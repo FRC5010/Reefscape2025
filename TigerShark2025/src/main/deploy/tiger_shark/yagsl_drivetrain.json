@@ -1,0 +1,10 @@
+{
+    "directory": "Kitbot/yagsl_swerve",
+    "turningMotorGearRatio": 1.0,
+    "driveModules": [
+        "frontleft.json",
+        "frontright.json",
+        "backleft.json",
+        "backright.json"
+    ]
+}
