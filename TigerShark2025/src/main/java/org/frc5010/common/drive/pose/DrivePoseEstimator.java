@@ -131,6 +131,7 @@ public class DrivePoseEstimator extends GenericSubsystem {
    * @return the current pose
    */
   public Pose2d getCurrentPose() {
+    //return poseProviders.get(0).getRobotPose().get().toPose2d();
     return poseTracker.getCurrentPose();
   }
 
@@ -206,17 +207,9 @@ public class DrivePoseEstimator extends GenericSubsystem {
   }
 
   private void resetProviderPoses(Pose2d pose) {
-    // TODO: FIX URGENT
     for (PoseProvider provider : poseProviders) {
-     
-      QuestNav quest = (QuestNav)provider;
-      quest.resetPose(new Pose3d(pose));
-      
-      
-
-      
+      provider.resetPose(new Pose3d(pose));
     }
-
   }
 
   /**
@@ -256,9 +249,8 @@ public class DrivePoseEstimator extends GenericSubsystem {
    * @param pose the pose to reset to
    */
   public void resetToPose(Pose2d pose) {
- 
+    poseTracker.resetToPose(pose);
     resetProviderPoses(pose);
-
   }
 
   /**

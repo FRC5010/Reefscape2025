@@ -91,8 +91,12 @@ public class QuestNav implements PoseProvider {
         return new Translation3d(position.get()[2], -position.get()[0], position.get()[2]);
     }
 
+    private Translation3d rotateAxes(Translation3d raw, Rotation3d rotation) {
+        return raw.rotateBy(rotation);
+    }
+
     private Translation3d correctWorldAxis(Translation3d rawPosition) {
-        return rawPosition.rotateBy(robotToQuest.getRotation());
+        return rotateAxes(rawPosition, robotToQuest.getRotation());
     }
 
     public Rotation3d getRawRotation() {
@@ -109,9 +113,11 @@ public class QuestNav implements PoseProvider {
     }
 
     public Translation3d getPosition() {
-        return correctWorldAxis(getRawPosition())
+        return rotateAxes(correctWorldAxis(getRawPosition())
                 .plus(robotToQuest.getTranslation())
-                .plus(robotToQuest.getTranslation().times(-1).rotateBy(getRotation()))
+                .plus(robotToQuest.getTranslation().times(-1).rotateBy(getRawRotation())),
+                initPose.getRotation().times(-1))
+
                 .plus(initPose.getTranslation());
     }
 
@@ -134,10 +140,11 @@ public class QuestNav implements PoseProvider {
     }
 
     public boolean isActive() {
-        if (timestamp.get() == 0.0 || RobotBase.isSimulation()) {
-            return false;
-        }
-        return initializedPosition;
+        return false;
+        // if (timestamp.get() == 0.0 || RobotBase.isSimulation()) {
+        // return false;
+        // }
+        // return initializedPosition;
     }
 
     public boolean processQuestCommand(QuestCommand command) {

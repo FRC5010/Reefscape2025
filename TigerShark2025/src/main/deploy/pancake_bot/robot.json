@@ -1,5 +1,5 @@
 {
-    "userConfig": "demo_mode.json",
+    "userConfig": "competition_mode.json",
     "logLevel": "CONFIG",
     "driveType": "YAGSL_SWERVE_DRIVE",
     "trackWidth": 22.25,
@@ -10,7 +10,7 @@
     "wheelDiameterUom": "m",
     "physicalMaxSpeed": 5.93,
     "physicalMaxSpeedUom": "m/s",
-    "driveMotorGearRatio": 1.0,
+    "driveMotorGearRatio": 6.75,
     "devices": {
         "gyro": "gyro_settings.json"
     }

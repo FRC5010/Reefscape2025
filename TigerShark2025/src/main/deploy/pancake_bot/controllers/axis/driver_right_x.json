@@ -3,6 +3,6 @@
     "deadband" : 0.07,
     "invert" : true,
     "scale" : 1.0,
-    "curvePower" : 1,
+    "curvePower" : 3,
     "limit" : 1.0
 }

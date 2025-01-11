@@ -244,4 +244,6 @@ public class LimeLightCamera extends GenericCamera {
   public double getCaptureTime() {
     return getLatency();
   }
+
+  public void resetPose(Pose3d init) {}
 }

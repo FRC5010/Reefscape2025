@@ -52,4 +52,6 @@ public interface PoseProvider {
     public double getCaptureTime();
 
     public void update();
+
+    public void resetPose(Pose3d initPose);
 }
