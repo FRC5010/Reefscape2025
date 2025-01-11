@@ -1,0 +1,403 @@
+{
+  "HALProvider": {
+    "Other Devices": {
+      "SPARK MAX [2]": {
+        "header": {
+          "open": true
+        }
+      },
+      "SPARK MAX [4]": {
+        "header": {
+          "open": true
+        }
+      },
+      "SPARK MAX [5]": {
+        "header": {
+          "open": true
+        }
+      },
+      "SPARK MAX [7]": {
+        "header": {
+          "open": true
+        }
+      },
+      "Talon FX (v6)[2]/Rotor Sensor": {
+        "header": {
+          "open": true
+        }
+      },
+      "Talon FX (v6)[51]": {
+        "header": {
+          "open": true
+        }
+      },
+      "Talon FX[50]": {
+        "header": {
+          "open": true
+        }
+      },
+      "Talon FX[51]/Integrated Sensor": {
+        "header": {
+          "open": true
+        }
+      },
+      "Talon FX[52]/Integrated Sensor": {
+        "header": {
+          "open": true
+        }
+      },
+      "Talon FX[8]/Integrated Sensor": {
+        "header": {
+          "open": true
+        }
+      }
+    }
+  },
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/LiveWindow/SwerveSubsystem": "Subsystem",
+      "/LiveWindow/Ungrouped/PIDController[1]": "PIDController",
+      "/LiveWindow/Ungrouped/Pigeon 2 [13]": "Gyro",
+      "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
+      "/Shuffleboard/BabySwerve/Auto Modes": "String Chooser",
+      "/Shuffleboard/ExampleRobot/Auto Modes": "String Chooser",
+      "/Shuffleboard/Pose/Pose Field": "Field2d",
+      "/SmartDashboard/Alerts": "Alerts",
+      "/SmartDashboard/Drive Visual": "Mechanism2d",
+      "/SmartDashboard/Encoders": "Alerts",
+      "/SmartDashboard/Field": "Field2d",
+      "/SmartDashboard/IMU": "Alerts",
+      "/SmartDashboard/JSON": "Alerts",
+      "/SmartDashboard/Motors": "Alerts",
+      "/SmartDashboard/Pigeon 2 (v6) [13]": "Gyro",
+      "/SmartDashboard/Pigeon 2 [13]": "Gyro",
+      "/SmartDashboard/Robot Visual": "Mechanism2d",
+      "/SmartDashboard/SendableChooser[0]": "String Chooser",
+      "/SmartDashboard/Swerve Drive": "Alerts",
+      "/SmartDashboard/VisionSystemSim-Vision/Sim Field": "Field2d",
+      "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d",
+      "/SmartDashboard/navX-Sensor[1]": "Gyro",
+      "/SmartDashboard/navX-Sensor[4]": "Gyro"
+    },
+    "windows": {
+      "/FMSInfo": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/Shuffleboard/Pose/Pose Field": {
+        "Field Tag 1": {
+          "image": ".\\pictures\\AT1.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "Field Tag 10": {
+          "image": ".\\pictures\\AT10.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "Field Tag 11": {
+          "image": ".\\pictures\\AT11.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "Field Tag 12": {
+          "image": ".\\pictures\\AT12.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "Field Tag 13": {
+          "image": ".\\pictures\\AT13.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "Field Tag 14": {
+          "image": ".\\pictures\\AT14.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "Field Tag 15": {
+          "image": ".\\pictures\\AT15.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "Field Tag 16": {
+          "image": ".\\pictures\\AT16.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "Field Tag 2": {
+          "image": ".\\pictures\\AT2.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "Field Tag 3": {
+          "image": ".\\pictures\\AT3.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "Field Tag 4": {
+          "image": ".\\pictures\\AT4.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "Field Tag 5": {
+          "image": ".\\pictures\\AT5.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "Field Tag 6": {
+          "image": ".\\pictures\\AT6.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "Field Tag 7": {
+          "image": ".\\pictures\\AT7.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "Field Tag 8": {
+          "image": ".\\pictures\\AT8.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "Field Tag 9": {
+          "image": ".\\pictures\\AT9.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP0": {
+          "arrowSize": 64,
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP1": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP10": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP11": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP12": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP13": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP14": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP15": {
+          "arrowSize": 61,
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP16": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP17": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP18": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP19": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP2": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP20": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP21": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP22": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP23": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP24": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP3": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP4": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP5": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP6": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP7": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP8": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "GP9": {
+          "image": ".\\pictures\\note.png",
+          "length": 0.44999998807907104,
+          "width": 0.44999998807907104
+        },
+        "OdometryPose": {
+          "arrowColor": [
+            255.0,
+            255.0,
+            0.0,
+            255.0
+          ],
+          "color": [
+            224.99996948242188,
+            0.0,
+            255.0,
+            255.0
+          ]
+        },
+        "Robot": {
+          "image": ".\\pictures\\spitfire.png",
+          "length": 0.8669999837875366,
+          "width": 0.8669999837875366
+        },
+        "XModules": {
+          "arrowColor": [
+            0.09611687064170837,
+            0.17414122819900513,
+            0.9803921580314636,
+            255.0
+          ],
+          "arrowSize": 33,
+          "arrowWeight": 3.0,
+          "style": "Hidden"
+        },
+        "bottom": 1638,
+        "builtin": "2025 Reefscape",
+        "height": 8.051901817321777,
+        "left": 534,
+        "right": 3466,
+        "top": 291,
+        "width": 17.54825210571289,
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Field": {
+        "OdometryPose": {
+          "arrowColor": [
+            255.0,
+            255.0,
+            0.0,
+            255.0
+          ]
+        },
+        "XModules": {
+          "arrowColor": [
+            0.09611687064170837,
+            0.17414122819900513,
+            0.9803921580314636,
+            255.0
+          ],
+          "arrowSize": 33,
+          "arrowWeight": 3.0,
+          "style": "Hidden"
+        },
+        "bottom": 1476,
+        "height": 8.210550308227539,
+        "left": 150,
+        "right": 2961,
+        "top": 79,
+        "width": 16.541748046875,
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Robot Visual": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/VisionSystemSim-main/Sim Field": {
+        "bottom": 1638,
+        "builtin": "2025 Reefscape",
+        "height": 8.051901817321777,
+        "left": 534,
+        "right": 3466,
+        "top": 291,
+        "width": 17.54825210571289,
+        "window": {
+          "visible": true
+        }
+      }
+    }
+  },
+  "NetworkTables": {
+    "transitory": {
+      "FMSInfo": {
+        "open": true
+      },
+      "SmartDashboard": {
+        "open": true,
+        "swerve": {
+          "open": true
+        }
+      }
+    }
+  },
+  "NetworkTables Info": {
+    "visible": true
+  }
+}
