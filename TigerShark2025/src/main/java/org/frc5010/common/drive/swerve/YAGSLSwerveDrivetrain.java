@@ -131,7 +131,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     try {
       File swerveJsonDirectory = new File(Filesystem.getDeployDirectory(), swerveType);
       swerveDrive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(maximumSpeed,
-          new Pose2d(new Translation2d(Meter.of(1),
+          new Pose2d(new Translation2d(Meter.of(7.2),
               Meter.of(4)),
               Rotation2d.fromDegrees(0)));
     } catch (Exception e) {
@@ -139,11 +139,11 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
       throw new RuntimeException(e);
     }
     // Heading correction should only be used while controlling the robot via angle.
-    swerveDrive.setHeadingCorrection(true);
+    swerveDrive.setHeadingCorrection(false);
 
     // Disables cosine compensation for simulations since it causes discrepancies
     // not seen in real life.
-    swerveDrive.setCosineCompensator(true);//!SwerveDriveTelemetry.isSimulation);
+    swerveDrive.setCosineCompensator(!SwerveDriveTelemetry.isSimulation);
     // Correct for skew that gets worse as angular velocity increases. Start with a
     // coefficient of 0.1.
     swerveDrive.setAngularVelocityCompensation(true,
@@ -183,9 +183,14 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     if (RobotBase.isSimulation()) {
       SimulatedArena.getInstance().placeGamePiecesOnField();
       int count = 0;
-      for (Pose3d note : SimulatedArena.getInstance().getGamePiecesByType("Note")) {
-        getField2d().getObject("CARPET" + count).setPose(new Pose2d(note.getX(), note.getY(), new Rotation2d()));
-        getField2d().getObject("GP" + count).setPose(new Pose2d(note.getX(), note.getY(), new Rotation2d()));
+      for (Pose3d gpa : SimulatedArena.getInstance().getGamePiecesByType("Coral")) {
+        getField2d().getObject("CARPET" + count).setPose(new Pose2d(gpa.getX(), gpa.getY(), new Rotation2d()));
+        getField2d().getObject("GPA" + count).setPose(new Pose2d(gpa.getX(), gpa.getY(), gpa.getRotation().toRotation2d()));
+        count++;
+      }  
+      count = 0;
+      for (Pose3d gpb : SimulatedArena.getInstance().getGamePiecesByType("Algae")) {
+        getField2d().getObject("GPB" + count).setPose(new Pose2d(gpb.getX(), gpb.getY(), gpb.getRotation().toRotation2d()));
         count++;
       }  
     }
@@ -745,10 +750,16 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   @Override
   public void simulationPeriodic() {
     int count = 0;
-    List<Pose3d> notes = SimulatedArena.getInstance().getGamePiecesByType("Note");
-    SmartDashboard.putNumber("Notes", notes.size());
-    for (Pose3d note : notes) {
-      getField2d().getObject("GP" + count++).setPose(new Pose2d(note.getX(), note.getY(), new Rotation2d()));
+    List<Pose3d> gpas = SimulatedArena.getInstance().getGamePiecesByType("Coral");
+    for (Pose3d gpa : gpas) {
+      getField2d().getObject("GPA" + count++).setPose(
+        new Pose2d(gpa.getX(), gpa.getY(), gpa.getRotation().toRotation2d()));
+    }
+    count = 0;
+    List<Pose3d> gpbs = SimulatedArena.getInstance().getGamePiecesByType("Algae");
+    for (Pose3d gpb : gpbs) {
+      getField2d().getObject("GPB" + count++).setPose(
+        new Pose2d(gpb.getX(), gpb.getY(), gpb.getRotation().toRotation2d()));
     }
   }
 
