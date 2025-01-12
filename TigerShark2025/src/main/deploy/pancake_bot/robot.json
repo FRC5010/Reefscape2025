@@ -11,6 +11,8 @@
     "physicalMaxSpeed": 5.93,
     "physicalMaxSpeedUom": "m/s",
     "driveMotorGearRatio": 6.75,
+    "gamePieceA": "Coral",
+    "gamePieceB": "Algae",
     "devices": {
         "gyro": "gyro_settings.json"
     }

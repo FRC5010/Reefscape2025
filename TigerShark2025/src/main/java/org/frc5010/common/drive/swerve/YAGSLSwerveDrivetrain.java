@@ -21,6 +21,7 @@ import java.util.function.Supplier;
 import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.arch.GenericRobot.LogLevel;
 import org.frc5010.common.commands.JoystickToSwerve;
+import org.frc5010.common.constants.Constants;
 import org.frc5010.common.constants.GenericDrivetrainConstants;
 import org.frc5010.common.constants.MotorFeedFwdConstants;
 import org.frc5010.common.constants.RobotConstantsDef;
@@ -183,13 +184,13 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     if (RobotBase.isSimulation()) {
       SimulatedArena.getInstance().placeGamePiecesOnField();
       int count = 0;
-      for (Pose3d gpa : SimulatedArena.getInstance().getGamePiecesByType("Coral")) {
+      for (Pose3d gpa : SimulatedArena.getInstance().getGamePiecesByType(Constants.Simulation.gamePieceA)) {
         getField2d().getObject("CARPET" + count).setPose(new Pose2d(gpa.getX(), gpa.getY(), new Rotation2d()));
         getField2d().getObject("GPA" + count).setPose(new Pose2d(gpa.getX(), gpa.getY(), gpa.getRotation().toRotation2d()));
         count++;
       }  
       count = 0;
-      for (Pose3d gpb : SimulatedArena.getInstance().getGamePiecesByType("Algae")) {
+      for (Pose3d gpb : SimulatedArena.getInstance().getGamePiecesByType(Constants.Simulation.gamePieceB)) {
         getField2d().getObject("GPB" + count).setPose(new Pose2d(gpb.getX(), gpb.getY(), gpb.getRotation().toRotation2d()));
         count++;
       }  
@@ -750,18 +751,19 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   @Override
   public void simulationPeriodic() {
     int count = 0;
-    List<Pose3d> gpas = SimulatedArena.getInstance().getGamePiecesByType("Coral");
+    List<Pose3d> gpas = SimulatedArena.getInstance().getGamePiecesByType(Constants.Simulation.gamePieceA);
     for (Pose3d gpa : gpas) {
       getField2d().getObject("GPA" + count++).setPose(
         new Pose2d(gpa.getX(), gpa.getY(), gpa.getRotation().toRotation2d()));
     }
     count = 0;
-    List<Pose3d> gpbs = SimulatedArena.getInstance().getGamePiecesByType("Algae");
+    List<Pose3d> gpbs = SimulatedArena.getInstance().getGamePiecesByType(Constants.Simulation.gamePieceB);
     for (Pose3d gpb : gpbs) {
       getField2d().getObject("GPB" + count++).setPose(
         new Pose2d(gpb.getX(), gpb.getY(), gpb.getRotation().toRotation2d()));
     }
   }
+
 
   public void setAngleSupplier(DoubleSupplier angDoubleSupplier) {
     angleSpeedSupplier = angDoubleSupplier;
