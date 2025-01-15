@@ -8,8 +8,6 @@ import org.frc5010.common.sensors.Controller;
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.autos.ExampleAuto;
-import frc.robot.autos.Left2Coral;
 
 public class TigerShark extends GenericRobot {
     GenericDrivetrain drivetrain;
@@ -42,7 +40,7 @@ public class TigerShark extends GenericRobot {
     @Override
     public void buildAutoCommands() {
         super.buildAutoCommands();
-        addAutoToChooser("Left 2 Coral", new Left2Coral());
-        addAutoToChooser("Auto New", new ExampleAuto());
+        // addAutoToChooser("Left 2 Coral", new Left2Coral());
+        // addAutoToChooser("Auto New", new ExampleAuto());
     }
 }
