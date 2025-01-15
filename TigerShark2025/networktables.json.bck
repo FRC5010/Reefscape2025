@@ -6,5 +6,29 @@
     "properties": {
       "persistent": true
     }
+  },
+  {
+    "name": "/YAGSLSwerveDrivetrain/Has Issues",
+    "type": "boolean",
+    "value": false,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/AprilTagPoseSystem/AprilTagPoseSystem/Std Vector Factor",
+    "type": "double",
+    "value": 0.1,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/AprilTagPoseSystem/AprilTagPoseSystem/Std Vector Radian Factor",
+    "type": "double",
+    "value": 5.0,
+    "properties": {
+      "persistent": true
+    }
   }
 ]

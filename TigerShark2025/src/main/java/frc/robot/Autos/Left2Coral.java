@@ -1,4 +1,4 @@
-package frc.robot.Autos;
+package frc.robot.autos;
 
 import org.frc5010.common.auto.AutoPath;
 import org.frc5010.common.auto.AutoSequence;
@@ -27,7 +27,12 @@ public class Left2Coral extends AutoSequence {
     // TODO: Make actual commands
 
     // Command Sequence
-    addCommands(startToF.resetOdometryToStart(0.1), startToF.follow(), fToStation.resetOdometryToStart(0.1), fToStation.follow(), stationToE.resetOdometryToStart(0.1), stationToE.follow(), eToStation.resetOdometryToStart(0.1), eToStation.follow());
+    addCommands(
+      startToF.resetOdometryToStart(0.1), 
+      startToF.follow(), 
+      fToStation.follow(), 
+      stationToE.follow(), 
+      eToStation.follow());
   }
 
 }
