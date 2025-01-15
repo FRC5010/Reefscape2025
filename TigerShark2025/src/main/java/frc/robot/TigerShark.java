@@ -5,6 +5,7 @@ import org.frc5010.common.config.ConfigConstants;
 import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.sensors.Controller;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Autos.Left2Coral;
 
 public class TigerShark extends GenericRobot {
     GenericDrivetrain drivetrain;
@@ -32,5 +33,11 @@ public class TigerShark extends GenericRobot {
     @Override
     public Command generateAutoCommand(Command autoCommand) {
         return drivetrain.generateAutoCommand(autoCommand);
+    }
+
+    @Override
+    public void buildAutoCommands() {
+        super.buildAutoCommands();
+        addAutoToChooser("Left 2 Coral", new Left2Coral());
     }
 }
