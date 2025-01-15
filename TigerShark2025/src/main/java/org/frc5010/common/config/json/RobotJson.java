@@ -14,6 +14,7 @@ import org.frc5010.common.arch.GenericDeviceHandler;
 import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.arch.GenericRobot.LogLevel;
 import org.frc5010.common.config.UnitsParser;
+import org.frc5010.common.constants.Constants;
 import org.frc5010.common.constants.GenericDrivetrainConstants;
 
 /** The base JSON class for robot configurations */
@@ -54,6 +55,12 @@ public class RobotJson {
   /** Drivetrain gear ratio between drive motor and wheels */
   public double driveMotorGearRatio = 1.0;
 
+  /** Game piece definition for first game piece */
+  public String gamePieceA = "GPA";
+
+  /** Game piece definition for second game piece */
+  public String gamePieceB = "GPB";
+
   /** Device definition files */
   public Map<String, String> devices;
 
@@ -80,6 +87,9 @@ public class RobotJson {
     drivetrainConstants.setkTeleDriveMaxAngularAccelerationUnitsPerSecond(
         userModeJson.maxAngularAccelleration);
     drivetrainConstants.setkDriveMotorGearRatio(driveMotorGearRatio);
+
+    Constants.Simulation.gamePieceA = gamePieceA;
+    Constants.Simulation.gamePieceB = gamePieceB;
   }
 
   /**

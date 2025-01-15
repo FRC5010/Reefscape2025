@@ -12,4 +12,9 @@ public class Constants {
     /** Rotation PID constants */
     public static final PIDConstants ANGLE_PID = new PIDConstants(5, 0, .1);
   }
+  
+  public static final class Simulation {
+    public static String gamePieceA = "GPA";
+    public static String gamePieceB = "GPB";
+  }
 }
