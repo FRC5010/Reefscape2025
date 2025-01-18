@@ -22,6 +22,7 @@ import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -140,7 +141,7 @@ public class QuestNav implements PoseProvider {
     }
 
     public boolean isActive() {
-        if (timestamp.get() == 0.0 || RobotBase.isSimulation()) {
+        if (timestamp.get() == 0.0 || RobotBase.isSimulation() || DriverStation.isDisabled()) {
         return false;
         }
         return initializedPosition;
@@ -173,6 +174,10 @@ public class QuestNav implements PoseProvider {
         if (miso.get() == 99) {
             mosi.set(0);
         }
+    }
+
+    public int fiducialId() {
+        return 0;
     }
 
     private void updateVelocity() {

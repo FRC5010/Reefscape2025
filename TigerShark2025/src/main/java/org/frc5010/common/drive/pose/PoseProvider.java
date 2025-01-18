@@ -54,4 +54,6 @@ public interface PoseProvider {
     public void update();
 
     public void resetPose(Pose3d initPose);
+
+    public int fiducialId();
 }

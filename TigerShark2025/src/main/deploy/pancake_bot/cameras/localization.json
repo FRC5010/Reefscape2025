@@ -1,11 +1,11 @@
 {
-    "name": "limelight",
+    "name": "pancake",
     "use": "apriltag",
     "type": "limelight",
     "strategy": "LOWEST_AMBIGUITY",
     "column": 0,
     "x": 0.1845,
-    "y": -0.228,
+    "y": 0.228,
     "z": 0.28,
     "roll": 0,
     "pitch": 10,
