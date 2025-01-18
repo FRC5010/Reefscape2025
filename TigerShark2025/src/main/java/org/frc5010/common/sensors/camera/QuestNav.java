@@ -129,7 +129,7 @@ public class QuestNav implements PoseProvider {
 
     public double getConfidence() {
         if (RobotBase.isReal()) {
-            return 0.0000000000001;
+            return 0.02;
         } else {
             return Double.MAX_VALUE;
         }
@@ -140,11 +140,10 @@ public class QuestNav implements PoseProvider {
     }
 
     public boolean isActive() {
+        if (timestamp.get() == 0.0 || RobotBase.isSimulation()) {
         return false;
-        // if (timestamp.get() == 0.0 || RobotBase.isSimulation()) {
-        // return false;
-        // }
-        // return initializedPosition;
+        }
+        return initializedPosition;
     }
 
     public boolean processQuestCommand(QuestCommand command) {

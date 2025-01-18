@@ -3,6 +3,7 @@ package frc.robot;
 import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.config.ConfigConstants;
 import org.frc5010.common.drive.GenericDrivetrain;
+import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 import org.frc5010.common.sensors.Controller;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.autos2.Left2Coral;
@@ -18,7 +19,8 @@ public class TigerShark extends GenericRobot {
 
     @Override
     public void configureButtonBindings(Controller driver, Controller operator) {
-        
+        driver.createAButton().whileTrue(((YAGSLSwerveDrivetrain) drivetrain).sysIdDriveMotorCommand());
+        driver.createBButton().whileTrue(((YAGSLSwerveDrivetrain) drivetrain).sysIdAngleMotorCommand());
     }
 
     @Override

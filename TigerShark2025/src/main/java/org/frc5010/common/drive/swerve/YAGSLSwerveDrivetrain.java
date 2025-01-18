@@ -333,7 +333,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     return SwerveDriveTest.generateSysIdCommand(
         SwerveDriveTest.setDriveSysIdRoutine(
             new SysIdRoutine.Config(),
-            this, swerveDrive, 12, false),
+            this, swerveDrive, 12, true),
         3.0, 5.0, 3.0);
   }
 
