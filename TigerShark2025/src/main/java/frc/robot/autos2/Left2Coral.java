@@ -28,7 +28,7 @@ public class Left2Coral extends AutoSequence {
 
     // Command Sequence
     addCommands(
-      startToF.resetOdometryToStart(0.1), 
+      startToF.resetOdometryToStart(), 
       startToF.follow(), 
       fToStation.follow(), 
       stationToE.follow(), 

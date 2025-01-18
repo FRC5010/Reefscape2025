@@ -159,20 +159,20 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     // offsets onto it. Throws warning if not possible
 
     /** 5010 Code */
-    // SwerveConstants swerveConstants = (SwerveConstants) constants;
-    // if (swerveConstants.getSwerveModuleConstants().getDriveFeedForward().size() > 0) {
-    //   Map<String, MotorFeedFwdConstants> motorFFMap = swerveConstants.getSwerveModuleConstants().getDriveFeedForward();
-    //   Map<String, SwerveModule> swerveModuleMap = swerveDrive.getModuleMap();
-    //   motorFFMap.keySet().stream()
-    //       .forEach(
-    //           module -> {
-    //             MotorFeedFwdConstants ff = motorFFMap.get(module);
-    //             double kS = ff.getkS();
-    //             double kV = ff.getkV();
-    //             double kA = ff.getkA();
-    //             swerveModuleMap.get(module).setFeedforward(new SimpleMotorFeedforward(kS, kV, kA));
-    //           });
-    // }
+    SwerveConstants swerveConstants = (SwerveConstants) constants;
+    if (swerveConstants.getSwerveModuleConstants().getDriveFeedForward().size() > 0) {
+      Map<String, MotorFeedFwdConstants> motorFFMap = swerveConstants.getSwerveModuleConstants().getDriveFeedForward();
+      Map<String, SwerveModule> swerveModuleMap = swerveDrive.getModuleMap();
+      motorFFMap.keySet().stream()
+          .forEach(
+              module -> {
+                MotorFeedFwdConstants ff = motorFFMap.get(module);
+                double kS = ff.getkS();
+                double kV = ff.getkV();
+                double kA = ff.getkA();
+                swerveModuleMap.get(module).setFeedforward(new SimpleMotorFeedforward(kS, kV, kA));
+              });
+    }
 
     setDrivetrainPoseEstimator(new DrivePoseEstimator(new YAGSLSwervePose(this)));
 
