@@ -1,5 +1,5 @@
 {
-    "directory": "pancake_bot/yagsl_swerve",
+    "directory": "tigershark/yagsl_swerve",
     "turningMotorGearRatio": 1.0,
     "driveModules": [
         "frontleft.json",

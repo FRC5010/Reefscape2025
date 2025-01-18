@@ -660,6 +660,21 @@
         "TigerShark": {
           "open": true
         }
+      },
+      "SmartDashboard": {
+        "ScoringSystem": {
+          "elevator": {
+            "open": true
+          },
+          "open": true,
+          "shooterLeft": {
+            "open": true
+          }
+        },
+        "open": true
+      },
+      "elevator": {
+        "open": true
       }
     },
     "transitory": {
@@ -682,8 +697,5 @@
   },
   "NetworkTables Info": {
     "visible": true
-  },
-  "NetworkTables View": {
-    "visible": false
   }
 }
