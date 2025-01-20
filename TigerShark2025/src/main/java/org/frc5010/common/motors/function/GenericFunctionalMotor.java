@@ -6,6 +6,8 @@ package org.frc5010.common.motors.function;
 
 import static edu.wpi.first.units.Units.Meters;
 
+import java.util.Optional;
+
 import org.frc5010.common.arch.WpiHelperInterface;
 import org.frc5010.common.constants.RobotConstantsDef;
 import org.frc5010.common.motors.MotorController5010;
@@ -15,7 +17,9 @@ import org.frc5010.common.telemetry.DisplayValuesHelper;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -71,7 +75,7 @@ public class GenericFunctionalMotor implements MotorController5010, WpiHelperInt
    * @return a reference to the current MotorController5010 instance
    */
   @Override
-  public MotorController5010 setCurrentLimit(int limit) {
+  public MotorController5010 setCurrentLimit(Current limit) {
     _motor.setCurrentLimit(limit);
     return this;
   }
@@ -380,7 +384,7 @@ public class GenericFunctionalMotor implements MotorController5010, WpiHelperInt
     return _motor.getAppliedOutput();
   }
 
-  @Override 
+  @Override
   public double getOutputCurrent() {
     return _motor.getOutputCurrent();
   }
@@ -414,5 +418,39 @@ public class GenericFunctionalMotor implements MotorController5010, WpiHelperInt
    */
   protected void initiateDisplayValues() {
     throw new UnsupportedOperationException("Unimplemented method 'initiateDisplayValues'");
+  }
+
+  /**
+   * Sets the simulated instance of the motor for use in simulations. This
+   * method passes the motor simulation type to the motor controller, which
+   * should be implemented to use the simulated motor type in its simulation.
+   *
+   * @param motorSimulationType the simulated instance of the motor
+   */
+  @Override
+  public void setMotorSimulationType(DCMotor motorSimulationType) {
+    _motor.setMotorSimulationType(motorSimulationType);
+  }
+
+  /**
+   * Update the motor simulation model with the current state of the motor.
+   *
+   * @param position The current angle of the motor in radians.
+   * @param velocity The current angular velocity of the motor in radians per
+   *                 second.
+   */
+  @Override
+  public void simulationUpdate(Optional<Angle> position, AngularVelocity velocity) {
+    _motor.simulationUpdate(position, velocity);
+  }
+
+  /**
+   * Sets the maximum angular velocity of the motor in rotations per minute.
+   *
+   * @param rpm The maximum angular velocity of the motor in rotations per minute.
+   */
+  @Override
+  public void setMaxRPM(AngularVelocity rpm) {
+    _motor.setMaxRPM(rpm);
   }
 }

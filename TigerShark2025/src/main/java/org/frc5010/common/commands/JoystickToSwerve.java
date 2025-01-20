@@ -9,7 +9,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -60,16 +59,13 @@ public class JoystickToSwerve extends Command {
     // get values on sticks and deadzone them
 
     double xInput = (xSpdFunction.getAsDouble());
-    SmartDashboard.putNumber("INX", xInput);
     double yInput = (ySpdFunction.getAsDouble());
-    SmartDashboard.putNumber("INY", yInput);
 
     Translation2d inputTranslation = new Translation2d(xInput, yInput);
     double magnitude = inputTranslation.getNorm();
     Rotation2d angle = 0 != xInput || 0 != yInput ? inputTranslation.getAngle() : new Rotation2d();
 
     double curvedMagnitude = Math.pow(magnitude, 3);
-    SmartDashboard.putNumber("MagCurve", curvedMagnitude);
 
     double turnSpeed = (turnSpdFunction.getAsDouble());
 
@@ -85,13 +81,9 @@ public class JoystickToSwerve extends Command {
     turnSpeed =
         turnSpeed * swerveDrive.getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond();
 
-    SmartDashboard.putNumber("XOutput", xSpeed);
-    SmartDashboard.putNumber("YOut", ySpeed);
-    SmartDashboard.putNumber("ZAngleSpeed", turnSpeed);
-
     // convert to chassis speed class
     ChassisSpeeds chassisSpeeds;
- 
+    //
     // System.out.println(swerveDrive.getGyroRate());
     double gyroRate = Units.degreesToRadians(swerveDrive.getGyroRate()) * 0.01;
     Rotation2d correctedRotation = swerveDrive.getHeading().minus(new Rotation2d(gyroRate));

@@ -6,13 +6,15 @@ package org.frc5010.common.motors.function;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Minute;
+import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
+
+import java.util.Optional;
 
 import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.motors.SystemIdentification;
-import org.frc5010.common.sensors.encoder.SimulatedEncoder;
 import org.frc5010.common.telemetry.DisplayValuesHelper;
 
 import edu.wpi.first.math.geometry.Pose3d;
@@ -33,8 +35,7 @@ public class VelocityControlMotor extends GenericControlledMotor {
   protected MechanismLigament2d speedometer;
   protected MechanismLigament2d setpoint;
   protected MechanismRoot2d root;
-  protected FlywheelSim simMotor;
-  protected SimulatedEncoder simEncoder;
+  protected FlywheelSim flyWheelSim;
 
   public VelocityControlMotor(MotorController5010 motor, String visualName, DisplayValuesHelper display) {
     super(motor, visualName, display);
@@ -42,12 +43,9 @@ public class VelocityControlMotor extends GenericControlledMotor {
   }
 
   public VelocityControlMotor setupSimulatedMotor(double gearing, double jKgMetersSquared) {
-    simMotor = new FlywheelSim(
+    flyWheelSim = new FlywheelSim(
         LinearSystemId.createFlywheelSystem(_motor.getMotorSimulationType(), jKgMetersSquared, gearing),
         _motor.getMotorSimulationType());
-    simEncoder =
-        new SimulatedEncoder(
-            MotorFactory.getNextSimEncoderPort(), MotorFactory.getNextSimEncoderPort());
     return this;
   }
 
@@ -77,7 +75,7 @@ public class VelocityControlMotor extends GenericControlledMotor {
     if (RobotBase.isReal()) {
       currentVelocity = encoder.getVelocity();
     } else {
-      currentVelocity = simEncoder.getVelocity();
+      currentVelocity = flyWheelSim.getAngularVelocityRPM();
     }
     velocity.setValue(currentVelocity);
     reference.setValue(getReference());
@@ -87,12 +85,14 @@ public class VelocityControlMotor extends GenericControlledMotor {
 
   @Override
   public void simulationUpdate() {
-    effort.setVoltage(calculateControlEffort(simEncoder.getVelocity()), Volts);
-    simMotor.setInput(effort.getVoltage().in(Volts));
-    simMotor.update(0.020);
-    simEncoder.setRate(simMotor.getAngularVelocityRPM());
+    effort.setVoltage(calculateControlEffort(flyWheelSim.getAngularVelocityRPM()), Volts);
+    flyWheelSim.setInput(effort.getVoltage().in(Volts));
+    flyWheelSim.update(0.020);
+
+    _motor.simulationUpdate(Optional.empty(), RPM.of(flyWheelSim.getAngularVelocityRPM()));
+        
     RoboRioSim.setVInVoltage(
-        BatterySim.calculateDefaultBatteryLoadedVoltage(simMotor.getCurrentDrawAmps()));
+        BatterySim.calculateDefaultBatteryLoadedVoltage(flyWheelSim.getCurrentDrawAmps()));
   }
 
   @Override

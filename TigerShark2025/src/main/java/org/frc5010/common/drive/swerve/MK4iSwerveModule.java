@@ -63,8 +63,8 @@ public class MK4iSwerveModule extends GenericSwerveModule {
     super.pid = this.pid;
     super.motorConstants = this.motorConstants;
     super.moduleConstants = swerveConstants.getSwerveModuleConstants();
-    drive = MotorFactory.NEO(swervePorts.getDrivePort()).invert(individualConstants.isDrivingInv());
-    turn = MotorFactory.NEO(swervePorts.getTurnPort()).invert(individualConstants.isTurningInv());
+    drive = MotorFactory.Neo(swervePorts.getDrivePort()).invert(individualConstants.isDrivingInv());
+    turn = MotorFactory.Neo(swervePorts.getTurnPort()).invert(individualConstants.isTurningInv());
     absoluteEncoder = new CanCoderEncoder(swervePorts.getEncoderPort());
     absoluteEncoder.setInverted(individualConstants.isEncoderInv());
     setupSwerveEncoders();
