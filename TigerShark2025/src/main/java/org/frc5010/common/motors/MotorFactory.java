@@ -18,31 +18,30 @@ import edu.wpi.first.wpilibj.util.Color;
 public class MotorFactory {
   protected static int simEncoderPort = 10;
   protected static int visualColorIndex = 0;
-  protected static Color[] visualColors =
-      new Color[] {
-        Color.kRed,
-        Color.kOrange,
-        Color.kYellow,
-        Color.kGreen,
-        Color.kBlue,
-        Color.kPurple,
-        Color.kCyan,
-        Color.kMagenta,
-        Color.kViolet,
-        Color.kPink,
-        Color.kWhite,
-        Color.kBrown,
-        Color.kDarkRed,
-        Color.kDarkOrange,
-        Color.kYellowGreen,
-        Color.kDarkGreen,
-        Color.kDarkBlue,
-        Color.kDarkViolet,
-        Color.kDarkCyan,
-        Color.kDarkMagenta,
-        Color.kDarkSalmon,
-        Color.kGray
-      };
+  protected static Color[] visualColors = new Color[] {
+      Color.kRed,
+      Color.kOrange,
+      Color.kYellow,
+      Color.kGreen,
+      Color.kBlue,
+      Color.kPurple,
+      Color.kCyan,
+      Color.kMagenta,
+      Color.kViolet,
+      Color.kPink,
+      Color.kWhite,
+      Color.kBrown,
+      Color.kDarkRed,
+      Color.kDarkOrange,
+      Color.kYellowGreen,
+      Color.kDarkGreen,
+      Color.kDarkBlue,
+      Color.kDarkViolet,
+      Color.kDarkCyan,
+      Color.kDarkMagenta,
+      Color.kDarkSalmon,
+      Color.kGray
+  };
 
   public static int getNextSimEncoderPort() {
     return simEncoderPort++;
@@ -64,6 +63,10 @@ public class MotorFactory {
     motor.setMaxRPM(MotorConstants.Motor.Neo.maxRpm);
     motor.setMotorSimulationType(MotorConstants.Motor.Neo.motorSim);
     return motor;
+  }
+
+  public static MotorController5010 Spark(int canId, Motor config) {
+    return new GenericRevBrushlessMotor(canId, config);
   }
 
   public static MotorController5010 Neo550(int port) {
@@ -97,6 +100,10 @@ public class MotorFactory {
     motor.setMaxRPM(MotorConstants.Motor.Neo550.maxRpm);
     motor.setMotorSimulationType(Motor.Neo550.motorSim);
     return motor;
+  }
+
+  public static MotorController5010 Thrifty(int canId, Motor config) {
+    return new GenericThriftyNovaMotor(canId, config);
   }
 
   public static MotorController5010 KrakenX60(int port) {

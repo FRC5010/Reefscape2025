@@ -10,6 +10,7 @@ import static edu.wpi.first.units.Units.RPM;
 
 import org.frc5010.common.arch.GenericSubsystem;
 import org.frc5010.common.motors.MotorFactory;
+import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.motors.function.FollowerMotor;
 import org.frc5010.common.motors.function.VelocityControlMotor;
 import org.frc5010.common.motors.function.VerticalPositionControlMotor;
@@ -26,8 +27,8 @@ public class ScoringSystem extends GenericSubsystem {
     protected VelocityControlMotor shooterLeft;
     protected VelocityControlMotor shooterRight;
     public ScoringSystem(Mechanism2d mechanismSimulation){
-        shooterLeft = new VelocityControlMotor(MotorFactory.ThriftyNeo(11), "shooterLeft", displayValues);
-        shooterRight = new VelocityControlMotor(MotorFactory.ThriftyNeo(12), "shooterRight", displayValues);
+        shooterLeft = new VelocityControlMotor(MotorFactory.Thrifty(11, Motor.Neo), "shooterLeft", displayValues);
+        shooterRight = new VelocityControlMotor(MotorFactory.Thrifty(12, Motor.Neo), "shooterRight", displayValues);
         shooterLeft.setupSimulatedMotor(3, 0.1);
         shooterRight.setupSimulatedMotor(3, 0.1);
         shooterLeft.setVisualizer(mechanismSimulation, new Pose3d(new Translation3d(0.1,0.1,0.1),new Rotation3d()));
