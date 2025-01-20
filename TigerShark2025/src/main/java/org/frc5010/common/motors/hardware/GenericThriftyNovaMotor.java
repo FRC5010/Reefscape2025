@@ -10,6 +10,7 @@ import java.util.Optional;
 
 import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.motors.PIDController5010;
+import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.sensors.encoder.GenericEncoder;
 
 import com.thethriftybot.ThriftyNova;
@@ -40,6 +41,15 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
         motor = new ThriftyNova(canId);
         this.currentLimit = currentLimit;
         setCurrentLimit(currentLimit);
+    }
+
+    public GenericThriftyNovaMotor(int canId, Motor config) {
+        motor = new ThriftyNova(canId);
+        factoryDefaults();
+        clearStickyFaults();
+        setCurrentLimit(config.currentLimit);
+        setMotorSimulationType(config.motorSim);
+        setMaxRPM(config.maxRpm);
     }
 
     @Override

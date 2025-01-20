@@ -11,6 +11,7 @@ import static edu.wpi.first.units.Units.Seconds;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.motors.PIDController5010;
 import org.frc5010.common.motors.SystemIdentification;
@@ -89,6 +90,18 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
     cfgUpdated = true;
   }
 
+  public GenericRevBrushlessMotor(int port, Motor config) {
+    motor = new SparkMax(port, MotorType.kBrushless);
+    factoryDefaults();
+    clearStickyFaults();
+    setCurrentLimit(config.currentLimit);
+    setMotorSimulationType(config.motorSim);
+    setMaxRPM(config.maxRpm);
+    cfg.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder); // Configure feedback of the PID controller as the
+    // integrated encoder.
+    cfgUpdated = true;
+  }
+
   @Override
   /**
    * Sets up the same motor hardware and current limit
@@ -162,7 +175,7 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
    */
   @Override
   public MotorController5010 setCurrentLimit(Current currentLimit) {
-    cfg.smartCurrentLimit((int)currentLimit.in(Amps));
+    cfg.smartCurrentLimit((int) currentLimit.in(Amps));
     cfgUpdated = true;
     return this;
   }

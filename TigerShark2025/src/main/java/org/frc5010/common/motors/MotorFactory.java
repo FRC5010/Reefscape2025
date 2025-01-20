@@ -4,13 +4,13 @@
 
 package org.frc5010.common.motors;
 
+import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.motors.function.DriveTrainMotor;
 import org.frc5010.common.motors.function.FollowerMotor;
 import org.frc5010.common.motors.hardware.GenericRevBrushlessMotor;
 import org.frc5010.common.motors.hardware.GenericThriftyNovaMotor;
 import org.frc5010.common.motors.hardware.KrakenX60;
 
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.util.Color;
 
@@ -56,57 +56,57 @@ public class MotorFactory {
   }
 
   public static MotorController5010 Neo(int port) {
-    return Neo(port, MotorConstants.CurrentLimits.Neo);
+    return Neo(port, MotorConstants.Motor.Neo.currentLimit);
   }
 
   public static MotorController5010 Neo(int port, Current currentLimit) {
     MotorController5010 motor = new GenericRevBrushlessMotor(port, currentLimit);
-    motor.setMaxRPM(MotorConstants.MaxRpms.Neo);
-    motor.setMotorSimulationType(DCMotor.getNEO(1));
+    motor.setMaxRPM(MotorConstants.Motor.Neo.maxRpm);
+    motor.setMotorSimulationType(MotorConstants.Motor.Neo.motorSim);
     return motor;
   }
 
   public static MotorController5010 Neo550(int port) {
-    return Neo550(port, MotorConstants.CurrentLimits.Neo550);
+    return Neo550(port, MotorConstants.Motor.Neo550.currentLimit);
   }
 
   public static MotorController5010 Neo550(int port, Current currentLimit) {
     MotorController5010 motor = new GenericRevBrushlessMotor(port, currentLimit);
-    motor.setMaxRPM(MotorConstants.MaxRpms.Neo550);
-    motor.setMotorSimulationType(DCMotor.getNeo550(1));
+    motor.setMaxRPM(MotorConstants.Motor.Neo550.maxRpm);
+    motor.setMotorSimulationType(MotorConstants.Motor.Neo550.motorSim);
     return motor;
   }
 
   public static MotorController5010 ThriftyNeo(int port) {
-    return ThriftyNeo(port, MotorConstants.CurrentLimits.Neo);
+    return ThriftyNeo(port, MotorConstants.Motor.Neo.currentLimit);
   }
 
   public static MotorController5010 ThriftyNeo(int port, Current currentLimit) {
     MotorController5010 motor = new GenericThriftyNovaMotor(port, currentLimit);
-    motor.setMaxRPM(MotorConstants.MaxRpms.Neo);
-    motor.setMotorSimulationType(DCMotor.getNEO(1));
+    motor.setMaxRPM(MotorConstants.Motor.Neo.maxRpm);
+    motor.setMotorSimulationType(MotorConstants.Motor.Neo.motorSim);
     return motor;
   }
 
   public static MotorController5010 ThriftyNeo550(int port) {
-    return ThriftyNeo550(port, MotorConstants.CurrentLimits.Neo550);
+    return ThriftyNeo550(port, MotorConstants.Motor.Neo550.currentLimit);
   }
 
   public static MotorController5010 ThriftyNeo550(int port, Current currentLimit) {
     MotorController5010 motor = new GenericThriftyNovaMotor(port, currentLimit);
-    motor.setMaxRPM(MotorConstants.MaxRpms.Neo550);
-    motor.setMotorSimulationType(DCMotor.getNeo550(1));
+    motor.setMaxRPM(MotorConstants.Motor.Neo550.maxRpm);
+    motor.setMotorSimulationType(Motor.Neo550.motorSim);
     return motor;
   }
 
   public static MotorController5010 KrakenX60(int port) {
-    return KrakenX60(port, MotorConstants.CurrentLimits.KrakenX60);
+    return KrakenX60(port, Motor.KrakenX60.currentLimit);
   }
 
   public static MotorController5010 KrakenX60(int port, Current currentLimit) {
     MotorController5010 motor = new KrakenX60(port);
-    motor.setMaxRPM(MotorConstants.MaxRpms.KralenX60);
-    motor.setMotorSimulationType(DCMotor.getKrakenX60Foc(1));
+    motor.setMaxRPM(Motor.KrakenX60.maxRpm);
+    motor.setMotorSimulationType(Motor.KrakenX60.motorSim);
     return motor;
   }
 

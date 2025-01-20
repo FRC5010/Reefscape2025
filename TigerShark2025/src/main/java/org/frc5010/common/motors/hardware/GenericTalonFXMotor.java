@@ -13,6 +13,7 @@ import java.util.Optional;
 
 import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.motors.PIDController5010;
+import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.motors.control.TalonFXPID;
 import org.frc5010.common.sensors.encoder.GenericEncoder;
 import org.frc5010.common.sensors.encoder.TalonFXEncoder;
@@ -98,6 +99,13 @@ public class GenericTalonFXMotor implements MotorController5010 {
     this(new TalonFX(id, canbus));
   }
 
+  public GenericTalonFXMotor(int canId, Motor config) {
+    this(new TalonFX(canId, ""));
+    setCurrentLimit(config.currentLimit);
+    setMotorSimulationType(config.motorSim);
+    setMaxRPM(config.maxRpm);
+  }
+
   /**
    * Construct the TalonFX swerve motor given the ID and CANBus.
    *
@@ -152,7 +160,7 @@ public class GenericTalonFXMotor implements MotorController5010 {
    */
   @Override
   public MotorController5010 setCurrentLimit(Current limit) {
-    motorCurrentLimit = (int)limit.in(Amps);
+    motorCurrentLimit = (int) limit.in(Amps);
 
     cfg.refresh(configuration.CurrentLimits);
     cfg.apply(
