@@ -231,7 +231,7 @@ public class DrivePoseEstimator extends GenericSubsystem {
             Optional<Pose3d> robotPose = provider.getRobotPose();
             if (robotPose.isPresent()) {
               double confidence = provider.getConfidence();
-              visionUpdated = true;
+              visionUpdated |= provider.fiducialId() != 0;
               poseTracker.updateVisionMeasurements(
                 robotPose.get().toPose2d(), provider.getCaptureTime(), vision.getStdConfidenceVector(confidence));
             }

@@ -111,6 +111,11 @@ public class LimeLightCamera extends GenericCamera {
     return poseEstimate;
   }
 
+  @Override
+  public int fiducialId() {
+    return (int)LimelightHelpers.getFiducialID(name);
+  }
+
   /**
    * Validate the pose estimate
    *
@@ -223,7 +228,7 @@ public class LimeLightCamera extends GenericCamera {
   
   @Override
   public double getConfidence() {
-    return 0.0;
+    return 0.000000000000001;
   }
 
   @Override

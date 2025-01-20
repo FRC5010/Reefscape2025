@@ -26,8 +26,8 @@ public class ScoringSystem extends GenericSubsystem {
     protected VelocityControlMotor shooterLeft;
     protected VelocityControlMotor shooterRight;
     public ScoringSystem(Mechanism2d mechanismSimulation){
-        shooterLeft = new VelocityControlMotor(MotorFactory.Neo550(11), "shooterLeft", displayValues);
-        shooterRight = new VelocityControlMotor(MotorFactory.Neo550(12), "shooterRight", displayValues);
+        shooterLeft = new VelocityControlMotor(MotorFactory.ThriftyNeo(11), "shooterLeft", displayValues);
+        shooterRight = new VelocityControlMotor(MotorFactory.ThriftyNeo(12), "shooterRight", displayValues);
         shooterLeft.setupSimulatedMotor(3, 0.1);
         shooterRight.setupSimulatedMotor(3, 0.1);
         shooterLeft.setVisualizer(mechanismSimulation, new Pose3d(new Translation3d(0.1,0.1,0.1),new Rotation3d()));
@@ -37,8 +37,6 @@ public class ScoringSystem extends GenericSubsystem {
         elevatorFollower.setInverted(true);
         elevator.setupSimulatedMotor(86, Kilograms.of(10), Meters.of(0.01), Meters.of(0), Meters.of(2), Meters.of(0), Meters.of(0.2), 0.1, 0.1);
         elevator.setVisualizer(mechanismSimulation, new Pose3d(new Translation3d(0.1, 0, 0.5),new Rotation3d()));
-
-
     }
     public void shooterLeftSpeed(double speed){
         shooterLeft.setReference(speed * shooterLeft.getMaxRPM().in(RPM));
