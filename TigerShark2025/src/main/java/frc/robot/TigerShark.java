@@ -7,6 +7,7 @@ import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 import org.frc5010.common.sensors.Controller;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.autos2.Left2Coral;
+import frc.robot.autos2.Right2Coral;
 
 
 public class TigerShark extends GenericRobot {
@@ -44,6 +45,7 @@ public class TigerShark extends GenericRobot {
     public void buildAutoCommands() {
         super.buildAutoCommands();
         addAutoToChooser("Left 2 Coral", new Left2Coral());
+        addAutoToChooser("Right 2 Coral", new Right2Coral());
         // addAutoToChooser("Auto New", new ExampleAuto());
     }
 }

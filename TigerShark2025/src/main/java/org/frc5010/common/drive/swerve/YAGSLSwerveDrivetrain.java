@@ -202,7 +202,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   public void setupPathPlanner() {
     AutoBuilder.configure(
         poseEstimator::getCurrentPose, // Robot pose supplier
-        (Pose2d pose) -> resetOrientation(), // Method to reset odometry (will be called if your auto has a starting
+        poseEstimator::resetToPose, // Method to reset odometry (will be called if your auto has a starting
         // pose)
         this::getRobotVelocity, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
         // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
