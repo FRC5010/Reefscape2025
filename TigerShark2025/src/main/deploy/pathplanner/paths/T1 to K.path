@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.576229508196722,
-        "y": 3.9950307377049183
+        "x": 1.6380000000000001,
+        "y": 7.3302499999999995
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.293545081967213,
-        "y": 4.570440573770491
+        "x": 2.845109990220787,
+        "y": 6.287184769046365
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "T1 Station"
     },
     {
       "anchor": {
-        "x": 5.190676229508196,
-        "y": 5.145850409836064
+        "x": 3.9585000000000004,
+        "y": 5.312
       },
       "prevControl": {
-        "x": 5.790061475409836,
-        "y": 4.846157786885246
+        "x": 3.8097081879340533,
+        "y": 5.512900464564251
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "K"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -120.25643716352927
+    "rotation": -59.99999999999999
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -178.51250144213853
+    "rotation": -55.0
   },
   "useDefaultConstraints": true
 }

@@ -15,14 +15,15 @@ public class Right4Coral extends AutoSequence {
     Pose2d reefCenter = new Pose2d(4.5, 4.0, new Rotation2d());
 
     // Auto Path Definitions
-    AutoPath startToI = AutoPath.PP("Start to I");
-    AutoPath iToStation = AutoPath.PP("I to Station");
-    AutoPath stationToJ = AutoPath.PP("Station to J");
-    AutoPath jToStation = AutoPath.PP("J to Station");
-    AutoPath stationToK = AutoPath.PP("Station to K");
-    AutoPath kToStation = AutoPath.PP("K to Station");
-    AutoPath stationToL = AutoPath.PP("Station to L");
-    AutoPath LToStation = AutoPath.PP("L to Station");
+    AutoPath startToI = AutoPath.PP("Start 3 to I");
+    AutoPath iToStation = AutoPath.PP("I to T1");
+    AutoPath stationToJ = AutoPath.PP("T1 to J");
+    AutoPath jToStation = AutoPath.PP("J to T1");
+    AutoPath stationToK = AutoPath.PP("T1 to K");
+    AutoPath kToStation = AutoPath.PP("K to T1");
+    AutoPath stationToL = AutoPath.PP("T1 to L");
+    AutoPath LToStation = AutoPath.PP("L to T1");
+    AutoPath T1ToStart3 = AutoPath.PP("T1 to Start 3");
 
     // Trigger Definitions
     Trigger robotNearReef = robotNearLocation(reefCenter, Meter.of(2.0));
@@ -40,7 +41,8 @@ public class Right4Coral extends AutoSequence {
       stationToK.follow(),
       kToStation.follow(),
       stationToL.follow(),
-      LToStation.follow());
+      LToStation.follow(),
+      T1ToStart3.follow());
   }
 
 }

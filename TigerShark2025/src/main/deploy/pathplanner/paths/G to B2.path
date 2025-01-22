@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.576229508196722,
-        "y": 3.9950307377049183
+        "x": 5.762249999999999,
+        "y": 3.8689999999999993
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.293545081967213,
-        "y": 4.570440573770491
+        "x": 7.429500000000001,
+        "y": 2.8939999999999997
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "G"
     },
     {
       "anchor": {
-        "x": 5.190676229508196,
-        "y": 5.145850409836064
+        "x": 1.111,
+        "y": 0.95375
       },
       "prevControl": {
-        "x": 5.790061475409836,
-        "y": 4.846157786885246
+        "x": 1.092,
+        "y": 1.3925
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "B2 Station"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -120.25643716352927
+    "rotation": 54.46232220802562
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -178.51250144213853
+    "rotation": -178.22853025996594
   },
   "useDefaultConstraints": true
 }

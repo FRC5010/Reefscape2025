@@ -9,12 +9,6 @@
           "data": {
             "pathName": "Quest Test Path 1"
           }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Shoot"
-          }
         }
       ]
     }
