@@ -4,10 +4,14 @@
 
 package org.frc5010.common.motors.hardware;
 
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Seconds;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
+import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.motors.PIDController5010;
 import org.frc5010.common.motors.SystemIdentification;
@@ -16,6 +20,7 @@ import org.frc5010.common.sensors.encoder.GenericEncoder;
 import org.frc5010.common.sensors.encoder.RevEncoder;
 
 import com.revrobotics.REVLibError;
+import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -28,9 +33,12 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
@@ -42,6 +50,13 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
   private final SparkMax motor;
   /** The current limit */
   protected int currentLimit;
+  /** The simulated instance of the motor */
+  protected DCMotor motorSim;
+  /** The maximum angular velocity */
+  protected AngularVelocity maxRPM;
+  /** The simulated instance of the motor */
+  protected SparkMaxSim sparkMaxSim;
+
   /**
    * The maximum amount of times the swerve motor will attempt to configure a
    * motor if failures occur.
@@ -64,7 +79,7 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
    * @param port         the port number
    * @param currentLimit the current limit
    */
-  public GenericRevBrushlessMotor(int port, int currentLimit) {
+  public GenericRevBrushlessMotor(int port, Current currentLimit) {
     motor = new SparkMax(port, MotorType.kBrushless);
     factoryDefaults();
     clearStickyFaults();
@@ -75,6 +90,18 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
     cfgUpdated = true;
   }
 
+  public GenericRevBrushlessMotor(int port, Motor config) {
+    motor = new SparkMax(port, MotorType.kBrushless);
+    factoryDefaults();
+    clearStickyFaults();
+    setCurrentLimit(config.currentLimit);
+    setMotorSimulationType(config.motorSim);
+    setMaxRPM(config.maxRpm);
+    cfg.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder); // Configure feedback of the PID controller as the
+    // integrated encoder.
+    cfgUpdated = true;
+  }
+
   @Override
   /**
    * Sets up the same motor hardware and current limit
@@ -82,7 +109,7 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
    * @param port The port number of the motor
    */
   public MotorController5010 duplicate(int port) {
-    MotorController5010 duplicate = new GenericRevBrushlessMotor(port, currentLimit);
+    MotorController5010 duplicate = new GenericRevBrushlessMotor(port, Amps.of(currentLimit));
     return duplicate;
   }
 
@@ -147,8 +174,8 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
    * @param currentLimit Current limit in AMPS at free speed.
    */
   @Override
-  public MotorController5010 setCurrentLimit(int currentLimit) {
-    cfg.smartCurrentLimit(currentLimit);
+  public MotorController5010 setCurrentLimit(Current currentLimit) {
+    cfg.smartCurrentLimit((int) currentLimit.in(Amps));
     cfgUpdated = true;
     return this;
   }
@@ -289,14 +316,24 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
   public void factoryDefaults() {
   }
 
+  /**
+   * Returns the motor simulation type as a {@link DCMotor} instance.
+   *
+   * @return the simulated instance of the motor for use in simulations
+   */
   @Override
   public DCMotor getMotorSimulationType() {
-    throw new UnsupportedOperationException("Unimplemented method 'getMotorSimulationType'");
+    return motorSim;
   }
 
+  /**
+   * Returns the maximum angular velocity of the motor in rotations per minute.
+   *
+   * @return the maximum angular velocity of the motor in rotations per minute
+   */
   @Override
   public AngularVelocity getMaxRPM() {
-    throw new UnsupportedOperationException("Unimplemented method 'getMaxRPM'");
+    return maxRPM;
   }
 
   /**
@@ -430,6 +467,32 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
   @Override
   public double getOutputCurrent() {
     return motor.getOutputCurrent();
+  }
+
+  /**
+   * Sets the simulated instance of the motor for use in simulations.
+   *
+   * @param motorSimulationType The simulated instance of the motor.
+   */
+  @Override
+  public void setMotorSimulationType(DCMotor motorSimulationType) {
+    motorSim = motorSimulationType;
+    sparkMaxSim = new SparkMaxSim(motor, motorSim);
+  }
+
+  /**
+   * Sets the maximum angular velocity of the motor in rotations per minute.
+   *
+   * @param rpm The maximum angular velocity of the motor in rotations per minute.
+   */
+  @Override
+  public void setMaxRPM(AngularVelocity rpm) {
+    maxRPM = rpm;
+  }
+
+  @Override
+  public void simulationUpdate(Optional<Angle> position, AngularVelocity velocity) {
+    sparkMaxSim.iterate(velocity.in(RPM), RoboRioSim.getVInVoltage(), 0.02);
   }
 
 }

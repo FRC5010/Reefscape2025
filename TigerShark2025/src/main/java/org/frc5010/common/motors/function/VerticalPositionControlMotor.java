@@ -47,7 +47,7 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
 
     public VerticalPositionControlMotor(MotorController5010 motor, String visualName, DisplayValuesHelper tab) {
         super(motor, visualName, tab);
-        kG = new DisplayDouble(0.0, K_G, visualName);
+        kG = _displayValuesHelper.makeDisplayDouble(K_G);
         setControlType(PIDControlType.POSITION);
     }
 
@@ -79,13 +79,13 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
         simulatedCarriage = new MechanismLigament2d(
                 _visualName + "-carriage",
                 carriageHeight.in(Meters),
-                90,
+                0,
                 5,
                 new Color8Bit(MotorFactory.getNextVisualColor()));
         simSetpoint = new MechanismLigament2d(
                 _visualName + "-setpoint",
                 carriageHeight.in(Meters),
-                90,
+                0,
                 5,
                 new Color8Bit(MotorFactory.getNextVisualColor()));
         root.append(simulatedCarriage);
@@ -134,7 +134,7 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
             currentPosition = simEncoder.getPosition();
         }
         simSetpoint.setLength(getReference());
-        simulatedCarriage.setLength(currentPosition + carriageHeight.in(Meters));
+        simulatedCarriage.setLength(currentPosition);
         position.setValue(currentPosition);
         reference.setValue(getReference());
     }

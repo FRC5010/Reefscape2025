@@ -317,7 +317,7 @@ public class Drive extends GenericMechanism {
   }
 
   private void initializeDifferentialDrive() {
-    MotorController5010 template = MotorFactory.DriveTrainMotor(MotorFactory.NEO(1), "left");
+    MotorController5010 template = MotorFactory.DriveTrainMotor(MotorFactory.Neo(1), "left");
     List<DrivePorts> motorPorts = new ArrayList<>();
 
     // This assumes ports 1 & 2 are left and 3 & 4 are right

@@ -4,13 +4,13 @@
 
 package org.frc5010.common.motors.hardware;
 
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.measure.AngularVelocity;
-
 import static edu.wpi.first.units.Units.Minute;
 import static edu.wpi.first.units.Units.Rotations;
 
-import org.frc5010.common.motors.MotorConstants;
+import org.frc5010.common.motors.MotorConstants.Motor;
+
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.AngularVelocity;
 
 /** Add your docs here. */
 public class KrakenX60 extends GenericTalonFXMotor {
@@ -18,7 +18,7 @@ public class KrakenX60 extends GenericTalonFXMotor {
 
   public KrakenX60(int port) {
     super(port);
-    setCurrentLimit(MotorConstants.CurrentLimits.KrakenX60);
+    setCurrentLimit(Motor.KrakenX60.currentLimit);
   }
 
   @Override

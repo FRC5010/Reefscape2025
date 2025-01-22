@@ -23,7 +23,7 @@ public class DeviceConfigReader {
     MotorController5010 motor;
     switch (type) {
       case "neo":
-        motor = MotorFactory.NEO(id);
+        motor = MotorFactory.Neo(id);
         break;
       case "kraken":
         motor = MotorFactory.KrakenX60(id);

@@ -4,12 +4,17 @@
 
 package org.frc5010.common.motors;
 
+import java.util.Optional;
+
+import org.frc5010.common.sensors.encoder.GenericEncoder;
+
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import org.frc5010.common.sensors.encoder.GenericEncoder;
 
 /** Common interface fdr motors in the library */
 public interface MotorController5010 extends MotorController {
@@ -60,7 +65,7 @@ public interface MotorController5010 extends MotorController {
    * @param limit The current limit
    * @return a reference to the motor
    */
-  MotorController5010 setCurrentLimit(int limit);
+  MotorController5010 setCurrentLimit(Current limit);
 
   /**
    * Gets the motor encoder
@@ -110,12 +115,29 @@ public interface MotorController5010 extends MotorController {
   public DCMotor getMotorSimulationType();
 
   /**
+   * Sets the simulated instance of the motor
+   *
+   * @param motorSimulationType The simulated instance of the motor
+   */
+  public void setMotorSimulationType(DCMotor motorSimulationType);
+
+  /** Updates the simulated instance of the motor */
+  public void simulationUpdate(Optional<Angle> position, AngularVelocity velocity);
+  
+  /**
    * Returns the maximum RPM
    *
    * @return The maximum RPM
    */
   public AngularVelocity getMaxRPM();
 
+  /**
+   * Sets the maximum RPM
+   *
+   * @param rpm The maximum RPM
+   */
+  public void setMaxRPM(AngularVelocity rpm);
+  
   /**
    * Set the voltage compensation for the swerve module motor.
    *

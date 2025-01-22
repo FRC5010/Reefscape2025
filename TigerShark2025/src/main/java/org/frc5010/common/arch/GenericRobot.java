@@ -5,9 +5,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import org.frc5010.common.config.ConfigConstants;
 import org.frc5010.common.config.RobotParser;
 import org.frc5010.common.config.SubsystemParser;
 import org.frc5010.common.constants.GenericDrivetrainConstants;
+import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.sensors.Controller;
 import org.frc5010.common.subsystems.Color;
 import org.frc5010.common.telemetry.DisplayString;
@@ -369,6 +371,11 @@ public abstract class GenericRobot extends GenericMechanism implements GenericDe
    */
   public GenericDrivetrainConstants getDrivetrainConstants() {
     return drivetrainConstants;
+  }
+
+  public void resetDrivePose() {
+    GenericDrivetrain drivetrain =  (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN); 
+    drivetrain.resetOrientation();  
   }
 
   /**

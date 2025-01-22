@@ -159,20 +159,20 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     // offsets onto it. Throws warning if not possible
 
     /** 5010 Code */
-    // SwerveConstants swerveConstants = (SwerveConstants) constants;
-    // if (swerveConstants.getSwerveModuleConstants().getDriveFeedForward().size() > 0) {
-    //   Map<String, MotorFeedFwdConstants> motorFFMap = swerveConstants.getSwerveModuleConstants().getDriveFeedForward();
-    //   Map<String, SwerveModule> swerveModuleMap = swerveDrive.getModuleMap();
-    //   motorFFMap.keySet().stream()
-    //       .forEach(
-    //           module -> {
-    //             MotorFeedFwdConstants ff = motorFFMap.get(module);
-    //             double kS = ff.getkS();
-    //             double kV = ff.getkV();
-    //             double kA = ff.getkA();
-    //             swerveModuleMap.get(module).setFeedforward(new SimpleMotorFeedforward(kS, kV, kA));
-    //           });
-    // }
+    SwerveConstants swerveConstants = (SwerveConstants) constants;
+    if (swerveConstants.getSwerveModuleConstants().getDriveFeedForward().size() > 0) {
+      Map<String, MotorFeedFwdConstants> motorFFMap = swerveConstants.getSwerveModuleConstants().getDriveFeedForward();
+      Map<String, SwerveModule> swerveModuleMap = swerveDrive.getModuleMap();
+      motorFFMap.keySet().stream()
+          .forEach(
+              module -> {
+                MotorFeedFwdConstants ff = motorFFMap.get(module);
+                double kS = ff.getkS();
+                double kV = ff.getkV();
+                double kA = ff.getkA();
+                swerveModuleMap.get(module).setFeedforward(new SimpleMotorFeedforward(kS, kV, kA));
+              });
+    }
 
     setDrivetrainPoseEstimator(new DrivePoseEstimator(new YAGSLSwervePose(this)));
 
@@ -201,8 +201,8 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   /** Setup AutoBuilder for PathPlanner. */
   public void setupPathPlanner() {
     AutoBuilder.configure(
-        this::getPose, // Robot pose supplier
-        this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting
+        poseEstimator::getCurrentPose, // Robot pose supplier
+        poseEstimator::resetToPose, // Method to reset odometry (will be called if your auto has a starting
         // pose)
         this::getRobotVelocity, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
         // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
@@ -333,7 +333,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     return SwerveDriveTest.generateSysIdCommand(
         SwerveDriveTest.setDriveSysIdRoutine(
             new SysIdRoutine.Config(),
-            this, swerveDrive, 12, false),
+            this, swerveDrive, 12, true),
         3.0, 5.0, 3.0);
   }
 
@@ -626,6 +626,11 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     } else {
       zeroGyro();
     }
+  }
+
+  @Override
+  public void resetOrientation() {
+    poseEstimator.resetToPose(poseEstimator.getCurrentPose());
   }
 
   /**
