@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.16025,
+        "y": 7.0865
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.560266214648725,
+        "y": 6.4866847577609255
+      },
+      "isLocked": false,
+      "linkedName": "T2 Station"
+    },
+    {
+      "anchor": {
+        "x": 3.0448770491803274,
+        "y": 4.198821721311475
+      },
+      "prevControl": {
+        "x": 2.909044636271683,
+        "y": 4.408701581239519
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "A"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 5.0,
+    "maxAcceleration": 4.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 480.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -54.833563964207066
+  },
+  "useDefaultConstraints": true
+}
