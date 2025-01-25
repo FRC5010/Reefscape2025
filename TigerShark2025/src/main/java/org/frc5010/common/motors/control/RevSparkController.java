@@ -5,6 +5,7 @@
 package org.frc5010.common.motors.control;
 
 import org.frc5010.common.constants.GenericPID;
+import org.frc5010.common.constants.MotorFeedFwdConstants;
 import org.frc5010.common.motors.hardware.GenericRevBrushlessMotor;
 
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -15,25 +16,26 @@ import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 /** Add your docs here. */
-public class RevPID extends GenericPIDController {
+public class RevSparkController extends GenericPIDController {
   /** The motor for this controller */
   GenericRevBrushlessMotor motor;
   /** The PID controller */
   SparkClosedLoopController controller;
   /** The control type */
   ControlType sparkControlType = ControlType.kVoltage;
-  /** The reference */
-  private double reference = 0.0;
-  /** The tolerance */
-  private double tolerance = 0.0;
+
   /**
    * Configuration object for {@link SparkMax} motor.
    */
   private SparkMaxConfig cfg;
+  /** The reference */
+  private double reference = 0.0;
+  /** The tolerance */
+  private double tolerance = 0.0;
   /** The PIDF configuration */
   private GenericPID pidfConfig = new GenericPID(0, 0, 0);
 
-  public RevPID(GenericRevBrushlessMotor motor) {
+  public RevSparkController(GenericRevBrushlessMotor motor) {
     this.motor = motor;
     controller = motor.getPIDController();
     cfg = motor.getConfig();
@@ -62,7 +64,8 @@ public class RevPID extends GenericPIDController {
   public void setD(double d) {
     cfg.closedLoop.d(d);
     pidfConfig.setkD(d);
-    motor.updateConfig(cfg);  }
+    motor.updateConfig(cfg);
+  }
 
   @Override
   public void setF(double f) {
@@ -109,8 +112,10 @@ public class RevPID extends GenericPIDController {
   public boolean isAtTarget() {
     switch (sparkControlType) {
       case kVelocity:
+      case kMAXMotionVelocityControl:
         return Math.abs(getReference() - motor.getMotorEncoder().getVelocity()) < tolerance;
       case kPosition:
+      case kMAXMotionPositionControl:
         return Math.abs(getReference() - motor.getMotorEncoder().getPosition()) < tolerance;
       default:
         return false;
@@ -144,6 +149,12 @@ public class RevPID extends GenericPIDController {
         break;
       case DUTY_CYCLE:
         sparkControlType = ControlType.kDutyCycle;
+        break;
+      case PROFILED_POSITION:
+        sparkControlType = ControlType.kMAXMotionPositionControl;
+        break;
+      case PROFILED_VELOCITY:
+        sparkControlType = ControlType.kMAXMotionVelocityControl;
         break;
       default:
         sparkControlType = ControlType.kVoltage;
@@ -194,6 +205,10 @@ public class RevPID extends GenericPIDController {
         return PIDControlType.CURRENT;
       case kDutyCycle:
         return PIDControlType.DUTY_CYCLE;
+      case kMAXMotionPositionControl:
+        return PIDControlType.PROFILED_POSITION;
+      case kMAXMotionVelocityControl:
+        return PIDControlType.PROFILED_VELOCITY;
       default:
         return PIDControlType.VOLTAGE;
     }
@@ -219,5 +234,19 @@ public class RevPID extends GenericPIDController {
     cfg.closedLoop
         .positionWrappingEnabled(true)
         .positionWrappingInputRange(min, max);
+  }
+
+  @Override
+  public void setProfiledMaxVelocity(double maxVelocity) {
+    cfg.closedLoop.maxMotion.maxVelocity(maxVelocity);
+  }
+
+  @Override
+  public void setProfiledMaxAcceleration(double maxAcceleration) {
+    cfg.closedLoop.maxMotion.maxAcceleration(maxAcceleration);
+  }
+
+  @Override
+  public void setMotorFeedFwd(MotorFeedFwdConstants motorConstants) {
   }
 }

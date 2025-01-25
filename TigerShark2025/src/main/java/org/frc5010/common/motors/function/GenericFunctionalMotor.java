@@ -317,7 +317,7 @@ public class GenericFunctionalMotor implements MotorController5010, WpiHelperInt
    */
   @Override
   public AngularVelocity getMaxRPM() {
-    throw new UnsupportedOperationException("Unimplemented method 'getMaxRPM'");
+    return _motor.getMaxRPM();
   }
 
   /**

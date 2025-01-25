@@ -12,6 +12,7 @@ import org.frc5010.common.constants.SwerveConstants;
 import org.frc5010.common.constants.SwerveModuleConstants;
 import org.frc5010.common.constants.SwervePorts;
 import org.frc5010.common.motors.MotorFactory;
+import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.sensors.AnalogInput5010;
 
 /** Add your docs here. */
@@ -60,8 +61,8 @@ public class ThriftySwerveModule extends GenericSwerveModule {
     super.pid = pid;
     super.motorConstants = motorConstants;
     super.moduleConstants = moduleConstants;
-    drive = MotorFactory.Neo(swervePorts.getDrivePort()).invert(moduleConstants.isDrivingInv());
-    turn = MotorFactory.Neo(swervePorts.getTurnPort()).invert(moduleConstants.isTurningInv());
+    drive = MotorFactory.Spark(swervePorts.getDrivePort(), Motor.Neo).invert(moduleConstants.isDrivingInv());
+    turn = MotorFactory.Spark(swervePorts.getTurnPort(), Motor.Neo).invert(moduleConstants.isTurningInv());
     absoluteEncoder = new AnalogInput5010(swervePorts.getEncoderPort());
     turnEncoder = turn.getMotorEncoder();
     driveEncoder = drive.getMotorEncoder();

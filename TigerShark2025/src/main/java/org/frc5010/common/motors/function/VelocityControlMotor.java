@@ -39,7 +39,7 @@ public class VelocityControlMotor extends GenericControlledMotor {
 
   public VelocityControlMotor(MotorController5010 motor, String visualName, DisplayValuesHelper display) {
     super(motor, visualName, display);
-    pid.setControlType(PIDControlType.VELOCITY);
+    controller.setControlType(PIDControlType.VELOCITY);
   }
 
   public VelocityControlMotor setupSimulatedMotor(double gearing, double jKgMetersSquared) {

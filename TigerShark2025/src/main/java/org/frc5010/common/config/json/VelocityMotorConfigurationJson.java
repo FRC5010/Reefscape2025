@@ -9,10 +9,15 @@ import org.frc5010.common.motors.function.VelocityControlMotor;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 
-/** Configures a VelocityControlMotor with the given parameters and visualizes it. */
+/**
+ * Configures a VelocityControlMotor with the given parameters and visualizes
+ * it.
+ */
 public class VelocityMotorConfigurationJson implements DeviceConfiguration {
-/** The name of the motor */
+  /** The name of the motor */
   public String name;
+  /** The type of controller */
+  public String controller;
   /** The type of motor */
   public String type;
   /** The ID of the motor */
@@ -43,17 +48,18 @@ public class VelocityMotorConfigurationJson implements DeviceConfiguration {
   public double iZone = 0.0;
 
   /**
-   * Configures a VelocityControlMotor with the given parameters and visualizes it.
+   * Configures a VelocityControlMotor with the given parameters and visualizes
+   * it.
    *
    * @param mechanismSimulation The Mechanism2d instance for visualization.
    * @return A configured VelocityControlMotor object.
    */
   @Override
   public Object configure(GenericDeviceHandler deviceHandler) {
-    VelocityControlMotor motor =
-        new VelocityControlMotor(DeviceConfigReader.getMotor(type, id), name, deviceHandler.getDisplayValuesHelper())
-            .setupSimulatedMotor(gearing, momentOfInertiaKgMSq)
-            .setVisualizer(deviceHandler.getMechVisual(), new Pose3d(x, y, z, new Rotation3d()));
+    VelocityControlMotor motor = new VelocityControlMotor(DeviceConfigReader.getMotor(controller, type, id), name,
+        deviceHandler.getDisplayValuesHelper())
+        .setupSimulatedMotor(gearing, momentOfInertiaKgMSq)
+        .setVisualizer(deviceHandler.getMechVisual(), new Pose3d(x, y, z, new Rotation3d()));
     if (kP != 0.0 || kI != 0.0 || kD != 0.0) {
       motor.setValues(new GenericPID(kP, kI, kD));
     }

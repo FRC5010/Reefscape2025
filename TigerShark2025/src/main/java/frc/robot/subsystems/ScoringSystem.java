@@ -33,8 +33,8 @@ public class ScoringSystem extends GenericSubsystem {
         shooterRight.setupSimulatedMotor(3, 0.1);
         shooterLeft.setVisualizer(mechanismSimulation, new Pose3d(new Translation3d(0.1,0.1,0.1),new Rotation3d()));
         shooterRight.setVisualizer(mechanismSimulation, new Pose3d(new Translation3d(0.1,-0.1,0.1),new Rotation3d()));
-        elevator = new VerticalPositionControlMotor(MotorFactory.Neo(9), "elevator", displayValues);
-        elevatorFollower = new FollowerMotor(MotorFactory.Neo(10), elevator, "elevatorFollower");
+        elevator = new VerticalPositionControlMotor(MotorFactory.TalonFX(9, Motor.KrakenX60), "elevator", displayValues);
+        elevatorFollower = new FollowerMotor(MotorFactory.TalonFX(10, Motor.KrakenX60), elevator, "elevatorFollower");
         elevatorFollower.setInverted(true);
         elevator.setupSimulatedMotor(86, Kilograms.of(10), Meters.of(0.01), Meters.of(0), Meters.of(2), Meters.of(0), Meters.of(0.2), 0.1, 0.1);
         elevator.setVisualizer(mechanismSimulation, new Pose3d(new Translation3d(0.1, 0, 0.5),new Rotation3d()));

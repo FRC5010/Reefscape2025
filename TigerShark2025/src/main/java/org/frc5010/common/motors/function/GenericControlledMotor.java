@@ -41,6 +41,8 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
   protected static final String VELOCITY = "Velocity";
   protected static final String EFFORT = "Effort";
   protected static final String TOLERANCE = "Tolerance";
+  protected static final String PROFILED_MAX_VEL = "Max Velocity";
+  protected static final String PROFILED_MAX_ACCEL = "Max Acceleration";
 
   protected DisplayString controlType;
   protected DisplayDouble feedForward;
@@ -59,15 +61,17 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
   protected DisplayDouble kV;
   protected DisplayDouble kA;
   protected DisplayDouble tolerance;
+  protected DisplayDouble profiledMaxVel;
+  protected DisplayDouble profiledMaxAccel;
 
-  protected PIDController5010 pid;
+  protected PIDController5010 controller;
   protected MotorFeedFwdConstants feedFwd;
   protected GenericEncoder encoder;
 
   public GenericControlledMotor(MotorController5010 motor, String visualName, DisplayValuesHelper tab) {
     super(motor, visualName);
     encoder = _motor.getMotorEncoder();
-    pid = motor.getPIDController5010();
+    controller = motor.getPIDController5010();
     setDisplayValuesHelper(tab);
   }
 
@@ -95,22 +99,24 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
     position = _displayValuesHelper.makeDisplayDouble(POSITION);
     velocity = _displayValuesHelper.makeDisplayDouble(VELOCITY);
     effort = _displayValuesHelper.makeDisplayVoltage(EFFORT);
+    profiledMaxVel = _displayValuesHelper.makeConfigDouble(PROFILED_MAX_VEL);
+    profiledMaxAccel = _displayValuesHelper.makeConfigDouble(PROFILED_MAX_ACCEL);
   }
   
   @Override
   public PIDController5010 getPIDController5010() {
-    return pid;
+    return controller;
   }
 
   @Override
   public void setTolerance(double tolerance) {
     this.tolerance.setValue(tolerance);
-    pid.setTolerance(tolerance);
+    controller.setTolerance(tolerance);
   }
 
   @Override
   public double getTolerance() {
-    return pid.getTolerance();
+    return controller.getTolerance();
   }
 
   @Override
@@ -118,50 +124,50 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
     kP.setValue(pidValues.getkP());
     kI.setValue(pidValues.getkI());
     kD.setValue(pidValues.getkD());
-    pid.setValues(pidValues);
+    controller.setValues(pidValues);
   }
 
   @Override
   public void setP(double p) {
     kP.setValue(p);
-    pid.setP(p);
+    controller.setP(p);
   }
 
   @Override
   public void setI(double i) {
     kI.setValue(i);
-    pid.setI(i);
+    controller.setI(i);
   }
 
   @Override
   public void setD(double d) {
     kD.setValue(d);
-    pid.setD(d);
+    controller.setD(d);
   }
 
   @Override
   public void setF(double f) {
     kF.setValue(f);
-    pid.setF(f);
+    controller.setF(f);
   }
 
   @Override
   public void setIZone(double iZone) {
     this.iZone.setValue(iZone);
-    pid.setIZone(iZone);
+    controller.setIZone(iZone);
   }
 
   @Override
   public void setOutputRange(double min, double max) {
     minOutput.setValue(min);
     maxOutput.setValue(max);
-    pid.setOutputRange(min, max);
+    controller.setOutputRange(min, max);
   }
 
   @Override
   public void setReference(double reference) {
     this.reference.setValue(reference);
-    pid.setReference(reference);
+    controller.setReference(reference);
   }
 
   @Override
@@ -169,63 +175,75 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
     this.reference.setValue(reference);
     feedForward.setValue(feedforward);
     this.controlType.setValue(controlType.name());
-    pid.setReference(reference, controlType, feedforward);
+    controller.setReference(reference, controlType, feedforward);
   }
 
   @Override
   public void setControlType(PIDControlType controlType) {
     this.controlType.setValue(controlType.name());
-    pid.setControlType(controlType);
+    controller.setControlType(controlType);
+  }
+
+  @Override
+  public void setProfiledMaxVelocity(double maxVel) {
+    this.profiledMaxVel.setValue(maxVel);
+    controller.setProfiledMaxVelocity(maxVel);
+  }
+
+  @Override
+  public void setProfiledMaxAcceleration(double maxAccel) {
+    this.profiledMaxAccel.setValue(maxAccel);
+    controller.setProfiledMaxAcceleration(maxAccel);
   }
 
   @Override
   public GenericPID getValues() {
-    return pid.getValues();
+    return controller.getValues();
   }
 
   @Override
   public double getP() {
-    return pid.getP();
+    return controller.getP();
   }
 
   @Override
   public double getI() {
-    return pid.getI();
+    return controller.getI();
   }
 
   @Override
   public double getD() {
-    return pid.getD();
+    return controller.getD();
   }
 
   @Override
   public double getF() {
-    return pid.getF();
+    return controller.getF();
   }
 
   @Override
   public double getIZone() {
-    return pid.getIZone();
+    return controller.getIZone();
   }
 
   @Override
   public double getReference() {
-    return pid.getReference();
+    return controller.getReference();
   }
 
   @Override
   public PIDControlType getControlType() {
-    return pid.getControlType();
+    return controller.getControlType();
   }
 
   @Override
   public boolean isAtTarget() {
-    return pid.isAtTarget();
+    return controller.isAtTarget();
   }
 
   @Override
   public double calculateControlEffort(double current) {
-    double controlEffort = pid.calculateControlEffort(current) + getFeedForward().in(Volts);
+    double controlEffort = controller.calculateControlEffort(current) + getFeedForward().in(Volts);
     if (controlEffort > maxOutput.getValue()) {
       controlEffort = maxOutput.getValue();
     } else if (controlEffort < minOutput.getValue()) {
@@ -235,11 +253,13 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
     return controlEffort;
   }
 
+  @Override
   public void setMotorFeedFwd(MotorFeedFwdConstants feedFwd) {
     this.feedFwd = feedFwd;
     kS.setValue(feedFwd.getkS());
     kV.setValue(feedFwd.getkV());
     kA.setValue(feedFwd.getkA());
+    controller.setMotorFeedFwd(feedFwd);
   }
 
   public MotorFeedFwdConstants getMotorFeedFwd() {
@@ -250,14 +270,14 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
     double feedforward =
         (null == feedFwd
             ? 0.0
-            : pid.getReference() * (feedFwd.getkV() + feedFwd.getkA()) + feedFwd.getkS());
+            : controller.getReference() * (feedFwd.getkV() + feedFwd.getkA()) + feedFwd.getkS());
     feedForward.setValue(feedforward);
     return Volts.of(feedforward);
   }
 
   @Override
   public void configureAbsoluteControl(double offset, boolean inverted, double min, double max) {
-    pid.configureAbsoluteControl(offset, inverted, min, max);
+    controller.configureAbsoluteControl(offset, inverted, min, max);
   }
 
   public abstract Command getSysIdCommand(SubsystemBase subsystemBase);

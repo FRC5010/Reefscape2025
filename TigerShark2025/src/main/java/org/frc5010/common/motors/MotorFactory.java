@@ -8,10 +8,9 @@ import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.motors.function.DriveTrainMotor;
 import org.frc5010.common.motors.function.FollowerMotor;
 import org.frc5010.common.motors.hardware.GenericRevBrushlessMotor;
+import org.frc5010.common.motors.hardware.GenericTalonFXMotor;
 import org.frc5010.common.motors.hardware.GenericThriftyNovaMotor;
-import org.frc5010.common.motors.hardware.KrakenX60;
 
-import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.util.Color;
 
 /** Add your docs here. */
@@ -54,67 +53,31 @@ public class MotorFactory {
     return visualColors[visualColorIndex++];
   }
 
-  public static MotorController5010 Neo(int port) {
-    return Neo(port, MotorConstants.Motor.Neo.currentLimit);
-  }
-
-  public static MotorController5010 Neo(int port, Current currentLimit) {
-    MotorController5010 motor = new GenericRevBrushlessMotor(port, currentLimit);
-    motor.setMaxRPM(MotorConstants.Motor.Neo.maxRpm);
-    motor.setMotorSimulationType(MotorConstants.Motor.Neo.motorSim);
-    return motor;
-  }
-
   public static MotorController5010 Spark(int canId, Motor config) {
+    switch (config) {
+      case KrakenX60:
+        throw new IllegalArgumentException("Sparks can not use KrakenX60 config");
+      default:
+    }
     return new GenericRevBrushlessMotor(canId, config);
   }
 
-  public static MotorController5010 Neo550(int port) {
-    return Neo550(port, MotorConstants.Motor.Neo550.currentLimit);
-  }
-
-  public static MotorController5010 Neo550(int port, Current currentLimit) {
-    MotorController5010 motor = new GenericRevBrushlessMotor(port, currentLimit);
-    motor.setMaxRPM(MotorConstants.Motor.Neo550.maxRpm);
-    motor.setMotorSimulationType(MotorConstants.Motor.Neo550.motorSim);
-    return motor;
-  }
-
-  public static MotorController5010 ThriftyNeo(int port) {
-    return ThriftyNeo(port, MotorConstants.Motor.Neo.currentLimit);
-  }
-
-  public static MotorController5010 ThriftyNeo(int port, Current currentLimit) {
-    MotorController5010 motor = new GenericThriftyNovaMotor(port, currentLimit);
-    motor.setMaxRPM(MotorConstants.Motor.Neo.maxRpm);
-    motor.setMotorSimulationType(MotorConstants.Motor.Neo.motorSim);
-    return motor;
-  }
-
-  public static MotorController5010 ThriftyNeo550(int port) {
-    return ThriftyNeo550(port, MotorConstants.Motor.Neo550.currentLimit);
-  }
-
-  public static MotorController5010 ThriftyNeo550(int port, Current currentLimit) {
-    MotorController5010 motor = new GenericThriftyNovaMotor(port, currentLimit);
-    motor.setMaxRPM(MotorConstants.Motor.Neo550.maxRpm);
-    motor.setMotorSimulationType(Motor.Neo550.motorSim);
-    return motor;
-  }
-
   public static MotorController5010 Thrifty(int canId, Motor config) {
+    switch (config) {
+      case KrakenX60:
+        throw new IllegalArgumentException("Thrifty Novas can not use KrakenX60 config");
+      default:
+    }
     return new GenericThriftyNovaMotor(canId, config);
   }
 
-  public static MotorController5010 KrakenX60(int port) {
-    return KrakenX60(port, Motor.KrakenX60.currentLimit);
-  }
-
-  public static MotorController5010 KrakenX60(int port, Current currentLimit) {
-    MotorController5010 motor = new KrakenX60(port);
-    motor.setMaxRPM(Motor.KrakenX60.maxRpm);
-    motor.setMotorSimulationType(Motor.KrakenX60.motorSim);
-    return motor;
+  public static MotorController5010 TalonFX(int canId, Motor config) {
+    switch (config) {
+      case KrakenX60:
+      return new GenericTalonFXMotor(canId, config);
+      default:
+      throw new IllegalArgumentException("TalonFX can not use " + config + " config");
+    }
   }
 
   public static MotorController5010 DriveTrainMotor(MotorController5010 motor, String name) {

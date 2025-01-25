@@ -79,13 +79,13 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
         simulatedCarriage = new MechanismLigament2d(
                 _visualName + "-carriage",
                 carriageHeight.in(Meters),
-                0,
+                90,
                 5,
                 new Color8Bit(MotorFactory.getNextVisualColor()));
         simSetpoint = new MechanismLigament2d(
                 _visualName + "-setpoint",
                 carriageHeight.in(Meters),
-                0,
+                90,
                 5,
                 new Color8Bit(MotorFactory.getNextVisualColor()));
         root.append(simulatedCarriage);
@@ -100,7 +100,7 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
             effort.setVoltage(calculateControlEffort(simEncoder.getPosition()), Volts);
             _motor.set(effort.getVoltage().in(Volts) / RobotController.getBatteryVoltage());
         } else {
-            pid.setF(getFeedForward().in(Volts) / RobotController.getBatteryVoltage());
+            controller.setF(getFeedForward().in(Volts) / RobotController.getBatteryVoltage());
         }
     }
 

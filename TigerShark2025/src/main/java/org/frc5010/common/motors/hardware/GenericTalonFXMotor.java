@@ -11,10 +11,10 @@ import static edu.wpi.first.units.Units.Volts;
 
 import java.util.Optional;
 
+import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.motors.PIDController5010;
-import org.frc5010.common.motors.MotorConstants.Motor;
-import org.frc5010.common.motors.control.TalonFXPID;
+import org.frc5010.common.motors.control.TalonFXController;
 import org.frc5010.common.sensors.encoder.GenericEncoder;
 import org.frc5010.common.sensors.encoder.TalonFXEncoder;
 
@@ -72,7 +72,11 @@ public class GenericTalonFXMotor implements MotorController5010 {
   /** TalonFX simulation */
   protected TalonFXSimState talonFXSim;
 
+  /** Max RPM */
   protected AngularVelocity maxRPM;
+
+  /** Configuration */
+  protected Motor config;
 
   /**
    * Constructor for TalonFX swerve motor.
@@ -102,19 +106,8 @@ public class GenericTalonFXMotor implements MotorController5010 {
   public GenericTalonFXMotor(int canId, Motor config) {
     this(new TalonFX(canId, ""));
     setCurrentLimit(config.currentLimit);
-    setMotorSimulationType(config.motorSim);
+    setMotorSimulationType(config.getMotorSimulationType());
     setMaxRPM(config.maxRpm);
-  }
-
-  /**
-   * Construct the TalonFX swerve motor given the ID and CANBus.
-   *
-   * @param id           ID of the TalonFX on the CANBus.
-   * @param canbus       CANBus on which the TalonFX is on.
-   * @param isDriveMotor Whether the motor is a drive or steering motor.
-   */
-  public GenericTalonFXMotor(int id) {
-    this(new TalonFX(id));
   }
 
   /**
@@ -125,7 +118,7 @@ public class GenericTalonFXMotor implements MotorController5010 {
    */
   @Override
   public MotorController5010 duplicate(int port) {
-    MotorController5010 duplicate = new GenericTalonFXMotor(port);
+    MotorController5010 duplicate = new GenericTalonFXMotor(port, config);
     return duplicate;
   }
 
@@ -195,7 +188,7 @@ public class GenericTalonFXMotor implements MotorController5010 {
    */
   @Override
   public MotorController5010 setFollow(MotorController5010 motor) {
-    this.motor.setControl(new Follower(((TalonFX) motor).getDeviceID(), false));
+    this.motor.setControl(new Follower(((TalonFX) motor.getMotor()).getDeviceID(), false));
     return this;
   }
 
@@ -276,7 +269,7 @@ public class GenericTalonFXMotor implements MotorController5010 {
    */
   @Override
   public PIDController5010 getPIDController5010() {
-    return new TalonFXPID(this);
+    return new TalonFXController(this);
   }
 
   /**
@@ -339,14 +332,14 @@ public class GenericTalonFXMotor implements MotorController5010 {
   }
 
   /**
-   * Returns the simulation type of the motor as a {@link DCMotor}.
+   * Returns the type of motor that is being simulated. This is used for motor
+   * system identification and simulation.
    *
-   * @return A {@link DCMotor} that represents the simulation type of the motor.
-   * @throws UnsupportedOperationException if the method is not implemented.
+   * @return The type of motor being simulated.
    */
   @Override
   public DCMotor getMotorSimulationType() {
-    throw new UnsupportedOperationException("Unimplemented method 'getMotorSimulationType'");
+    return motorSim;
   }
 
   /**

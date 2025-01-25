@@ -30,6 +30,7 @@ import org.frc5010.common.drive.swerve.ThriftySwerveModule;
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.motors.MotorFactory;
+import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.sensors.Controller;
 import org.frc5010.common.sensors.gyro.GenericGyro;
 import org.frc5010.common.subsystems.AprilTagPoseSystem;
@@ -317,7 +318,7 @@ public class Drive extends GenericMechanism {
   }
 
   private void initializeDifferentialDrive() {
-    MotorController5010 template = MotorFactory.DriveTrainMotor(MotorFactory.Neo(1), "left");
+    MotorController5010 template = MotorFactory.DriveTrainMotor(MotorFactory.Spark(1, Motor.Neo), "left");
     List<DrivePorts> motorPorts = new ArrayList<>();
 
     // This assumes ports 1 & 2 are left and 3 & 4 are right

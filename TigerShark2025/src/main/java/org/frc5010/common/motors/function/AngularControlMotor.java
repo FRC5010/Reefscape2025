@@ -129,7 +129,7 @@ public class AngularControlMotor extends GenericControlledMotor {
       effort.setVoltage(calculateControlEffort(simEncoder.getPosition()), Volts);
       _motor.set(effort.getVoltage().in(Volts) / RobotController.getBatteryVoltage());
     } else {
-      pid.setF(getFeedForward().in(Volts) / RobotController.getBatteryVoltage());
+      controller.setF(getFeedForward().in(Volts) / RobotController.getBatteryVoltage());
     }
   }
 

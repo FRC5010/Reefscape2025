@@ -15,7 +15,7 @@ import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.motors.PIDController5010;
 import org.frc5010.common.motors.SystemIdentification;
-import org.frc5010.common.motors.control.RevPID;
+import org.frc5010.common.motors.control.RevSparkController;
 import org.frc5010.common.sensors.encoder.GenericEncoder;
 import org.frc5010.common.sensors.encoder.RevEncoder;
 
@@ -56,6 +56,8 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
   protected AngularVelocity maxRPM;
   /** The simulated instance of the motor */
   protected SparkMaxSim sparkMaxSim;
+  /** The configuration of the motor */
+  protected Motor config;
 
   /**
    * The maximum amount of times the swerve motor will attempt to configure a
@@ -77,39 +79,35 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
    * Constructor for a generic REV brushless motor
    *
    * @param port         the port number
+   * @param config       the configuration
    * @param currentLimit the current limit
    */
-  public GenericRevBrushlessMotor(int port, Current currentLimit) {
-    motor = new SparkMax(port, MotorType.kBrushless);
-    factoryDefaults();
-    clearStickyFaults();
+  public GenericRevBrushlessMotor(int port, Motor config, Current currentLimit) {
+    this(port, config);
     setCurrentLimit(currentLimit);
-
-    cfg.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder); // Configure feedback of the PID controller as the
-                                                                   // integrated encoder.
-    cfgUpdated = true;
   }
 
   public GenericRevBrushlessMotor(int port, Motor config) {
     motor = new SparkMax(port, MotorType.kBrushless);
+    this.config = config;
     factoryDefaults();
     clearStickyFaults();
     setCurrentLimit(config.currentLimit);
-    setMotorSimulationType(config.motorSim);
+    setMotorSimulationType(config.getMotorSimulationType());
     setMaxRPM(config.maxRpm);
     cfg.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder); // Configure feedback of the PID controller as the
     // integrated encoder.
     cfgUpdated = true;
   }
 
-  @Override
   /**
    * Sets up the same motor hardware and current limit
    *
    * @param port The port number of the motor
    */
+  @Override
   public MotorController5010 duplicate(int port) {
-    MotorController5010 duplicate = new GenericRevBrushlessMotor(port, Amps.of(currentLimit));
+    MotorController5010 duplicate = new GenericRevBrushlessMotor(port, config, Amps.of(currentLimit));
     return duplicate;
   }
 
@@ -279,7 +277,7 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
    */
   @Override
   public PIDController5010 getPIDController5010() {
-    return new RevPID(this);
+    return new RevSparkController(this);
   }
 
   /**

@@ -11,6 +11,7 @@ import org.frc5010.common.constants.SwerveConstants;
 import org.frc5010.common.constants.SwerveModuleConstants;
 import org.frc5010.common.constants.SwervePorts;
 import org.frc5010.common.motors.MotorFactory;
+import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.sensors.encoder.CanCoderEncoder;
 
 /** Add your docs here. */
@@ -63,8 +64,8 @@ public class MK4iSwerveModule extends GenericSwerveModule {
     super.pid = this.pid;
     super.motorConstants = this.motorConstants;
     super.moduleConstants = swerveConstants.getSwerveModuleConstants();
-    drive = MotorFactory.Neo(swervePorts.getDrivePort()).invert(individualConstants.isDrivingInv());
-    turn = MotorFactory.Neo(swervePorts.getTurnPort()).invert(individualConstants.isTurningInv());
+    drive = MotorFactory.Spark(swervePorts.getDrivePort(), Motor.Neo).invert(individualConstants.isDrivingInv());
+    turn = MotorFactory.Spark(swervePorts.getTurnPort(), Motor.Neo).invert(individualConstants.isTurningInv());
     absoluteEncoder = new CanCoderEncoder(swervePorts.getEncoderPort());
     absoluteEncoder.setInverted(individualConstants.isEncoderInv());
     setupSwerveEncoders();

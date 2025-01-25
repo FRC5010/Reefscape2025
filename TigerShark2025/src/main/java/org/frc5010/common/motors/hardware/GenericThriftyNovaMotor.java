@@ -5,13 +5,19 @@
 package org.frc5010.common.motors.hardware;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.RPM;
 
 import java.util.Optional;
 
-import org.frc5010.common.motors.MotorController5010;
-import org.frc5010.common.motors.PIDController5010;
 import org.frc5010.common.motors.MotorConstants.Motor;
+import org.frc5010.common.motors.MotorController5010;
+import org.frc5010.common.motors.MotorFactory;
+import org.frc5010.common.motors.PIDController5010;
+import org.frc5010.common.motors.control.ThriftyNovaController;
 import org.frc5010.common.sensors.encoder.GenericEncoder;
+import org.frc5010.common.sensors.encoder.SimulatedEncoder;
+import org.frc5010.common.sensors.encoder.ThriftyNovaEncoder;
 
 import com.thethriftybot.ThriftyNova;
 import com.thethriftybot.ThriftyNova.CurrentType;
@@ -27,29 +33,39 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 public class GenericThriftyNovaMotor implements MotorController5010 {
     /** The motor controller */
     protected ThriftyNova motor;
+    /** The maximum RPM */
     protected AngularVelocity maxRPM;
+    /** The motor simulation type */
     protected DCMotor motorSim;
 
     /** The current limit */
     protected Current currentLimit;
+    /** The internal encoder representation */
+    protected GenericEncoder encoder;
+    /** The internal simulation representation */
+    protected SimulatedEncoder simEncoder;
+    /** The internal PID controller representation */
+    protected PIDController5010 controller;
+    /** The configuration */
+    protected Motor config;
 
-    public GenericThriftyNovaMotor(int canId) {
-        motor = new ThriftyNova(canId);
-    }
-
-    public GenericThriftyNovaMotor(int canId, Current currentLimit) {
-        motor = new ThriftyNova(canId);
-        this.currentLimit = currentLimit;
+    private GenericThriftyNovaMotor(int canId, Motor config, Current currentLimit) {
+        this(canId, config);
         setCurrentLimit(currentLimit);
     }
 
     public GenericThriftyNovaMotor(int canId, Motor config) {
         motor = new ThriftyNova(canId);
+        this.config = config;
         factoryDefaults();
         clearStickyFaults();
         setCurrentLimit(config.currentLimit);
-        setMotorSimulationType(config.motorSim);
+        setMotorSimulationType(config.getMotorSimulationType());
         setMaxRPM(config.maxRpm);
+        encoder = new ThriftyNovaEncoder(motor);
+        simEncoder = new SimulatedEncoder(
+                MotorFactory.getNextSimEncoderPort(), MotorFactory.getNextSimEncoderPort());
+        controller = new ThriftyNovaController(motor);
     }
 
     @Override
@@ -65,6 +81,7 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
     @Override
     public void setInverted(boolean isInverted) {
         motor.setInverted(isInverted);
+        simEncoder.setInverted(isInverted);
     }
 
     @Override
@@ -84,7 +101,7 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
 
     @Override
     public MotorController5010 duplicate(int port) {
-        return new GenericThriftyNovaMotor(port, currentLimit);
+        return new GenericThriftyNovaMotor(port, config, currentLimit);
     }
 
     @Override
@@ -110,7 +127,9 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
     @Override
     public MotorController5010 invert(boolean inverted) {
         motor.setInverted(inverted);
-        return this;}
+        simEncoder.setInverted(inverted);
+        return this;
+    }
 
     @Override
     public MotorController5010 setCurrentLimit(Current limit) {
@@ -121,20 +140,21 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
 
     @Override
     public GenericEncoder getMotorEncoder() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getMotorEncoder'");
+        return encoder;
     }
 
     @Override
     public GenericEncoder getMotorEncoder(int countsPerRev) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getMotorEncoder'");
+        encoder.setPositionConversion(countsPerRev);
+        simEncoder.setPositionConversion(countsPerRev);
+        encoder.setVelocityConversion(countsPerRev / 60.0);
+        simEncoder.setVelocityConversion(countsPerRev / 60.0);
+        return encoder;
     }
 
     @Override
     public PIDController5010 getPIDController5010() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getPIDController5010'");
+        return controller;
     }
 
     @Override
@@ -154,14 +174,12 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
 
     @Override
     public DCMotor getMotorSimulationType() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getMotorSimulationType'");
+        return motorSim;
     }
 
     @Override
     public AngularVelocity getMaxRPM() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getMaxRPM'");
+        return maxRPM;
     }
 
     @Override
@@ -207,13 +225,12 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
 
     @Override
     public void simulationUpdate(Optional<Angle> position, AngularVelocity velocity) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'simulationUpdate'");
+        simEncoder.setPosition(position.map(it -> it.in(Degrees)).orElse(0.0));
+        simEncoder.setRate(velocity.in(RPM));
     }
 
     @Override
     public void setMaxRPM(AngularVelocity rpm) {
         maxRPM = rpm;
     }
-
 }
