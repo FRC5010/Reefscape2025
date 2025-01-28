@@ -9,9 +9,11 @@ import java.util.Optional;
 import org.frc5010.common.sensors.encoder.GenericEncoder;
 
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -122,7 +124,7 @@ public interface MotorController5010 extends MotorController {
   public void setMotorSimulationType(DCMotor motorSimulationType);
 
   /** Updates the simulated instance of the motor */
-  public void simulationUpdate(Optional<Angle> position, AngularVelocity velocity);
+  public void simulationUpdate(Optional<Double> position, Double velocity);
   
   /**
    * Returns the maximum RPM

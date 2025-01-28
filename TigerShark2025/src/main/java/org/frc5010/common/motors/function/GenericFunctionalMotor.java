@@ -17,7 +17,6 @@ import org.frc5010.common.telemetry.DisplayValuesHelper;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
@@ -440,7 +439,7 @@ public class GenericFunctionalMotor implements MotorController5010, WpiHelperInt
    *                 second.
    */
   @Override
-  public void simulationUpdate(Optional<Angle> position, AngularVelocity velocity) {
+  public void simulationUpdate(Optional<Double> position, Double velocity) {
     _motor.simulationUpdate(position, velocity);
   }
 

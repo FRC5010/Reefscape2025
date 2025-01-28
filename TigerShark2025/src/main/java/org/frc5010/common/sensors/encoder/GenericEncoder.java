@@ -4,6 +4,8 @@
 
 package org.frc5010.common.sensors.encoder;
 
+import java.util.Optional;
+
 /** A Generic encoder interface */
 public interface GenericEncoder {
   /**
@@ -57,4 +59,10 @@ public interface GenericEncoder {
    * @param inverted - true if encoder should be inverted
    */
   void setInverted(boolean inverted);
+
+  double getPositionConversion();
+
+  double getVelocityConversion();
+
+  void simulationUpdate(Optional<Double> position, Double velocity);
 }

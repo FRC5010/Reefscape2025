@@ -4,18 +4,27 @@
 
 package org.frc5010.common.sensors.encoder;
 
+import java.util.Optional;
+
 import org.frc5010.common.motors.hardware.GenericTalonFXMotor;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.sim.TalonFXSimState;
+
+import edu.wpi.first.wpilibj.RobotController;
 
 /** Add your docs here. */
 public class TalonFXEncoder implements GenericEncoder {
+  /** TalonFX motor */
   TalonFX motor;
+    /** TalonFX simulation */
+  protected TalonFXSimState talonFXSim;
   double positionConversion = 1;
   double velocityConversion = 1;
 
   public TalonFXEncoder(GenericTalonFXMotor motor) {
     this.motor = (TalonFX)motor.getMotor();
+    talonFXSim = this.motor.getSimState();
   }
 
   private double nativeToActualPosition(double position) {
@@ -44,35 +53,56 @@ public class TalonFXEncoder implements GenericEncoder {
     return nativeToActualVelocity(motor.getVelocity().getValueAsDouble());
   }
 
+  public double getVoltage() {
+    return talonFXSim.getMotorVoltage();
+  }
+  
   @Override
   public void reset() {
-    motor.setPosition(0);
+    setPosition(0);
   }
 
   @Override
   public void setPosition(double position) {
     motor.setPosition(actualToNativePosition(position));
+    talonFXSim.setRawRotorPosition(actualToNativePosition(position));
   }
 
   @Override
   public void setRate(double rate) {
-    throw new UnsupportedOperationException("Not supported for TalonFX");
+    talonFXSim.setRotorVelocity(actualToNativeVelocity(rate));
   }
 
   @Override
   public void setPositionConversion(double conversion) {
     positionConversion = conversion;
-    velocityConversion = conversion * 60;
   }
 
   @Override
   public void setVelocityConversion(double conversion) {
     velocityConversion = conversion;
-    positionConversion = conversion / 60.0;
   }
 
   @Override
   public void setInverted(boolean inverted) {
-    throw new UnsupportedOperationException("Not supported for TalonFX");
+    throw new UnsupportedOperationException("Not supported for TalonFX encoder");
+  }
+
+  @Override
+  public double getPositionConversion() {
+    return positionConversion;
+  }
+
+  @Override
+  public double getVelocityConversion() {
+    return velocityConversion;
+  }
+  
+  @Override
+  public void simulationUpdate(Optional<Double> position, Double velocity) {
+    // set the supply voltage of the TalonFX
+    talonFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+    position.map(it -> talonFXSim.setRawRotorPosition(actualToNativePosition(it)));
+    talonFXSim.setRotorVelocity(actualToNativeVelocity(velocity));
   }
 }

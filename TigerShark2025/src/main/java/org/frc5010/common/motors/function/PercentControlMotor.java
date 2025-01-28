@@ -6,13 +6,14 @@ package org.frc5010.common.motors.function;
 
 import static edu.wpi.first.units.Units.Meters;
 
+import java.util.Optional;
+
 import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.sensors.encoder.SimulatedEncoder;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
@@ -66,9 +67,9 @@ public class PercentControlMotor extends GenericFunctionalMotor {
 
   @Override
   public void simulationUpdate() {
-    simMotor.setInput(_motor.get() * RobotController.getBatteryVoltage());
+    simMotor.setInput(_motor.getVoltage());
     simMotor.update(0.020);
-    simEncoder.setRate(simMotor.getAngularVelocityRPM());
+    _motor.simulationUpdate(Optional.empty(), simMotor.getAngularVelocityRPM());
     RoboRioSim.setVInVoltage(
         BatterySim.calculateDefaultBatteryLoadedVoltage(simMotor.getCurrentDrawAmps()));
   }

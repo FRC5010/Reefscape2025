@@ -5,7 +5,6 @@
 package org.frc5010.common.motors.hardware;
 
 import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Seconds;
 
 import java.util.Optional;
@@ -33,10 +32,10 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -54,8 +53,7 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
   protected DCMotor motorSim;
   /** The maximum angular velocity */
   protected AngularVelocity maxRPM;
-  /** The simulated instance of the motor */
-  protected SparkMaxSim sparkMaxSim;
+
   /** The configuration of the motor */
   protected Motor config;
 
@@ -73,7 +71,7 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
    */
   private boolean cfgUpdated = false;
   /** A reference to the encoder */
-  private GenericEncoder encoder = null;
+  private RevEncoder encoder = null;
 
   /**
    * Constructor for a generic REV brushless motor
@@ -384,7 +382,11 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
    */
   @Override
   public double getVoltage() {
-    return motor.getAppliedOutput() * motor.getBusVoltage();
+    if (RobotBase.isReal()) {
+      return motor.getAppliedOutput() * motor.getBusVoltage();
+    } else {
+      return motor.getAppliedOutput() * RoboRioSim.getVInVoltage();
+    }
   }
 
   /**
@@ -475,7 +477,7 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
   @Override
   public void setMotorSimulationType(DCMotor motorSimulationType) {
     motorSim = motorSimulationType;
-    sparkMaxSim = new SparkMaxSim(motor, motorSim);
+    encoder.setSimulation(new SparkMaxSim(motor, motorSim));
   }
 
   /**
@@ -489,8 +491,8 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
   }
 
   @Override
-  public void simulationUpdate(Optional<Angle> position, AngularVelocity velocity) {
-    sparkMaxSim.iterate(velocity.in(RPM), RoboRioSim.getVInVoltage(), 0.02);
+  public void simulationUpdate(Optional<Double> position, Double velocity) {
+    encoder.simulationUpdate(position, velocity);
   }
 
 }

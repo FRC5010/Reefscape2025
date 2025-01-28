@@ -6,9 +6,7 @@ package org.frc5010.common.motors.function;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Minute;
-import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.Volts;
 
 import java.util.Optional;
 
@@ -19,7 +17,6 @@ import org.frc5010.common.telemetry.DisplayValuesHelper;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
@@ -72,11 +69,7 @@ public class VelocityControlMotor extends GenericControlledMotor {
   @Override
   public void draw() {
     double currentVelocity = 0;
-    if (RobotBase.isReal()) {
-      currentVelocity = encoder.getVelocity();
-    } else {
-      currentVelocity = flyWheelSim.getAngularVelocityRPM();
-    }
+    currentVelocity = encoder.getVelocity();
     velocity.setValue(currentVelocity);
     reference.setValue(getReference());
     speedometer.setAngle(270 - currentVelocity / _motor.getMaxRPM().in(Rotations.per(Minute)) * 180);
@@ -85,11 +78,10 @@ public class VelocityControlMotor extends GenericControlledMotor {
 
   @Override
   public void simulationUpdate() {
-    effort.setVoltage(calculateControlEffort(flyWheelSim.getAngularVelocityRPM()), Volts);
-    flyWheelSim.setInput(effort.getVoltage().in(Volts));
+    flyWheelSim.setInput(_motor.getVoltage());
     flyWheelSim.update(0.020);
-
-    _motor.simulationUpdate(Optional.empty(), RPM.of(flyWheelSim.getAngularVelocityRPM()));
+    
+    _motor.simulationUpdate(Optional.empty(), flyWheelSim.getAngularVelocityRPM());
         
     RoboRioSim.setVInVoltage(
         BatterySim.calculateDefaultBatteryLoadedVoltage(flyWheelSim.getCurrentDrawAmps()));

@@ -6,6 +6,9 @@ package org.frc5010.common.sensors;
 
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.RobotController;
+
+import java.util.Optional;
+
 import org.frc5010.common.sensors.encoder.GenericEncoder;
 
 /** A class for supporting an analog input on the roboRIO */
@@ -55,4 +58,17 @@ public class AnalogInput5010 implements GenericEncoder {
   public void setInverted(boolean inverted) {
     this.inverted = inverted;
   }
+
+  @Override
+  public double getPositionConversion() {
+    return 1;
+  }
+
+  @Override
+  public double getVelocityConversion() {
+    return 1;
+  }
+
+  @Override
+  public void simulationUpdate(Optional<Double> position, Double velocity) {}
 }

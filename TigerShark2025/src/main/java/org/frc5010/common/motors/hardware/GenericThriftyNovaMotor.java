@@ -5,8 +5,6 @@
 package org.frc5010.common.motors.hardware;
 
 import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.RPM;
 
 import java.util.Optional;
 
@@ -23,7 +21,6 @@ import com.thethriftybot.ThriftyNova;
 import com.thethriftybot.ThriftyNova.CurrentType;
 
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -224,9 +221,9 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
     }
 
     @Override
-    public void simulationUpdate(Optional<Angle> position, AngularVelocity velocity) {
-        simEncoder.setPosition(position.map(it -> it.in(Degrees)).orElse(0.0));
-        simEncoder.setRate(velocity.in(RPM));
+    public void simulationUpdate(Optional<Double> position, Double velocity) {
+        simEncoder.setPosition(position.map(it -> it).orElse(0.0));
+        simEncoder.setRate(velocity);
     }
 
     @Override

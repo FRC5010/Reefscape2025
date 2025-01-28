@@ -4,6 +4,8 @@
 
 package org.frc5010.common.sensors.encoder;
 
+import java.util.Optional;
+
 import com.thethriftybot.Conversion;
 import com.thethriftybot.Conversion.PositionUnit;
 import com.thethriftybot.Conversion.VelocityUnit;
@@ -63,4 +65,17 @@ public class ThriftyNovaEncoder implements GenericEncoder {
         encoder.setInversion(inverted);
     }
 
+    @Override
+    public double getPositionConversion() {
+        return rotationConversion;
+    }
+
+    @Override
+    public double getVelocityConversion() {
+        return speedConversion;
+    }
+
+    @Override
+    public void simulationUpdate(Optional<Double> position, Double velocity) {
+    }
 }

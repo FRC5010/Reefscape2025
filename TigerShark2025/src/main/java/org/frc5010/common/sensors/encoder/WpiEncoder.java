@@ -4,6 +4,8 @@
 
 package org.frc5010.common.sensors.encoder;
 
+import java.util.Optional;
+
 import edu.wpi.first.wpilibj.Encoder;
 
 /** Add your docs here. */
@@ -47,4 +49,17 @@ public class WpiEncoder implements GenericEncoder {
 
   @Override
   public void setInverted(boolean inverted) {}
+
+  @Override
+  public double getPositionConversion() {
+    return encoder.getDistancePerPulse();
+  }
+
+  @Override
+  public double getVelocityConversion() {
+    return encoder.getDistancePerPulse();
+  }
+  
+  @Override
+  public void simulationUpdate(Optional<Double> position, Double velocity) {}
 }

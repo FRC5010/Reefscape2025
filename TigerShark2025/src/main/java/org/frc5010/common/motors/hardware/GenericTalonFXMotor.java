@@ -5,8 +5,6 @@
 package org.frc5010.common.motors.hardware;
 
 import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.RPM;
-import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
 import java.util.Optional;
@@ -26,14 +24,12 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.sim.TalonFXSimState;
 
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
@@ -51,6 +47,10 @@ public class GenericTalonFXMotor implements MotorController5010 {
    * TalonFX motor controller.
    */
   private final TalonFX motor;
+  /** TalonFX controller */
+  protected TalonFXController controller;
+  /** TalonFX encoder */
+  protected TalonFXEncoder encoder;
   /**
    * Current TalonFX configuration.
    */
@@ -69,28 +69,11 @@ public class GenericTalonFXMotor implements MotorController5010 {
   /** DCMotor simulation */
   protected DCMotor motorSim;
 
-  /** TalonFX simulation */
-  protected TalonFXSimState talonFXSim;
-
   /** Max RPM */
   protected AngularVelocity maxRPM;
 
   /** Configuration */
   protected Motor config;
-
-  /**
-   * Constructor for TalonFX swerve motor.
-   *
-   * @param motor        Motor to use.
-   * @param isDriveMotor Whether this motor is a drive motor.
-   */
-  public GenericTalonFXMotor(TalonFX motor) {
-    this.motor = motor;
-    this.cfg = motor.getConfigurator();
-
-    factoryDefaults();
-    clearStickyFaults();
-  }
 
   /**
    * Construct the TalonFX swerve motor given the ID and CANBus.
@@ -99,15 +82,22 @@ public class GenericTalonFXMotor implements MotorController5010 {
    * @param canbus       CANBus on which the TalonFX is on.
    * @param isDriveMotor Whether the motor is a drive or steering motor.
    */
-  public GenericTalonFXMotor(int id, String canbus) {
-    this(new TalonFX(id, canbus));
-  }
+  public GenericTalonFXMotor(int id, Motor config, String canbus) {
+    motor = new TalonFX(id, canbus);
+    this.cfg = motor.getConfigurator();
 
-  public GenericTalonFXMotor(int canId, Motor config) {
-    this(new TalonFX(canId, ""));
+    factoryDefaults();
+    clearStickyFaults();
     setCurrentLimit(config.currentLimit);
     setMotorSimulationType(config.getMotorSimulationType());
     setMaxRPM(config.maxRpm);
+    this.config = config;
+    encoder = new TalonFXEncoder(this);
+    controller = new TalonFXController(this);
+  }
+
+  public GenericTalonFXMotor(int canId, Motor config) {
+    this(canId, config, "");
   }
 
   /**
@@ -240,7 +230,7 @@ public class GenericTalonFXMotor implements MotorController5010 {
    */
   @Override
   public GenericEncoder getMotorEncoder() {
-    return new TalonFXEncoder(this);
+    return encoder;
   }
 
   /**
@@ -350,7 +340,7 @@ public class GenericTalonFXMotor implements MotorController5010 {
    */
   @Override
   public AngularVelocity getMaxRPM() {
-    throw new UnsupportedOperationException("Unimplemented method 'getMaxRPM'");
+    return config.maxRpm;
   }
 
   /**
@@ -396,12 +386,16 @@ public class GenericTalonFXMotor implements MotorController5010 {
    *
    * This method waits for the voltage update within a specified timeout
    * and returns the motor's voltage in volts.
-   *
+   * 
    * @return The voltage output of the motor in volts.
    */
   @Override
   public double getVoltage() {
-    return motor.getMotorVoltage().waitForUpdate(STATUS_TIMEOUT_SECONDS).getValue().in(Volts);
+    if (RobotBase.isReal()) {
+      return motor.getMotorVoltage().waitForUpdate(STATUS_TIMEOUT_SECONDS).getValue().in(Volts);
+    } else {
+      return encoder.getVoltage();
+    }
   }
 
   /**
@@ -501,7 +495,6 @@ public class GenericTalonFXMotor implements MotorController5010 {
   @Override
   public void setMotorSimulationType(DCMotor motorSimulationType) {
     motorSim = motorSimulationType;
-    talonFXSim = motor.getSimState();
   }
 
   /**
@@ -512,11 +505,8 @@ public class GenericTalonFXMotor implements MotorController5010 {
    *                 second.
    */
   @Override
-  public void simulationUpdate(Optional<Angle> position, AngularVelocity velocity) {
-    // set the supply voltage of the TalonFX
-    talonFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
-    position.map(it -> talonFXSim.setRawRotorPosition(it.in(Rotations)));
-    talonFXSim.setRotorVelocity(velocity.in(RPM));
+  public void simulationUpdate(Optional<Double> position, Double velocity) {
+    encoder.simulationUpdate(position, velocity);
   }
 
   /**

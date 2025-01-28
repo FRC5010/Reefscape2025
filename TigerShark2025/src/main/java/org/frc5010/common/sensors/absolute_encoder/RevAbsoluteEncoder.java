@@ -1,5 +1,6 @@
 package org.frc5010.common.sensors.absolute_encoder;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.revrobotics.AbsoluteEncoder;
@@ -163,4 +164,17 @@ public class RevAbsoluteEncoder extends GenericAbsoluteEncoder {
   public void setInverted(boolean inverted) {
     config.inverted(inverted);
   }
+
+  @Override
+  public double getPositionConversion() {
+    return 1;
+  }
+
+  @Override
+  public double getVelocityConversion() {
+    return 1;
+  }
+  
+  @Override
+  public void simulationUpdate(Optional<Double> position, Double velocity) {}
 }
