@@ -148,6 +148,10 @@ public class LimeLightCamera extends GenericCamera {
     megatagChooser = chooser;
   }
 
+  public void setIMUMode(int mode) {
+    LimelightHelpers.SetIMUMode(name, mode);
+  }
+
   /** Update the camera */
   @Override
   public void updateCameraInfo() {
