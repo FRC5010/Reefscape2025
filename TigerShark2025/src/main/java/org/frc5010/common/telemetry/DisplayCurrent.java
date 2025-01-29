@@ -69,7 +69,7 @@ public class DisplayCurrent {
     if (isDisplayed_) {
       topic_ = NetworkTableInstance.getDefault().getTable(table_).getDoubleTopic(name_);
       publisher_ = topic_.publish();
-      init();
+      init(logLevel);
     }
   }
 
@@ -103,21 +103,23 @@ public class DisplayCurrent {
     if (isDisplayed_) {
       topic_ = NetworkTableInstance.getDefault().getTable(table_).getDoubleTopic(name_);
       publisher_ = topic_.publish();
-      init();
+      init(logLevel);
     }
   }
 
-  protected void init() {
-    if (DisplayValuesHelper.robotIsAtLogLevel(LogLevel.CONFIG)) {
+  protected void init(LogLevel logLevel) {
+    if (LogLevel.CONFIG == logLevel) {
       topic_.setPersistent(true);
-      subscriber_ = topic_.subscribe(current_.in(unit_));
-      listenerHandle_ = NetworkTableInstance.getDefault()
-          .addListener(
-              subscriber_,
-              EnumSet.of(NetworkTableEvent.Kind.kValueAll),
-              event -> {
-                setCurrent(event.valueData.value.getDouble(), unit_, false);
-              });
+      if (DisplayValuesHelper.robotIsAtLogLevel(LogLevel.CONFIG)) {
+        subscriber_ = topic_.subscribe(current_.in(unit_));
+        listenerHandle_ = NetworkTableInstance.getDefault()
+            .addListener(
+                subscriber_,
+                EnumSet.of(NetworkTableEvent.Kind.kValueAll),
+                event -> {
+                  setCurrent(event.valueData.value.getDouble(), unit_, false);
+                });
+      }
     }
     publisher_.setDefault(current_.in(unit_));
   }
@@ -136,9 +138,9 @@ public class DisplayCurrent {
   /**
    * Sets the current
    *
-   * @param unit       - current unit
+   * @param unit    - current unit
    * @param current - current in that unit
-   * @param publish    - publish the value
+   * @param publish - publish the value
    */
   public void setCurrent(final double current, final CurrentUnit unit, final boolean publish) {
     setCurrent(unit.of(current), publish);

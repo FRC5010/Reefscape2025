@@ -58,18 +58,20 @@ public class DisplayString {
     if (isDisplayed_) {
       topic_ = NetworkTableInstance.getDefault().getTable(table_).getStringTopic(name_);
       publisher_ = topic_.publish();
-      if (DisplayValuesHelper.robotIsAtLogLevel(LogLevel.CONFIG)) {
+      if (LogLevel.CONFIG == logLevel) {
         topic_.setPersistent(true);
-        subscriber_ = topic_.subscribe(value_);
-        listenerHandle_ = NetworkTableInstance.getDefault()
-            .addListener(
-                subscriber_,
-                EnumSet.of(NetworkTableEvent.Kind.kValueAll),
-                event -> {
-                  setValue(event.valueData.value.getString(), false);
-                });
+        if (DisplayValuesHelper.robotIsAtLogLevel(LogLevel.CONFIG)) {
+          subscriber_ = topic_.subscribe(value_);
+          listenerHandle_ = NetworkTableInstance.getDefault()
+              .addListener(
+                  subscriber_,
+                  EnumSet.of(NetworkTableEvent.Kind.kValueAll),
+                  event -> {
+                    setValue(event.valueData.value.getString(), false);
+                  });
+        }
+        publisher_.setDefault(value_);
       }
-      publisher_.setDefault(value_);
     }
   }
 

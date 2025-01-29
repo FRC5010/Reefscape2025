@@ -60,16 +60,18 @@ public class DisplayDouble {
       publisher_ = topic_.publish();
       publisher_.setDefault(value_);
     }
-    if (DisplayValuesHelper.robotIsAtLogLevel(LogLevel.CONFIG)) {
+    if (LogLevel.CONFIG == logLevel) {
       topic_.setPersistent(true);
-      subscriber_ = topic_.subscribe(value_);
-      listenerHandle_ = NetworkTableInstance.getDefault()
-          .addListener(
-              subscriber_,
-              EnumSet.of(NetworkTableEvent.Kind.kValueAll),
-              event -> {
-                setValue(event.valueData.value.getDouble(), false);
-              });
+      if (DisplayValuesHelper.robotIsAtLogLevel(LogLevel.CONFIG)) {
+        subscriber_ = topic_.subscribe(value_);
+        listenerHandle_ = NetworkTableInstance.getDefault()
+            .addListener(
+                subscriber_,
+                EnumSet.of(NetworkTableEvent.Kind.kValueAll),
+                event -> {
+                  setValue(event.valueData.value.getDouble(), false);
+                });
+      }
     }
   }
 

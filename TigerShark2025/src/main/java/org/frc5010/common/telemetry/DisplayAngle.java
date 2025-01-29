@@ -70,7 +70,7 @@ public class DisplayAngle {
     if (isDisplayed_) {
       topic_ = NetworkTableInstance.getDefault().getTable(table_).getDoubleTopic(name_);
       publisher_ = topic_.publish();
-      init();
+      init(logLevel);
     }
   }
 
@@ -104,7 +104,7 @@ public class DisplayAngle {
     if (isDisplayed_) {
       topic_ = NetworkTableInstance.getDefault().getTable(table_).getDoubleTopic(name_);
       publisher_ = topic_.publish();
-      init();
+      init(logLevel);
     }
   }
 
@@ -112,18 +112,20 @@ public class DisplayAngle {
    * Initializes the display by adding a listener to the subscriber and
    * setting the default value of the publisher
    */
-  protected void init() {
+  protected void init(LogLevel logLevel) {
     publisher_.setDefault(angle_.in(unit_));
-    if (DisplayValuesHelper.robotIsAtLogLevel(LogLevel.CONFIG)) {
+    if (LogLevel.CONFIG == logLevel) {
       topic_.setPersistent(true);
-      subscriber_ = topic_.subscribe(angle_.in(unit_));
-      listenerHandle_ = NetworkTableInstance.getDefault()
-          .addListener(
-              subscriber_,
-              EnumSet.of(NetworkTableEvent.Kind.kValueAll),
-              event -> {
-                setAngle(event.valueData.value.getDouble(), unit_, false);
-              });
+      if (DisplayValuesHelper.robotIsAtLogLevel(LogLevel.CONFIG)) {
+        subscriber_ = topic_.subscribe(angle_.in(unit_));
+        listenerHandle_ = NetworkTableInstance.getDefault()
+            .addListener(
+                subscriber_,
+                EnumSet.of(NetworkTableEvent.Kind.kValueAll),
+                event -> {
+                  setAngle(event.valueData.value.getDouble(), unit_, false);
+                });
+      }
     }
   }
 

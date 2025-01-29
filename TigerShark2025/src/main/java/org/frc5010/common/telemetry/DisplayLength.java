@@ -68,7 +68,7 @@ public class DisplayLength {
     if (isDisplayed_) {
       topic_ = NetworkTableInstance.getDefault().getTable(table_).getDoubleTopic(name_);
       publisher_ = topic_.publish();
-      init();
+      init(logLevel);
     }
   }
 
@@ -101,22 +101,24 @@ public class DisplayLength {
     if (isDisplayed_) {
       topic_ = NetworkTableInstance.getDefault().getTable(table_).getDoubleTopic(name_);
       publisher_ = topic_.publish();
-      init();
+      init(logLevel);
     }
   }
 
-  protected void init() {
+  protected void init(LogLevel logLevel) {
     publisher_.setDefault(length_.in(unit_));
-    if (DisplayValuesHelper.robotIsAtLogLevel(LogLevel.CONFIG)) {
+    if (LogLevel.CONFIG == logLevel) {
       topic_.setPersistent(true);
-      subscriber_ = topic_.subscribe(length_.in(unit_));
-      listenerHandle_ = NetworkTableInstance.getDefault()
-          .addListener(
-              subscriber_,
-              EnumSet.of(NetworkTableEvent.Kind.kValueAll),
-              event -> {
-                setLength(event.valueData.value.getDouble(), unit_, false);
-              });
+      if (DisplayValuesHelper.robotIsAtLogLevel(LogLevel.CONFIG)) {
+        subscriber_ = topic_.subscribe(length_.in(unit_));
+        listenerHandle_ = NetworkTableInstance.getDefault()
+            .addListener(
+                subscriber_,
+                EnumSet.of(NetworkTableEvent.Kind.kValueAll),
+                event -> {
+                  setLength(event.valueData.value.getDouble(), unit_, false);
+                });
+      }
     }
   }
 
