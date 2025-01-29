@@ -33,7 +33,7 @@ public class Right4Coral extends AutoSequence {
 
     // Command Sequence
     addCommands(
-      startToI.resetOdometryToStart(), 
+      startToI.resetOdometryToStart(0.5), 
       startToI.follow(), 
       iToStation.follow(), 
       stationToJ.follow(), 

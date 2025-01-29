@@ -228,7 +228,7 @@ public class LimeLightCamera extends GenericCamera {
   
   @Override
   public double getConfidence() {
-    return 0.000000000000001;
+    return 0.1;
   }
 
   @Override

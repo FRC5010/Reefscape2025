@@ -6,6 +6,8 @@ package org.frc5010.common.drive.swerve;
 
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Meter;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Volts;
 
 import java.io.File;
 import java.io.IOException;
@@ -332,9 +334,9 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   public Command sysIdDriveMotorCommand() {
     return SwerveDriveTest.generateSysIdCommand(
         SwerveDriveTest.setDriveSysIdRoutine(
-            new SysIdRoutine.Config(),
+            new SysIdRoutine.Config(Volts.of(0.5).per(Second), Volts.of(12), Second.of(20)),
             this, swerveDrive, 12, true),
-        3.0, 5.0, 3.0);
+        3.0, 6.0, 4.0);
   }
 
   /**

@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.6380000000000001,
-        "y": 7.3302499999999995
+        "x": 1.7403977272727267,
+        "y": 7.245
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.55875,
-        "y": 7.17425
+        "x": 3.661147727272726,
+        "y": 7.089
       },
       "isLocked": false,
       "linkedName": "T1 Station"

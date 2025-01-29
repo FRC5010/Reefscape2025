@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.6380000000000001,
-        "y": 7.3302499999999995
+        "x": 1.7403977272727267,
+        "y": 7.245
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.845109990220787,
-        "y": 6.287184769046365
+        "x": 2.9475077174935134,
+        "y": 6.201934769046366
       },
       "isLocked": false,
       "linkedName": "T1 Station"
     },
     {
       "anchor": {
-        "x": 3.94875,
-        "y": 5.273
+        "x": 3.9679303278688525,
+        "y": 5.325665983606557
       },
       "prevControl": {
-        "x": 3.799958187934053,
-        "y": 5.473900464564251
+        "x": 3.8191385158029054,
+        "y": 5.526566448170808
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,8 +33,8 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 5.0,
-    "maxAcceleration": 5.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 480.0,
     "nominalVoltage": 12.0,

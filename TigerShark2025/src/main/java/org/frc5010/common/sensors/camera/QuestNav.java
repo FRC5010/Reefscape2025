@@ -35,7 +35,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 /** Add your docs here. */
 public class QuestNav implements PoseProvider {
     private boolean initializedPosition = false;
-    private String networkTableRoot = "oculus";
+    private String networkTableRoot = "questnav";
     private NetworkTableInstance networkTableInstance = NetworkTableInstance.getDefault();
     private NetworkTable networkTable;
     private Transform3d robotToQuest;
@@ -55,8 +55,8 @@ public class QuestNav implements PoseProvider {
     private Pose3d previousPose;
     private double previousTime;
 
-    private Translation2d _calculatedOffsetToRobotCenter;
-    private int _calculatedOffsetToRobotCenterCount;
+    private Translation2d _calculatedOffsetToRobotCenter = new Translation2d();
+    private int _calculatedOffsetToRobotCenterCount = 0;
 
     public enum QuestCommand {
         RESET(1);
@@ -126,7 +126,7 @@ public class QuestNav implements PoseProvider {
         return rotateAxes(correctWorldAxis(getRawPosition())
                 .plus(robotToQuest.getTranslation())
                 .plus(robotToQuest.getTranslation().times(-1).rotateBy(getRawRotation())),
-                initPose.getRotation().times(-1))
+                initPose.getRotation())
 
                 .plus(initPose.getTranslation());
     }
@@ -139,7 +139,7 @@ public class QuestNav implements PoseProvider {
 
     public double getConfidence() {
         if (RobotBase.isReal()) {
-            return 0.000000000000000000000000000000000000000000000000000000000000000000000000001;
+            return 0.00001;
         } else {
             return Double.MAX_VALUE;
         }
@@ -150,7 +150,7 @@ public class QuestNav implements PoseProvider {
     }
 
     public boolean isActive() {
-        if (timestamp.get() == 0.0 || RobotBase.isSimulation()) {
+        if (timestamp.get() == 0.0 || RobotBase.isSimulation() || DriverStation.isDisabled()) {
         return false;
         }
         return initializedPosition;
@@ -222,6 +222,11 @@ public class QuestNav implements PoseProvider {
             cleanUpQuestCommand();
             updateVelocity();
 
+            Pose2d currPose = getRobotPose().get().toPose2d();
+            SmartDashboard.putNumberArray("Quest POSE", new double[] {
+                currPose.getX(), currPose.getY(), currPose.getRotation().getDegrees()
+            });
+
             ChassisSpeeds velocity = getVelocity();
             SmartDashboard.putNumberArray("Velocity", new double[] { velocity.vxMetersPerSecond,
                     velocity.vyMetersPerSecond, velocity.omegaRadiansPerSecond });
@@ -248,18 +253,18 @@ public class QuestNav implements PoseProvider {
             Commands.run(
             () -> {
                 drivetrain.drive(new ChassisSpeeds(0, 0, 0.314), null);
-            }, drivetrain).withTimeout(1.0),
+            }, drivetrain).withTimeout(2.0),
             Commands.runOnce(() -> {
                 // Update current offset
                 Translation2d offset = calculateOffsetToRobotCenter();
                 
-                _calculatedOffsetToRobotCenter = _calculatedOffsetToRobotCenter.times(_calculatedOffsetToRobotCenterCount / (_calculatedOffsetToRobotCenterCount + 1))
+                _calculatedOffsetToRobotCenter = _calculatedOffsetToRobotCenter.times((double)_calculatedOffsetToRobotCenterCount / (_calculatedOffsetToRobotCenterCount + 1))
                     .plus(offset.div(_calculatedOffsetToRobotCenterCount + 1));
                 _calculatedOffsetToRobotCenterCount++;
 
                 SmartDashboard.putNumberArray("Quest Calculated Offset to Robot Center", new double[] { _calculatedOffsetToRobotCenter.getX(), _calculatedOffsetToRobotCenter.getY() });
 
-            })).withTimeout(5.0);
+            })).withTimeout(10.0);
     }
 
 }
