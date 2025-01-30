@@ -72,6 +72,7 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
   private boolean cfgUpdated = false;
   /** A reference to the encoder */
   private RevEncoder encoder = null;
+  private RevSparkController controller;
 
   /**
    * Constructor for a generic REV brushless motor
@@ -88,6 +89,8 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
   public GenericRevBrushlessMotor(int port, Motor config) {
     motor = new SparkMax(port, MotorType.kBrushless);
     this.config = config;
+    getMotorEncoder();
+    controller = new RevSparkController(this);
     factoryDefaults();
     clearStickyFaults();
     setCurrentLimit(config.currentLimit);
@@ -260,7 +263,7 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
    *         getEncoder() method
    */
   @Override
-  public GenericEncoder getMotorEncoder(int countsPerRev) {
+  public GenericEncoder createMotorEncoder(int countsPerRev) {
     getMotorEncoder();
     encoder.setPositionConversion(countsPerRev);
     encoder.setVelocityConversion(countsPerRev / 60.0);
@@ -275,7 +278,7 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
    */
   @Override
   public PIDController5010 getPIDController5010() {
-    return new RevSparkController(this);
+    return controller;
   }
 
   /**

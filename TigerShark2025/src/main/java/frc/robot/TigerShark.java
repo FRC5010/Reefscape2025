@@ -32,15 +32,18 @@ public class TigerShark extends GenericRobot {
             scoringSystem.shooterRightSpeed(operator.getRightTrigger());
             scoringSystem.elevatorSpeed(operator.getLeftYAxis());
         }, scoringSystem));
-        operator.createAButton().onTrue(
+        operator.createAButton().whileTrue(
                 Commands.runOnce(() -> scoringSystem.setElevatorPosition(ScoringSystem.Position.BOTTOM),
-                        scoringSystem));
-        operator.createXButton().onTrue(
-                Commands.runOnce(() -> scoringSystem.setElevatorPosition(ScoringSystem.Position.L2), scoringSystem));
-        operator.createYButton().onTrue(
-                Commands.runOnce(() -> scoringSystem.setElevatorPosition(ScoringSystem.Position.L3), scoringSystem));
-        operator.createBButton().onTrue(
-                Commands.runOnce(() -> scoringSystem.setElevatorPosition(ScoringSystem.Position.L4), scoringSystem));
+                        scoringSystem).until(scoringSystem.isAtTarget()));
+        operator.createXButton().whileTrue(
+                Commands.runOnce(() -> scoringSystem.setElevatorPosition(ScoringSystem.Position.L2), scoringSystem)
+                        .until(scoringSystem.isAtTarget()));
+        operator.createYButton().whileTrue(
+                Commands.runOnce(() -> scoringSystem.setElevatorPosition(ScoringSystem.Position.L3), scoringSystem)
+                        .until(scoringSystem.isAtTarget()));
+        operator.createBButton().whileTrue(
+                Commands.run(() -> scoringSystem.setElevatorPosition(ScoringSystem.Position.L4), scoringSystem)
+                        .until(scoringSystem.isAtTarget()));
     }
 
     @Override

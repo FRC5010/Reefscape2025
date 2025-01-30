@@ -19,6 +19,7 @@ import org.frc5010.common.sensors.encoder.TalonFXEncoder;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfigurator;
+import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -244,7 +245,7 @@ public class GenericTalonFXMotor implements MotorController5010 {
    *         this motor.
    */
   @Override
-  public GenericEncoder getMotorEncoder(int countsPerRev) {
+  public GenericEncoder createMotorEncoder(int countsPerRev) {
     GenericEncoder encoder = new TalonFXEncoder(this);
     encoder.setPositionConversion(countsPerRev);
     encoder.setVelocityConversion(countsPerRev);
@@ -259,7 +260,7 @@ public class GenericTalonFXMotor implements MotorController5010 {
    */
   @Override
   public PIDController5010 getPIDController5010() {
-    return new TalonFXController(this);
+    return controller;
   }
 
   /**
@@ -518,5 +519,9 @@ public class GenericTalonFXMotor implements MotorController5010 {
   @Override
   public void setMaxRPM(AngularVelocity rpm) {
     maxRPM = rpm;
+  }
+
+  public void sendControlRequest(ControlRequest request) {
+    motor.setControl(request);
   }
 }

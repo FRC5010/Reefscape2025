@@ -141,7 +141,7 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
     }
 
     @Override
-    public GenericEncoder getMotorEncoder(int countsPerRev) {
+    public GenericEncoder createMotorEncoder(int countsPerRev) {
         encoder.setPositionConversion(countsPerRev);
         simEncoder.setPositionConversion(countsPerRev);
         encoder.setVelocityConversion(countsPerRev / 60.0);

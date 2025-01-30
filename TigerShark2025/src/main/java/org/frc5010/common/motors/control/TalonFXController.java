@@ -40,6 +40,7 @@ public class TalonFXController extends GenericPIDController {
   public TalonFXController(GenericTalonFXMotor motor) {
     this.motor = motor;
     cfg = ((TalonFX) motor.getMotor()).getConfigurator();
+    setControlType(controlType);
   }
 
   /**
@@ -166,7 +167,7 @@ public class TalonFXController extends GenericPIDController {
    * @param f the feedforward value.
    */
   @Override
-  public void setF(double f) { 
+  public void setF(double f) {
   }
 
   /**
@@ -195,8 +196,7 @@ public class TalonFXController extends GenericPIDController {
    */
   @Override
   public void setReference(double reference, PIDControlType controlType, double feedforward) {
-    this.controlType = controlType;
-    refreshTalonConfigs();
+    setControlType(controlType);
     sendControlRequest(reference, feedforward);
   }
 
@@ -207,34 +207,33 @@ public class TalonFXController extends GenericPIDController {
    */
   @Override
   public void setControlType(PIDControlType controlType) {
-    this.controlType = controlType;
-    refreshTalonConfigs();
-    switch (controlType) {
-      case POSITION:
-        request = new PositionVoltage(reference)
-            .withEnableFOC(motor.isFOCEnabled());
-        break;
-      case VELOCITY:
-        request = new VelocityVoltage(reference)
-            .withEnableFOC(motor.isFOCEnabled());
-        break;
-      case DUTY_CYCLE:
-        request = new DutyCycleOut(reference).withEnableFOC(motor.isFOCEnabled());
-        break;
-      case VOLTAGE:
-        request = new VoltageOut(reference).withEnableFOC(motor.isFOCEnabled());
-        break;
-      case PROFILED_POSITION:
-        request = new MotionMagicVoltage(reference).withEnableFOC(motor.isFOCEnabled());
-        break;
-      case PROFILED_VELOCITY:
-        request = new MotionMagicVelocityVoltage(reference).withEnableFOC(motor.isFOCEnabled());
-        break;
-      default:
-        throw new IllegalArgumentException("Unsupported TalonFX control type " + controlType);
+    if (null == this.request || this.controlType != controlType) {
+      switch (controlType) {
+        case POSITION:
+          request = new PositionVoltage(reference)
+              .withEnableFOC(motor.isFOCEnabled());
+          break;
+        case VELOCITY:
+          request = new VelocityVoltage(reference)
+              .withEnableFOC(motor.isFOCEnabled());
+          break;
+        case DUTY_CYCLE:
+          request = new DutyCycleOut(reference).withEnableFOC(motor.isFOCEnabled());
+          break;
+        case VOLTAGE:
+          request = new VoltageOut(reference).withEnableFOC(motor.isFOCEnabled());
+          break;
+        case PROFILED_POSITION:
+          request = new MotionMagicVoltage(reference).withEnableFOC(motor.isFOCEnabled());
+          break;
+        case PROFILED_VELOCITY:
+          request = new MotionMagicVelocityVoltage(reference).withEnableFOC(motor.isFOCEnabled());
+          break;
+        default:
+          throw new IllegalArgumentException("Unsupported TalonFX control type " + controlType);
+      }
     }
-
-    sendControlRequest(reference, 0.0);
+    this.controlType = controlType;
   }
 
   /**

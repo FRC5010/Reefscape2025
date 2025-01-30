@@ -82,7 +82,7 @@ public interface MotorController5010 extends MotorController {
    * @param countsPerRev The number of counts per revolution
    * @return The motor encoder
    */
-  GenericEncoder getMotorEncoder(int countsPerRev);
+  GenericEncoder createMotorEncoder(int countsPerRev);
 
   /**
    * Gets the PID controller

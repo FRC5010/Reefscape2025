@@ -7,6 +7,7 @@ package org.frc5010.common.motors.function;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Minute;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.Volts;
 
 import java.util.Optional;
 
@@ -71,7 +72,6 @@ public class VelocityControlMotor extends GenericControlledMotor {
     double currentVelocity = 0;
     currentVelocity = encoder.getVelocity();
     velocity.setValue(currentVelocity);
-    reference.setValue(getReference());
     speedometer.setAngle(270 - currentVelocity / _motor.getMaxRPM().in(Rotations.per(Minute)) * 180);
     setpoint.setAngle(270 - getReference() / _motor.getMaxRPM().in(Rotations.per(Minute)) * 180);
   }
@@ -79,6 +79,7 @@ public class VelocityControlMotor extends GenericControlledMotor {
   @Override
   public void simulationUpdate() {
     flyWheelSim.setInput(_motor.getVoltage());
+    effort.setVoltage(_motor.getVoltage(), Volts);
     flyWheelSim.update(0.020);
     
     _motor.simulationUpdate(Optional.empty(), flyWheelSim.getAngularVelocityRPM());

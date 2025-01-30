@@ -209,8 +209,8 @@ public class GenericFunctionalMotor implements MotorController5010, WpiHelperInt
    * @return the generic encoder for the motor
    */
   @Override
-  public GenericEncoder getMotorEncoder(int countsPerRev) {
-    return _motor.getMotorEncoder(countsPerRev);
+  public GenericEncoder createMotorEncoder(int countsPerRev) {
+    return _motor.createMotorEncoder(countsPerRev);
   }
 
   /**
