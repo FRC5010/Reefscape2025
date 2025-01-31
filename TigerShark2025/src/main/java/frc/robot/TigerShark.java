@@ -1,17 +1,27 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
+
+import java.util.function.Consumer;
+
 import org.frc5010.common.arch.GenericRobot;
+import org.frc5010.common.auto.AutoErrorTracker;
+import org.frc5010.common.auto.RelayPIDAutoTuner;
 import org.frc5010.common.config.ConfigConstants;
 import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 import org.frc5010.common.sensors.Controller;
 import org.frc5010.common.sensors.camera.QuestNav;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.autos2.Left2Coral;
-import frc.robot.autos2.Right2Coral;
-import frc.robot.autos2.Right4Coral;
+import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.AutoRoutines.Right4Coral;
 
 
 public class TigerShark extends GenericRobot {
@@ -24,11 +34,30 @@ public class TigerShark extends GenericRobot {
 
     @Override
     public void configureButtonBindings(Controller driver, Controller operator) {
-        driver.createAButton().whileTrue(((YAGSLSwerveDrivetrain) drivetrain).sysIdDriveMotorCommand());
-        driver.createBButton().whileTrue(((YAGSLSwerveDrivetrain) drivetrain).sysIdAngleMotorCommand());
+        // driver.createAButton().whileTrue(((YAGSLSwerveDrivetrain) drivetrain).sysIdDriveMotorCommand());
+        // driver.createBButton().whileTrue(((YAGSLSwerveDrivetrain) drivetrain).sysIdAngleMotorCommand());
+        driver.createAButton().whileTrue(
+            new RelayPIDAutoTuner(
+                (Consumer<Double>)((Double value) -> 
+                    ((YAGSLSwerveDrivetrain) drivetrain).driveFieldOriented(new ChassisSpeeds(value, 0, 0))
+                ), 
+                () -> ((YAGSLSwerveDrivetrain) drivetrain).getPose().getTranslation().getX(),
+                2.0,
+                drivetrain)
+        );
+
 
         // Command offsetCommand = (new QuestNav(new Transform3d())).determineOffsetToRobotCenter(drivetrain);
         // driver.createXButton().whileTrue(offsetCommand);
+
+        driver.createXButton().whileTrue( // Test drive to J Reef Location
+            ((YAGSLSwerveDrivetrain) drivetrain).driveToPose(new Pose2d(5.000, 5.250, new Rotation2d(Degrees.of(-120))))
+            );
+
+        driver.createYButton().whileTrue( // Test drive to Top Station Position 1
+            ((YAGSLSwerveDrivetrain) drivetrain).driveToPose(new Pose2d(1.740, 7.245, new Rotation2d(Degrees.of(-55.000))))
+            );
+        
     }
 
     @Override
@@ -51,9 +80,7 @@ public class TigerShark extends GenericRobot {
     @Override
     public void buildAutoCommands() {
         super.buildAutoCommands();
-        addAutoToChooser("Left 2 Coral", new Left2Coral());
-        addAutoToChooser("Right 2 Coral", new Right2Coral());
-        addAutoToChooser("Right 4 Coral", new Right4Coral());
+        addAutoToChooser("Right 4 Coral", new Right4Coral().raceWith(new AutoErrorTracker()));
         // addAutoToChooser("Auto New", new ExampleAuto());
     }
 }

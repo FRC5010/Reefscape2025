@@ -6,6 +6,7 @@ package org.frc5010.common.auto;
 
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
+import java.util.function.Function;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
@@ -83,6 +84,12 @@ public class AutoPath {
      */
     public Command follow() {
         Command followingCommand = AutoBuilder.followPath(pathplannerPath);
+        followingCommand.setName("Follow Path " + pathplannerPath.name);
+        return followingCommand;
+    }
+
+    public Command follow(Function<PathPlannerPath, Command> pathFollowingCommandBuilder) {
+        Command followingCommand = pathFollowingCommandBuilder.apply(pathplannerPath);
         followingCommand.setName("Follow Path " + pathplannerPath.name);
         return followingCommand;
     }

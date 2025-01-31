@@ -1,7 +1,9 @@
-package frc.robot.autos2;
+package frc.robot.AutoRoutines;
 
 import org.frc5010.common.auto.AutoPath;
 import org.frc5010.common.auto.AutoSequence;
+
+import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -27,7 +29,6 @@ public class Right4Coral extends AutoSequence {
 
     // Trigger Definitions
     Trigger robotNearReef = robotNearLocation(reefCenter, Meter.of(2.0));
-
     // Commands
     // TODO: Make actual commands
 

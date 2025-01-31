@@ -37,19 +37,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "K to T1"
+            "pathName": "K to T2"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "T1 to L"
+            "pathName": "T2 to L"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "L to T1"
+            "pathName": "L to T2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "T2 to A"
           }
         }
       ]

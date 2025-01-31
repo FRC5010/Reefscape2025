@@ -208,7 +208,9 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         // pose)
         this::getRobotVelocity, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
         // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-        this::setChassisSpeedsWithAngleSupplier,
+        (ChassisSpeeds speeds, DriveFeedforwards ff) -> {
+          drive(speeds, ff);
+        },
         // RELATIVE ChassisSpeeds
         new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic
                                         // drive trains
@@ -784,6 +786,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         null != angleSpeedSupplier
             ? angleSpeedSupplier.getAsDouble()
             : chassisSpeeds.omegaRadiansPerSecond);
+
     swerveDrive.drive(
         angleSuppliedChassisSpeeds,
         swerveDrive.kinematics.toSwerveModuleStates(angleSuppliedChassisSpeeds),
