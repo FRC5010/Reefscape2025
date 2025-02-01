@@ -56,11 +56,11 @@ public class Pancake extends GenericRobot {
         // driver.createXButton().whileTrue(offsetCommand);
 
         driver.createXButton().whileTrue( // Test drive to J Reef Location
-            ((YAGSLSwerveDrivetrain) drivetrain).driveToPose(new Pose2d(5.000, 5.250, new Rotation2d(Degrees.of(-120))))
+            ((YAGSLSwerveDrivetrain) drivetrain).driveToPosePrecise(new Pose2d(5.000, 5.250, new Rotation2d(Degrees.of(-120))))
             );
 
         driver.createYButton().whileTrue( // Test drive to Top Station Position 1
-            ((YAGSLSwerveDrivetrain) drivetrain).driveToPose(new Pose2d(1.740, 7.245, new Rotation2d(Degrees.of(-55.000))))
+            ((YAGSLSwerveDrivetrain) drivetrain).driveToPosePrecise(new Pose2d(1.740, 7.245, new Rotation2d(Degrees.of(-55.000))))
             );
         
     }

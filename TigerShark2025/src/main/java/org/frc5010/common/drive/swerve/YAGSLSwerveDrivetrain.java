@@ -22,6 +22,7 @@ import java.util.function.Supplier;
 
 import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.arch.GenericRobot.LogLevel;
+import org.frc5010.common.auto.pathplanner.PathfindingCommand5010;
 import org.frc5010.common.commands.JoystickToSwerve;
 import org.frc5010.common.constants.Constants;
 import org.frc5010.common.constants.GenericDrivetrainConstants;
@@ -270,6 +271,32 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         0.0 // Goal end velocity in meters/sec
     );
   }
+
+  public Command driveToPosePrecise(Pose2d pose) {
+    // Create the constraints to use while pathfinding
+    PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond(),
+        getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond(),
+        getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond(),
+        getSwerveConstants().getkTeleDriveMaxAngularAccelerationUnitsPerSecond());
+    // PathConstraints constraints = new PathConstraints(
+    // swerveDrive.getMaximumChassisVelocity(), 4.0,
+    // swerveDrive.getMaximumChassisAngularVelocity(), Units.degreesToRadians(720));
+    // Since AutoBuilder is configured, we can use it to build pathfinding commands
+    return new PathfindingCommand5010(
+      pose,
+      constraints,
+      0.0,
+      this::getPose,
+      this::getChassisSpeeds,
+      this::setChassisSpeedsWithAngleSupplier,
+      new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic
+                                        // drive trains
+            new PIDConstants(7.0, 0, 0.5), // Translation PID constants
+            new PIDConstants(2.302, 3.7, 0.948) // Rotation PID constants
+        ),
+      config,
+      this);
+}
 
   /**
    * Drive with {@link SwerveSetpointGenerator} from 254, implemented by
