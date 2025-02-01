@@ -42,7 +42,17 @@ public class TigerShark extends GenericRobot {
                     ((YAGSLSwerveDrivetrain) drivetrain).driveFieldOriented(new ChassisSpeeds(value, 0, 0))
                 ), 
                 () -> ((YAGSLSwerveDrivetrain) drivetrain).getPose().getTranslation().getX(),
-                2.0,
+                3.5,
+                drivetrain)
+        );
+
+        driver.createBButton().whileTrue(
+            new RelayPIDAutoTuner(
+                (Consumer<Double>)((Double value) -> 
+                    ((YAGSLSwerveDrivetrain) drivetrain).drive(new ChassisSpeeds(0, 0, value))
+                ), 
+                () -> ((YAGSLSwerveDrivetrain) drivetrain).getPose().getRotation().getRadians(),
+                3.14*5,
                 drivetrain)
         );
 

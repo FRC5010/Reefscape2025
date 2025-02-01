@@ -208,14 +208,12 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         // pose)
         this::getRobotVelocity, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
         // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-        (ChassisSpeeds speeds, DriveFeedforwards ff) -> {
-          drive(speeds, ff);
-        },
+        this::setChassisSpeedsWithAngleSupplier,
         // RELATIVE ChassisSpeeds
         new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic
                                         // drive trains
-            new PIDConstants(7.0, 0.0, 0.5), // Translation PID constants
-            new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+            new PIDConstants(7.0, 0, 0.5), // Translation PID constants
+            new PIDConstants(2.302, 3.7, 0.948) // Rotation PID constants
         ),
         config, // The robot configuration
         () -> {
