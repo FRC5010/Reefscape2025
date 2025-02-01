@@ -8,9 +8,9 @@
     "wheelBaseUom": "in",
     "wheelDiameter": 0.103386904,
     "wheelDiameterUom": "m",
-    "physicalMaxSpeed": 5.93,
+    "physicalMaxSpeed": 5.4,
     "physicalMaxSpeedUom": "m/s",
-    "driveMotorGearRatio": 6.75,
+    "driveMotorGearRatio": 6.12,
     "gamePieceA": "Coral",
     "gamePieceB": "Algae",
     "devices": {
