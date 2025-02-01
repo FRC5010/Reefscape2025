@@ -17,6 +17,7 @@ import org.frc5010.common.motors.SystemIdentification;
 import org.frc5010.common.telemetry.DisplayDouble;
 import org.frc5010.common.telemetry.DisplayValuesHelper;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -37,33 +38,43 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /** Add your docs here. */
 public class VerticalPositionControlMotor extends GenericControlledMotor {
-    protected MechanismLigament2d simulatedCarriage;
-    protected MechanismLigament2d simSetpoint;
-    protected MechanismRoot2d root;
+    protected MechanismLigament2d displayedCarriage;
+    protected MechanismLigament2d displayedSetpoint;
+    protected MechanismRoot2d mechRoot;
+    protected MechanismRoot2d setPointRoot;
     protected ElevatorSim simMechanism;
     Distance carriageHeight = Meters.of(0.0);
     protected final String K_G = "kG";
+    protected final String CONVERSION = "Conversion";
+    protected final String SPEED = "Speed";
     protected DisplayDouble kG;
+    protected DisplayDouble conversion;
+    protected DisplayDouble speed;
     protected Optional<DoubleSupplier> supplyKG = Optional.empty();
 
     public VerticalPositionControlMotor(MotorController5010 motor, String visualName, DisplayValuesHelper tab) {
         super(motor, visualName, tab);
-        kG = _displayValuesHelper.makeDisplayDouble(K_G);
-        setControlType(PIDControlType.POSITION);
+        kG = _displayValuesHelper.makeConfigDouble(K_G);
+        this.conversion = _displayValuesHelper.makeConfigDouble(CONVERSION);
+        this.speed = _displayValuesHelper.makeDisplayDouble(SPEED);
+        setControlType(PIDControlType.DUTY_CYCLE);
     }
 
     public VerticalPositionControlMotor setupSimulatedMotor(double gearing, Mass mass, Distance drumRadius,
             Distance minHeight,
-            Distance maximumHeight, Distance startingHeight, Distance carriageHeight, double kG, double conversion) {
+            Distance maximumHeight, Distance startingHeight, Distance carriageHeight, double kG) {
         this.carriageHeight = carriageHeight;
-        this.kG.setValue(kG);
         simMechanism = new ElevatorSim(
                 LinearSystemId.createElevatorSystem(_motor.getMotorSimulationType(), mass.in(Kilograms),
                         drumRadius.in(Meters), gearing),
                 _motor.getMotorSimulationType(), minHeight.in(Meters), maximumHeight.in(Meters), true,
                 startingHeight.in(Meters));
-        encoder.setPositionConversion(conversion);
-        encoder.setVelocityConversion(conversion / 60.0);
+        double conversion = this.conversion.getValue();
+        this.kG.setValue(0 == this.kG.getValue() ? kG : this.kG.getValue());
+        this.conversion
+                .setValue(0 == conversion ? gearing * (drumRadius.in(Meters) * 2.0 * Math.PI) : conversion);
+        encoder.setPositionConversion(this.conversion.getValue());
+        encoder.setVelocityConversion(this.conversion.getValue() / 60.0);
         encoder.setPosition(startingHeight.in(Meters));
         position.setValue(startingHeight.in(Meters));
         return this;
@@ -72,41 +83,60 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
     @Override
     public VerticalPositionControlMotor setVisualizer(Mechanism2d visualizer, Pose3d robotToMotor) {
         super.setVisualizer(visualizer, robotToMotor);
-        root = visualizer.getRoot(
-                _visualName,
-                getSimX(Meters.of(robotToMotor.getX())),
+        setPointRoot = visualizer.getRoot(
+                _visualName + "setRoot",
+                getSimX(Meters.of(robotToMotor.getX() + 0.03)),
                 getSimY(Meters.of(robotToMotor.getZ())));
 
-        simulatedCarriage = new MechanismLigament2d(
-                _visualName + "-carriage",
-                carriageHeight.in(Meters),
-                90,
-                5,
-                new Color8Bit(MotorFactory.getNextVisualColor()));
-        simSetpoint = new MechanismLigament2d(
+        displayedSetpoint = new MechanismLigament2d(
                 _visualName + "-setpoint",
                 carriageHeight.in(Meters),
                 90,
                 5,
                 new Color8Bit(MotorFactory.getNextVisualColor()));
-        root.append(simulatedCarriage);
-        root.append(simSetpoint);
+        setPointRoot.append(displayedSetpoint);
+
+        mechRoot = visualizer.getRoot(
+                _visualName,
+                getSimX(Meters.of(robotToMotor.getX())),
+                getSimY(Meters.of(robotToMotor.getZ())));
+        displayedCarriage = new MechanismLigament2d(
+                _visualName + "-carriage",
+                carriageHeight.in(Meters),
+                90,
+                5,
+                new Color8Bit(MotorFactory.getNextVisualColor()));
+        mechRoot.append(displayedCarriage);
         return this;
     }
 
     @Override
     public void setReference(double reference) {
-        super.setReference(reference);
-        if (!RobotBase.isReal()) {
-            effort.setVoltage(calculateControlEffort(encoder.getPosition()), Volts);
-            _motor.set(effort.getVoltage().in(Volts) / RobotController.getBatteryVoltage());
-        } else {
-            controller.setF(getFeedForward().in(Volts) / RobotController.getBatteryVoltage());
+        setReference(reference, controller.getControlType(),
+                getFeedForward().in(Volts) / RobotController.getBatteryVoltage());
+    }
+
+    public void updateReference() {
+        if (PIDControlType.NONE != controller.getControlType()) {
+            controller.setReference(reference.getValue(), getControlType(),
+                    getFeedForward().in(Volts) / RobotController.getBatteryVoltage());
         }
     }
 
+    @Override
+    public void set(double speed) {
+        double actual = MathUtil.clamp(speed + getFeedForward().in(Volts) / RobotController.getBatteryVoltage(), -1.0,
+                1.0);
+        this.speed.setValue(actual);
+        _motor.set(actual);
+    }
+
     public double getPosition() {
-        return encoder.getPosition();
+        if (RobotBase.isReal()) {
+            return encoder.getPosition();
+        } else {
+            return simMechanism.getPositionMeters();
+        }
     }
 
     public void setSupplyKG(DoubleSupplier supplyKG) {
@@ -119,28 +149,31 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
             kG.setValue(supplyKG.get().getAsDouble());
         }
         ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(
-                getMotorFeedFwd().getkS(),
+                kS.getValue(),
                 kG.getValue(),
-                getMotorFeedFwd().getkV(),
-                getMotorFeedFwd().getkA());
+                kV.getValue(),
+                kA.getValue());
         Voltage ff = Volts.of(
-                elevatorFeedforward.calculate(getPosition()));
+                elevatorFeedforward.calculate(0));
         feedForward.setValue(ff.in(Volts));
         return ff;
     }
 
     @Override
     public void draw() {
+        updateReference();
         double currentPosition = 0;
         currentPosition = getPosition();
-        simSetpoint.setLength(getReference());
-        simulatedCarriage.setLength(currentPosition + carriageHeight.in(Meters));
+        displayedSetpoint.setLength(getReference() + carriageHeight.in(Meters));
+        displayedCarriage.setLength(currentPosition + carriageHeight.in(Meters));
         position.setValue(currentPosition);
+        velocity.setValue(encoder.getVelocity());
     }
 
     @Override
     public void simulationUpdate() {
         simMechanism.setInput(_motor.getVoltage());
+        effort.setVoltage(_motor.getVoltage(), Volts);
         simMechanism.update(0.020);
         _motor.simulationUpdate(Optional.of(simMechanism.getPositionMeters()),
                 simMechanism.getVelocityMetersPerSecond());
