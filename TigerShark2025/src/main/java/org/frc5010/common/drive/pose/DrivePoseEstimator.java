@@ -235,11 +235,16 @@ public class DrivePoseEstimator extends GenericSubsystem {
               poseTracker.updateVisionMeasurements(
                 robotPose.get().toPose2d(), provider.getCaptureTime(), vision.getStdConfidenceVector(confidence));
             }
+          } else {
+            provider.resetPose(getCurrentPose3d());
           }
         }
       }  
       SmartDashboard.putBoolean("April Tag Pose Updating", visionUpdated);
   }
+
+
+
 
   /**
    * Force the pose estimator to a particular pose. This is useful for indicating to the software

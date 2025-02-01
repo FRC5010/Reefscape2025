@@ -1,21 +1,5 @@
 [
   {
-    "name": "/YAGSLSwerveDrivetrain/Field Oriented",
-    "type": "boolean",
-    "value": true,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/YAGSLSwerveDrivetrain/Has Issues",
-    "type": "boolean",
-    "value": false,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
     "name": "/SmartDashboard/AprilTagPoseSystem/AprilTagPoseSystem/Std Vector Factor",
     "type": "double",
     "value": 0.1,
@@ -27,14 +11,6 @@
     "name": "/SmartDashboard/AprilTagPoseSystem/AprilTagPoseSystem/Std Vector Radian Factor",
     "type": "double",
     "value": 5.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Shuffleboard/TigerShark/TigerShark/Alliance",
-    "type": "string",
-    "value": "Blue",
     "properties": {
       "persistent": true
     }
@@ -120,14 +96,6 @@
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/shooterLeft/Reference",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
     "name": "/SmartDashboard/ScoringSystem/shooterLeft/Tolerance",
     "type": "double",
     "value": 0.0,
@@ -136,7 +104,7 @@
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/shooterLeft/FeedForward",
+    "name": "/SmartDashboard/ScoringSystem/shooterLeft/Max Velocity",
     "type": "double",
     "value": 0.0,
     "properties": {
@@ -144,31 +112,7 @@
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/shooterLeft/ControlType",
-    "type": "string",
-    "value": "",
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/shooterLeft/Position",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/shooterLeft/Velocity",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/shooterLeft/Effort (V)",
+    "name": "/SmartDashboard/ScoringSystem/shooterLeft/Max Acceleration",
     "type": "double",
     "value": 0.0,
     "properties": {
@@ -178,7 +122,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/shooterRight/kP",
     "type": "double",
-    "value": 0.0,
+    "value": 0.001,
     "properties": {
       "persistent": true
     }
@@ -218,7 +162,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/shooterRight/kV",
     "type": "double",
-    "value": 0.0,
+    "value": 0.396,
     "properties": {
       "persistent": true
     }
@@ -256,14 +200,6 @@
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/shooterRight/Reference",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
     "name": "/SmartDashboard/ScoringSystem/shooterRight/Tolerance",
     "type": "double",
     "value": 0.0,
@@ -272,7 +208,7 @@
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/shooterRight/FeedForward",
+    "name": "/SmartDashboard/ScoringSystem/shooterRight/Max Velocity",
     "type": "double",
     "value": 0.0,
     "properties": {
@@ -280,31 +216,7 @@
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/shooterRight/ControlType",
-    "type": "string",
-    "value": "",
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/shooterRight/Position",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/shooterRight/Velocity",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/shooterRight/Effort (V)",
+    "name": "/SmartDashboard/ScoringSystem/shooterRight/Max Acceleration",
     "type": "double",
     "value": 0.0,
     "properties": {
@@ -314,7 +226,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/elevator/kP",
     "type": "double",
-    "value": 0.0,
+    "value": 60.0,
     "properties": {
       "persistent": true
     }
@@ -330,7 +242,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/elevator/kD",
     "type": "double",
-    "value": 0.1,
+    "value": 0.5,
     "properties": {
       "persistent": true
     }
@@ -346,7 +258,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/elevator/kS",
     "type": "double",
-    "value": 0.0,
+    "value": 0.25,
     "properties": {
       "persistent": true
     }
@@ -354,7 +266,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/elevator/kV",
     "type": "double",
-    "value": 0.0,
+    "value": 0.5,
     "properties": {
       "persistent": true
     }
@@ -362,7 +274,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/elevator/kA",
     "type": "double",
-    "value": 0.1,
+    "value": 0.01,
     "properties": {
       "persistent": true
     }
@@ -378,7 +290,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/elevator/MinOutput",
     "type": "double",
-    "value": 0.0,
+    "value": -1.0,
     "properties": {
       "persistent": true
     }
@@ -386,15 +298,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/elevator/MaxOutput",
     "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/elevator/Reference",
-    "type": "double",
-    "value": 0.0,
+    "value": 1.0,
     "properties": {
       "persistent": true
     }
@@ -408,49 +312,33 @@
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/elevator/FeedForward",
+    "name": "/SmartDashboard/ScoringSystem/elevator/Max Velocity",
     "type": "double",
-    "value": 0.0,
+    "value": 2.0,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/elevator/ControlType",
-    "type": "string",
-    "value": "POSITION",
+    "name": "/SmartDashboard/ScoringSystem/elevator/Max Acceleration",
+    "type": "double",
+    "value": 0.5,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/elevator/Position",
+    "name": "/SmartDashboard/ScoringSystem/elevator/kG",
     "type": "double",
-    "value": 0.7000000000000001,
+    "value": 5.0,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/elevator/Velocity",
+    "name": "/SmartDashboard/ScoringSystem/elevator/Conversion",
     "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/elevator/Effort (V)",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/elevator/kG",
-    "type": "double",
-    "value": 0.1,
+    "value": 1.053313184895586,
     "properties": {
       "persistent": true
     }

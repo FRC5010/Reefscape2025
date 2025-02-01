@@ -6,6 +6,8 @@ package org.frc5010.common.drive.swerve;
 
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Meter;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Volts;
 
 import java.io.File;
 import java.io.IOException;
@@ -210,8 +212,8 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         // RELATIVE ChassisSpeeds
         new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic
                                         // drive trains
-            new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-            new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+            new PIDConstants(7.0, 0, 0.5), // Translation PID constants
+            new PIDConstants(2.302, 3.7, 0.948) // Rotation PID constants
         ),
         config, // The robot configuration
         () -> {
@@ -332,9 +334,9 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   public Command sysIdDriveMotorCommand() {
     return SwerveDriveTest.generateSysIdCommand(
         SwerveDriveTest.setDriveSysIdRoutine(
-            new SysIdRoutine.Config(),
+            new SysIdRoutine.Config(Volts.of(0.5).per(Second), Volts.of(12), Second.of(20)),
             this, swerveDrive, 12, true),
-        3.0, 5.0, 3.0);
+        3.0, 6.0, 4.0);
   }
 
   /**
@@ -782,6 +784,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         null != angleSpeedSupplier
             ? angleSpeedSupplier.getAsDouble()
             : chassisSpeeds.omegaRadiansPerSecond);
+
     swerveDrive.drive(
         angleSuppliedChassisSpeeds,
         swerveDrive.kinematics.toSwerveModuleStates(angleSuppliedChassisSpeeds),

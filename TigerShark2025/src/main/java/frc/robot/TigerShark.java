@@ -1,12 +1,14 @@
 package frc.robot;
 
 import org.frc5010.common.arch.GenericRobot;
+import org.frc5010.common.auto.AutoErrorTracker;
 import org.frc5010.common.config.ConfigConstants;
 import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.sensors.Controller;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.autos2.Left2Coral;
+import frc.robot.AutoRoutines.Right4Coral;
 import frc.robot.subsystems.ScoringSystem;
 
 public class TigerShark extends GenericRobot {
@@ -61,7 +63,7 @@ public class TigerShark extends GenericRobot {
     @Override
     public void buildAutoCommands() {
         super.buildAutoCommands();
-        addAutoToChooser("Left 2 Coral", new Left2Coral());
+           addAutoToChooser("Right 4 Coral", new Right4Coral().raceWith(new AutoErrorTracker()));
         // addAutoToChooser("Auto New", new ExampleAuto());
     }
 }

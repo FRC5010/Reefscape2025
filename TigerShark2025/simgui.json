@@ -655,6 +655,9 @@
     }
   },
   "NetworkTables": {
+    "Retained Values": {
+      "open": false
+    },
     "persistent": {
       "Shuffleboard": {
         "TigerShark": {
@@ -666,10 +669,7 @@
           "elevator": {
             "open": true
           },
-          "open": true,
-          "shooterLeft": {
-            "open": true
-          }
+          "open": true
         },
         "open": true
       },
@@ -678,20 +678,25 @@
       }
     },
     "transitory": {
-      "FMSInfo": {
-        "open": true
-      },
       "Shuffleboard": {
         "Pose": {
           "open": true
-        },
-        "open": true
+        }
       },
       "SmartDashboard": {
-        "open": true,
-        "swerve": {
-          "open": true
-        }
+        "ScoringSystem": {
+          "elevator": {
+            "open": true
+          },
+          "open": true,
+          "shooterLeft": {
+            "open": true
+          },
+          "shooterRight": {
+            "open": true
+          }
+        },
+        "open": true
       }
     }
   },

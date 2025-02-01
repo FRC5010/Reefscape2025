@@ -19,6 +19,7 @@ import org.frc5010.common.telemetry.WpiDataLogging;
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -375,7 +376,6 @@ public abstract class GenericRobot extends GenericMechanism implements GenericDe
 
   public void resetDrivePose() {
     GenericDrivetrain drivetrain =  (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN); 
-    drivetrain.resetOrientation();  
   }
 
   /**

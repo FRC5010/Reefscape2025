@@ -8,11 +8,15 @@ import static edu.wpi.first.units.Units.Degrees;
 
 import java.util.Optional;
 
+import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.drive.pose.PoseProvider;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.networktables.DoubleSubscriber;
@@ -25,11 +29,13 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 /** Add your docs here. */
 public class QuestNav implements PoseProvider {
     private boolean initializedPosition = false;
-    private String networkTableRoot = "oculus";
+    private String networkTableRoot = "questnav";
     private NetworkTableInstance networkTableInstance = NetworkTableInstance.getDefault();
     private NetworkTable networkTable;
     private Transform3d robotToQuest;
@@ -48,6 +54,9 @@ public class QuestNav implements PoseProvider {
     private ChassisSpeeds velocity;
     private Pose3d previousPose;
     private double previousTime;
+
+    private Translation2d _calculatedOffsetToRobotCenter = new Translation2d();
+    private int _calculatedOffsetToRobotCenterCount = 0;
 
     public enum QuestCommand {
         RESET(1);
@@ -117,7 +126,7 @@ public class QuestNav implements PoseProvider {
         return rotateAxes(correctWorldAxis(getRawPosition())
                 .plus(robotToQuest.getTranslation())
                 .plus(robotToQuest.getTranslation().times(-1).rotateBy(getRawRotation())),
-                initPose.getRotation().times(-1))
+                initPose.getRotation())
 
                 .plus(initPose.getTranslation());
     }
@@ -130,7 +139,7 @@ public class QuestNav implements PoseProvider {
 
     public double getConfidence() {
         if (RobotBase.isReal()) {
-            return 0.000000000000000000000000000000000000000000000000000000000000000000000000001;
+            return 0.00001;
         } else {
             return Double.MAX_VALUE;
         }
@@ -141,7 +150,7 @@ public class QuestNav implements PoseProvider {
     }
 
     public boolean isActive() {
-        if (timestamp.get() == 0.0 || RobotBase.isSimulation()) {
+        if (timestamp.get() == 0.0 || RobotBase.isSimulation() || DriverStation.isDisabled()) {
         return false;
         }
         return initializedPosition;
@@ -213,10 +222,49 @@ public class QuestNav implements PoseProvider {
             cleanUpQuestCommand();
             updateVelocity();
 
+            Pose2d currPose = getRobotPose().get().toPose2d();
+            SmartDashboard.putNumberArray("Quest POSE", new double[] {
+                currPose.getX(), currPose.getY(), currPose.getRotation().getDegrees()
+            });
+
             ChassisSpeeds velocity = getVelocity();
             SmartDashboard.putNumberArray("Velocity", new double[] { velocity.vxMetersPerSecond,
                     velocity.vyMetersPerSecond, velocity.omegaRadiansPerSecond });
         }
+    }
+
+    private Translation2d calculateOffsetToRobotCenter() {
+        Pose3d currentPose = getRobotPose().get();
+        Pose2d currentPose2d = currentPose.toPose2d();
+
+        Rotation2d angle = currentPose2d.getRotation();
+        Translation2d displacement = currentPose2d.getTranslation();
+
+        double x = ((angle.getCos() - 1) * displacement.getX() + angle.getSin() * displacement.getY()) / (2 * (1 - angle.getCos()));
+        double y = ((-1 * angle.getSin()) * displacement.getX() + (angle.getCos() - 1) * displacement.getY()) / (2 * (1 - angle.getCos()));
+
+        return new Translation2d(x, y);
+    }
+
+
+    public Command determineOffsetToRobotCenter(GenericDrivetrain drivetrain) {
+        return
+        Commands.repeatingSequence(
+            Commands.run(
+            () -> {
+                drivetrain.drive(new ChassisSpeeds(0, 0, 0.314), null);
+            }, drivetrain).withTimeout(2.0),
+            Commands.runOnce(() -> {
+                // Update current offset
+                Translation2d offset = calculateOffsetToRobotCenter();
+                
+                _calculatedOffsetToRobotCenter = _calculatedOffsetToRobotCenter.times((double)_calculatedOffsetToRobotCenterCount / (_calculatedOffsetToRobotCenterCount + 1))
+                    .plus(offset.div(_calculatedOffsetToRobotCenterCount + 1));
+                _calculatedOffsetToRobotCenterCount++;
+
+                SmartDashboard.putNumberArray("Quest Calculated Offset to Robot Center", new double[] { _calculatedOffsetToRobotCenter.getX(), _calculatedOffsetToRobotCenter.getY() });
+
+            })).withTimeout(10.0);
     }
 
 }
