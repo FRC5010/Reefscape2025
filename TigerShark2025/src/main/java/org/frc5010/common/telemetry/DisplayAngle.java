@@ -125,6 +125,7 @@ public class DisplayAngle {
                 event -> {
                   setAngle(event.valueData.value.getDouble(), unit_, false);
                 });
+        setAngle(subscriber_.get(), unit_, false);
       }
     }
   }

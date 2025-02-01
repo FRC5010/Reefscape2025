@@ -10,6 +10,7 @@ import org.frc5010.common.constants.GenericPID;
 import org.frc5010.common.constants.MotorFeedFwdConstants;
 import org.frc5010.common.motors.hardware.GenericTalonFXMotor;
 
+import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfigurator;
 import com.ctre.phoenix6.controls.ControlRequest;
@@ -23,9 +24,10 @@ import com.ctre.phoenix6.hardware.TalonFX;
 
 /** Add your docs here. */
 public class TalonFXController extends GenericPIDController {
-  GenericTalonFXMotor motor;
-  ControlRequest request;
-  PIDControlType controlType = PIDControlType.DUTY_CYCLE;
+  protected TalonFX internalMotor;
+  protected GenericTalonFXMotor motor;
+  protected ControlRequest request;
+  protected PIDControlType controlType = PIDControlType.DUTY_CYCLE;
   /**
    * Current TalonFX configuration.
    */
@@ -34,12 +36,14 @@ public class TalonFXController extends GenericPIDController {
    * Current TalonFX Configurator.
    */
   private TalonFXConfigurator cfg;
-  double reference = 0.0;
-  double tolerance;
+  protected double reference = 0.0;
+  protected double tolerance;
 
   public TalonFXController(GenericTalonFXMotor motor) {
     this.motor = motor;
-    cfg = ((TalonFX) motor.getMotor()).getConfigurator();
+    internalMotor = (TalonFX) motor.getMotor();
+    cfg = internalMotor.getConfigurator();
+    refreshTalonConfigs();
     setControlType(controlType);
   }
 
@@ -48,7 +52,7 @@ public class TalonFXController extends GenericPIDController {
    * configuration.
    */
   private void refreshTalonConfigs() {
-    cfg.refresh(configuration.Slot0);
+    cfg.refresh(configuration);
   }
 
   /**
@@ -62,6 +66,7 @@ public class TalonFXController extends GenericPIDController {
    */
   private void sendControlRequest(double reference, double feedforward) {
     switch (controlType) {
+      case NONE: return;
       case POSITION:
         ((PositionVoltage) request).withPosition(reference)
             .withFeedForward(feedforward);
@@ -88,6 +93,7 @@ public class TalonFXController extends GenericPIDController {
       default:
         throw new IllegalArgumentException("Unsupported TalonFX control type");
     }
+    internalMotor.setControl(request);
   }
 
   /**
@@ -107,18 +113,16 @@ public class TalonFXController extends GenericPIDController {
    */
   @Override
   public boolean isAtTarget() {
-    try (TalonFX talonFX = (TalonFX) motor.getMotor()) {
       switch (controlType) {
         case VELOCITY:
-          double velocity = talonFX.getVelocity().getValueAsDouble();
+          double velocity = internalMotor.getVelocity().getValueAsDouble();
           return Math.abs(getReference() - velocity) < tolerance;
         case POSITION:
-          double position = talonFX.getPosition().getValueAsDouble();
+          double position = internalMotor.getPosition().getValueAsDouble();
           return Math.abs(getReference() - position) < tolerance;
         default:
           return false;
       }
-    }
   }
 
   /**
@@ -182,7 +186,6 @@ public class TalonFXController extends GenericPIDController {
   @Override
   public void setReference(double reference) {
     this.reference = reference;
-    refreshTalonConfigs();
     sendControlRequest(reference, 0.0);
   }
 
@@ -196,6 +199,7 @@ public class TalonFXController extends GenericPIDController {
    */
   @Override
   public void setReference(double reference, PIDControlType controlType, double feedforward) {
+    this.reference = reference;
     setControlType(controlType);
     sendControlRequest(reference, feedforward);
   }
@@ -209,6 +213,8 @@ public class TalonFXController extends GenericPIDController {
   public void setControlType(PIDControlType controlType) {
     if (null == this.request || this.controlType != controlType) {
       switch (controlType) {
+        case NONE:
+          break;
         case POSITION:
           request = new PositionVoltage(reference)
               .withEnableFOC(motor.isFOCEnabled());
@@ -308,7 +314,7 @@ public class TalonFXController extends GenericPIDController {
    */
   @Override
   public double getReference() {
-    return ((TalonFX) motor.getMotor()).getClosedLoopReference().getValueAsDouble();
+    return reference;
   }
 
   /**
@@ -366,7 +372,7 @@ public class TalonFXController extends GenericPIDController {
    */
   @Override
   public void setOutputRange(double min, double max) { // TODO: Implement
-    throw new UnsupportedOperationException("Not implemented for TalonFX");
+    //throw new UnsupportedOperationException("Not implemented for TalonFX");
   }
 
   /**
@@ -407,5 +413,17 @@ public class TalonFXController extends GenericPIDController {
     configuration.Slot0.kV = motorConstants.getkV();
     configuration.Slot0.kA = motorConstants.getkA();
     cfg.apply(configuration.Slot0);
+  }
+
+  public void applyConfig() {
+        StatusCode status = StatusCode.StatusCodeNotInitialized;
+    for (int i = 0; i < 5; ++i) {
+      status = cfg.apply(configuration);
+      if (status.isOK())
+        break;
+    }
+    if (!status.isOK()) {
+      System.out.println("Could not configure device. Error: " + status.toString());
+    }
   }
 }

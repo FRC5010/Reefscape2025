@@ -6,6 +6,7 @@ package org.frc5010.common.motors.function;
 
 import static edu.wpi.first.units.Units.Volts;
 
+import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.constants.GenericPID;
 import org.frc5010.common.constants.MotorFeedFwdConstants;
 import org.frc5010.common.motors.MotorController5010;
@@ -73,6 +74,8 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
     encoder = _motor.getMotorEncoder();
     controller = motor.getPIDController5010();
     setDisplayValuesHelper(tab);
+    setMotorFeedFwd(new MotorFeedFwdConstants(kS.getValue(), kV.getValue(), kA.getValue()));
+    setValues(new GenericPID(kP.getValue(), kI.getValue(), kD.getValue()));
   }
 
   /**
@@ -170,6 +173,10 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
   @Override
   public void setReference(double reference) {
     this.reference.setValue(reference);
+    if (GenericRobot.LogLevel.CONFIG == GenericRobot.getLoggingLevel()) {
+      controller.setValues(new GenericPID(kP.getValue(), kI.getValue(), kD.getValue()));
+      controller.setMotorFeedFwd(new MotorFeedFwdConstants(kS.getValue(), kV.getValue(), kA.getValue()));
+    }
     controller.setReference(reference);
   }
 
@@ -178,6 +185,10 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
     this.reference.setValue(reference);
     feedForward.setValue(feedforward);
     this.controlType.setValue(controlType.name());
+    if (GenericRobot.LogLevel.CONFIG == GenericRobot.getLoggingLevel()) {
+      controller.setValues(new GenericPID(kP.getValue(), kI.getValue(), kD.getValue()));
+      controller.setMotorFeedFwd(new MotorFeedFwdConstants(kS.getValue(), kV.getValue(), kA.getValue()));
+    }
     controller.setReference(reference, controlType, feedforward);
   }
 

@@ -119,6 +119,7 @@ public class DisplayVoltage {
                 event -> {
                   setVoltage(event.valueData.value.getDouble(), unit_, false);
                 });
+        setVoltage(subscriber_.get(), unit_, false);
       }
     }
     publisher_.setDefault(voltage_.in(unit_));

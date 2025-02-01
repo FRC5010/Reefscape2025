@@ -38,7 +38,8 @@ public class PercentMotorConfigurationJson implements DeviceConfiguration {
    */
   @Override
   public Object configure(GenericDeviceHandler deviceHandler) {
-    return new PercentControlMotor(DeviceConfigReader.getMotor(controller, type, id), name)
+    return new PercentControlMotor(DeviceConfigReader.getMotor(controller, type, id), name,
+        deviceHandler.getDisplayValuesHelper())
         .setupSimulatedMotor(gearing, momentOfInertiaKgMSq)
         .setVisualizer(deviceHandler.getMechVisual(), new Pose3d(x, y, z, new Rotation3d()));
   }

@@ -119,6 +119,7 @@ public class DisplayTime {
                 event -> {
                   setTime(event.valueData.value.getDouble(), unit_, false);
                 });
+        setTime(subscriber_.get(), unit_, false);
       }
     }
     publisher_.setDefault(time_.in(unit_));

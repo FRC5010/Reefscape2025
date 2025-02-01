@@ -102,7 +102,9 @@ public class TalonFXEncoder implements GenericEncoder {
   public void simulationUpdate(Optional<Double> position, Double velocity) {
     // set the supply voltage of the TalonFX
     talonFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
-    position.map(it -> talonFXSim.setRawRotorPosition(actualToNativePosition(it)));
-    talonFXSim.setRotorVelocity(actualToNativeVelocity(velocity));
+    if (position.isPresent()) {
+      setPosition(position.get());
+    }
+    setRate(velocity);
   }
 }

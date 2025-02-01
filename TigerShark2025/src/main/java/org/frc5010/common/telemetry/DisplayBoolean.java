@@ -70,6 +70,7 @@ public class DisplayBoolean {
                 event -> {
                   setValue(event.valueData.value.getBoolean(), false);
                 });
+        setValue(subscriber_.get(), false);
       }
     }
   }

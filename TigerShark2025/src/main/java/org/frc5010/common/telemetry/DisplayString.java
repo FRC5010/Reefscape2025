@@ -69,6 +69,7 @@ public class DisplayString {
                   event -> {
                     setValue(event.valueData.value.getString(), false);
                   });
+          setValue(subscriber_.get(), false);
         }
         publisher_.setDefault(value_);
       }

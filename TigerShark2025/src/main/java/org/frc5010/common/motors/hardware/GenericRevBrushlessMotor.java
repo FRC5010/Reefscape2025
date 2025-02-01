@@ -66,10 +66,7 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
    * Configuration object for {@link SparkMax} motor.
    */
   private SparkMaxConfig cfg = new SparkMaxConfig();
-  /**
-   * Tracker for changes that need to be pushed.
-   */
-  private boolean cfgUpdated = false;
+
   /** A reference to the encoder */
   private RevEncoder encoder = null;
   private RevSparkController controller;
@@ -89,16 +86,17 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
   public GenericRevBrushlessMotor(int port, Motor config) {
     motor = new SparkMax(port, MotorType.kBrushless);
     this.config = config;
-    getMotorEncoder();
-    controller = new RevSparkController(this);
     factoryDefaults();
     clearStickyFaults();
+
+    getMotorEncoder();
+    controller = new RevSparkController(this);
+    
     setCurrentLimit(config.currentLimit);
     setMotorSimulationType(config.getMotorSimulationType());
     setMaxRPM(config.maxRpm);
     cfg.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder); // Configure feedback of the PID controller as the
     // integrated encoder.
-    cfgUpdated = true;
   }
 
   /**
@@ -136,7 +134,6 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
   public void updateConfig(SparkMaxConfig cfgGiven) {
     cfg.apply(cfgGiven);
     configureSparkMax(() -> motor.configure(cfg, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters));
-    cfgUpdated = false;
   }
 
   /**
@@ -160,7 +157,7 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
   @Override
   public MotorController5010 setVoltageCompensation(double nominalVoltage) {
     cfg.voltageCompensation(nominalVoltage);
-    cfgUpdated = true;
+    updateConfig(cfg);
     return this;
   }
 
@@ -175,7 +172,7 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
   @Override
   public MotorController5010 setCurrentLimit(Current currentLimit) {
     cfg.smartCurrentLimit((int) currentLimit.in(Amps));
-    cfgUpdated = true;
+    updateConfig(cfg);
     return this;
   }
 
@@ -189,7 +186,7 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
   public MotorController5010 setSlewRate(double rate) {
     cfg.closedLoopRampRate(rate)
         .openLoopRampRate(rate);
-    cfgUpdated = true;
+    updateConfig(cfg);
 
     return this;
   }
@@ -203,7 +200,7 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
   @Override
   public MotorController5010 setFollow(MotorController5010 motor) {
     cfg.follow((SparkBase) motor.getMotor());
-    cfgUpdated = true;
+    updateConfig(cfg);
     return this;
   }
 
@@ -218,7 +215,7 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
   @Override
   public MotorController5010 setFollow(MotorController5010 motor, boolean inverted) {
     cfg.follow((SparkBase) motor.getMotor(), inverted);
-    cfgUpdated = true;
+    updateConfig(cfg);
     return this;
   }
 
@@ -351,7 +348,7 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
   @Override
   public MotorController5010 setMotorBrake(boolean isBrakeMode) {
     cfg.idleMode(isBrakeMode ? IdleMode.kBrake : IdleMode.kCoast);
-    cfgUpdated = true;
+    updateConfig(cfg);
     return this;
   }
 
@@ -365,7 +362,6 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
     } catch (Exception e) {
     }
     motor.configure(cfg, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
-    cfgUpdated = false;
   }
 
   /**

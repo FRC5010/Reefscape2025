@@ -70,7 +70,7 @@ public class RevSparkController extends GenericPIDController {
   @Override
   public void setF(double f) {
     pidfConfig.setkF(f);
-    cfg.closedLoop.pidf(pidfConfig.getkP(), pidfConfig.getkI(), pidfConfig.getkD(), f);
+    cfg.closedLoop.velocityFF(f);
     motor.updateConfig(cfg);
   }
 
@@ -135,6 +135,9 @@ public class RevSparkController extends GenericPIDController {
   @Override
   public void setControlType(PIDControlType controlType) {
     switch (controlType) {
+      case NONE:
+        sparkControlType = null;
+        break;
       case POSITION:
         sparkControlType = ControlType.kPosition;
         break;
@@ -157,8 +160,7 @@ public class RevSparkController extends GenericPIDController {
         sparkControlType = ControlType.kMAXMotionVelocityControl;
         break;
       default:
-        sparkControlType = ControlType.kVoltage;
-        break;
+        throw new IllegalArgumentException("Control Type " + controlType.name() + " is not supported by Rev");
     }
   }
 
@@ -194,24 +196,27 @@ public class RevSparkController extends GenericPIDController {
 
   @Override
   public PIDControlType getControlType() {
-    switch (sparkControlType) {
-      case kPosition:
-        return PIDControlType.POSITION;
-      case kVelocity:
-        return PIDControlType.VELOCITY;
-      case kVoltage:
-        return PIDControlType.VOLTAGE;
-      case kCurrent:
-        return PIDControlType.CURRENT;
-      case kDutyCycle:
-        return PIDControlType.DUTY_CYCLE;
-      case kMAXMotionPositionControl:
-        return PIDControlType.PROFILED_POSITION;
-      case kMAXMotionVelocityControl:
-        return PIDControlType.PROFILED_VELOCITY;
-      default:
-        return PIDControlType.VOLTAGE;
+    if (null != sparkControlType) {
+      switch (sparkControlType) {
+        case kPosition:
+          return PIDControlType.POSITION;
+        case kVelocity:
+          return PIDControlType.VELOCITY;
+        case kVoltage:
+          return PIDControlType.VOLTAGE;
+        case kCurrent:
+          return PIDControlType.CURRENT;
+        case kDutyCycle:
+          return PIDControlType.DUTY_CYCLE;
+        case kMAXMotionPositionControl:
+          return PIDControlType.PROFILED_POSITION;
+        case kMAXMotionVelocityControl:
+          return PIDControlType.PROFILED_VELOCITY;
+        default:
+          return PIDControlType.NONE;
+      }
     }
+    return PIDControlType.NONE;
   }
 
   @Override

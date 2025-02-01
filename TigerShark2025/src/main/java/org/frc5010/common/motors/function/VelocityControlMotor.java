@@ -5,8 +5,8 @@
 package org.frc5010.common.motors.function;
 
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.Minute;
-import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import java.util.Optional;
@@ -42,7 +42,8 @@ public class VelocityControlMotor extends GenericControlledMotor {
 
   public VelocityControlMotor setupSimulatedMotor(double gearing, double jKgMetersSquared) {
     flyWheelSim = new FlywheelSim(
-        LinearSystemId.createFlywheelSystem(_motor.getMotorSimulationType(), jKgMetersSquared, gearing),
+      LinearSystemId.identifyVelocitySystem(12.0/_motor.getMaxRPM().in(RotationsPerSecond),0.001),
+        //LinearSystemId.createFlywheelSystem(_motor.getMotorSimulationType(), jKgMetersSquared, gearing),
         _motor.getMotorSimulationType());
     return this;
   }
@@ -72,8 +73,8 @@ public class VelocityControlMotor extends GenericControlledMotor {
     double currentVelocity = 0;
     currentVelocity = encoder.getVelocity();
     velocity.setValue(currentVelocity);
-    speedometer.setAngle(270 - currentVelocity / _motor.getMaxRPM().in(Rotations.per(Minute)) * 180);
-    setpoint.setAngle(270 - getReference() / _motor.getMaxRPM().in(Rotations.per(Minute)) * 180);
+    speedometer.setAngle(270 - currentVelocity / _motor.getMaxRPM().in(RPM) * 180);
+    setpoint.setAngle(270 - getReference() / _motor.getMaxRPM().in(RPM) * 180);
   }
 
   @Override

@@ -69,6 +69,7 @@ public class DisplayLong {
                   event -> {
                     setValue(event.valueData.value.getInteger(), false);
                   });
+          setValue(subscriber_.get(), false);
         }
         publisher_.setDefault(value_);
       }

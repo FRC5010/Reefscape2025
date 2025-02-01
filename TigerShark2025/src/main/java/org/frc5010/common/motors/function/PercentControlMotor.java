@@ -5,12 +5,17 @@
 package org.frc5010.common.motors.function;
 
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Volts;
 
 import java.util.Optional;
 
 import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.sensors.encoder.SimulatedEncoder;
+import org.frc5010.common.telemetry.DisplayDouble;
+import org.frc5010.common.telemetry.DisplayValuesHelper;
+import org.frc5010.common.telemetry.DisplayVoltage;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -28,9 +33,20 @@ public class PercentControlMotor extends GenericFunctionalMotor {
   protected MechanismRoot2d root;
   protected FlywheelSim simMotor;
   protected SimulatedEncoder simEncoder;
+  protected DisplayDouble speed;
+  protected DisplayVoltage effort;
+  protected DisplayDouble simRPM;
 
-  public PercentControlMotor(MotorController5010 motor, String visualName) {
+  public PercentControlMotor(MotorController5010 motor, String visualName, DisplayValuesHelper tab) {
     super(motor, visualName);
+    setDisplayValuesHelper(tab);
+  }
+
+  @Override
+  public void initiateDisplayValues() {
+    speed = _displayValuesHelper.makeDisplayDouble("Speed");
+    effort = _displayValuesHelper.makeDisplayVoltage("Effort");
+    simRPM = _displayValuesHelper.makeDisplayDouble("Sim RPM");
   }
 
   public PercentControlMotor(MotorController5010 motor, double slewRate) {
@@ -39,7 +55,8 @@ public class PercentControlMotor extends GenericFunctionalMotor {
 
   public PercentControlMotor setupSimulatedMotor(double gearing, double momentOfInertiaKgMetersSq) {
     simMotor = new FlywheelSim(
-        LinearSystemId.createFlywheelSystem(_motor.getMotorSimulationType(), momentOfInertiaKgMetersSq, gearing),
+        LinearSystemId.identifyVelocitySystem(12.0/_motor.getMaxRPM().in(RotationsPerSecond),0.001),
+        //LinearSystemId.createFlywheelSystem(_motor.getMotorSimulationType(), momentOfInertiaKgMetersSq, gearing),
         _motor.getMotorSimulationType());
     simEncoder = new SimulatedEncoder(
         MotorFactory.getNextSimEncoderPort(), MotorFactory.getNextSimEncoderPort());
@@ -62,14 +79,17 @@ public class PercentControlMotor extends GenericFunctionalMotor {
 
   @Override
   public void draw() {
+    speed.setValue(_motor.getMotorEncoder().getVelocity());
     speedometer.setAngle(270 - _motor.get() * 180);
   }
 
   @Override
   public void simulationUpdate() {
-    simMotor.setInput(_motor.getVoltage());
+    effort.setVoltage(_motor.getVoltage(), Volts);
+    simMotor.setInput(effort.getVoltageInVolts());
     simMotor.update(0.020);
-    _motor.simulationUpdate(Optional.empty(), simMotor.getAngularVelocityRPM());
+    simRPM.setValue(simMotor.getAngularVelocityRPM());
+    _motor.simulationUpdate(Optional.empty(), simRPM.getValue());
     RoboRioSim.setVInVoltage(
         BatterySim.calculateDefaultBatteryLoadedVoltage(simMotor.getCurrentDrawAmps()));
   }

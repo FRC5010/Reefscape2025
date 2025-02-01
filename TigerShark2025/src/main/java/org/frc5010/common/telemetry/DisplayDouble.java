@@ -71,6 +71,7 @@ public class DisplayDouble {
                 event -> {
                   setValue(event.valueData.value.getDouble(), false);
                 });
+        setValue(subscriber_.get(), false);
       }
     }
   }

@@ -9,6 +9,7 @@ import org.frc5010.common.constants.MotorFeedFwdConstants;
 
 public interface PIDController5010 {
   public static enum PIDControlType {
+    NONE,
     POSITION,
     VELOCITY,
     VOLTAGE,

@@ -16,16 +16,17 @@ import edu.wpi.first.units.measure.Current;
 /** Add your docs here. */
 public class MotorConstants {
   public static enum Motor {
-    Neo(Amps.of(40), RPM.of(5676), () -> DCMotor.getNEO(1)), 
-    Neo550(Amps.of(20), RPM.of(11000), () -> DCMotor.getNeo550(1)), 
-    KrakenX60(Amps.of(20), RPM.of(6000), () -> DCMotor.getKrakenX60(1))
+    Neo(Amps.of(40), RPM.of(5676), () -> DCMotor.getNEO(1), 42), 
+    Neo550(Amps.of(20), RPM.of(11000), () -> DCMotor.getNeo550(1), 42), 
+    KrakenX60(Amps.of(20), RPM.of(6000), () -> DCMotor.getKrakenX60(1), 1023)
     ;
 
     public Current currentLimit = Amps.of(20);
     public AngularVelocity maxRpm;
     public Supplier<DCMotor> motorSim;
+    public double ticsPerRotation;
     
-    private Motor(Current currentLimit, AngularVelocity rpm, Supplier<DCMotor> motorSim) {
+    private Motor(Current currentLimit, AngularVelocity rpm, Supplier<DCMotor> motorSim, double ticsPerRotation) {
       this.currentLimit = currentLimit;
       maxRpm = rpm;
       this.motorSim = motorSim;

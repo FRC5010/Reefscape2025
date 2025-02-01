@@ -207,7 +207,7 @@ public class GenericTalonFXMotor implements MotorController5010 {
     // Timer.delay(1);
     cfg.refresh(configuration.MotorOutput);
     configuration.MotorOutput.withInverted(
-        inverted ? InvertedValue.CounterClockwise_Positive : InvertedValue.Clockwise_Positive);
+        !inverted ? InvertedValue.CounterClockwise_Positive : InvertedValue.Clockwise_Positive);
     cfg.apply(configuration.MotorOutput);
   }
 

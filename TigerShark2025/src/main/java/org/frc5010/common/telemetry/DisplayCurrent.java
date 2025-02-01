@@ -119,6 +119,7 @@ public class DisplayCurrent {
                 event -> {
                   setCurrent(event.valueData.value.getDouble(), unit_, false);
                 });
+        setCurrent(subscriber_.get(), unit_, false);
       }
     }
     publisher_.setDefault(current_.in(unit_));

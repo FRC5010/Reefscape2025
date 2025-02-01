@@ -118,6 +118,7 @@ public class DisplayLength {
                 event -> {
                   setLength(event.valueData.value.getDouble(), unit_, false);
                 });
+        setLength(subscriber_.get(), unit_, false);
       }
     }
   }

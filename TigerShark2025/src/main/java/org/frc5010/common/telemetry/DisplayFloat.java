@@ -71,6 +71,7 @@ public class DisplayFloat {
                 event -> {
                   setValue(event.valueData.value.getFloat(), false);
                 });
+        setValue(subscriber_.get(), false);
       }
     }
   }
