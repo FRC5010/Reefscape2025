@@ -56,6 +56,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
@@ -785,9 +786,15 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
             ? angleSpeedSupplier.getAsDouble()
             : chassisSpeeds.omegaRadiansPerSecond);
 
+    SwerveModuleState[] moduleStates = swerveDrive.kinematics.toSwerveModuleStates(angleSuppliedChassisSpeeds);
+    SwerveModulePosition[] positions = getModulePositions();
+    for (int i = 0; i<moduleStates.length; i++) {
+      moduleStates[i].optimize(positions[i].angle);
+    }
+    
     swerveDrive.drive(
         angleSuppliedChassisSpeeds,
-        swerveDrive.kinematics.toSwerveModuleStates(angleSuppliedChassisSpeeds),
+        moduleStates,
         moduleFeedForwards.linearForces());
   }
 
