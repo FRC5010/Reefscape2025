@@ -48,14 +48,14 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
     protected final String CONVERSION = "Conversion";
     protected final String SPEED = "Speed";
     protected DisplayDouble kG;
-    protected DisplayDouble conversion;
+    protected DisplayDouble conversionRotationsToDistance;
     protected DisplayDouble speed;
     protected Optional<DoubleSupplier> supplyKG = Optional.empty();
 
     public VerticalPositionControlMotor(MotorController5010 motor, String visualName, DisplayValuesHelper tab) {
         super(motor, visualName, tab);
         kG = _displayValuesHelper.makeConfigDouble(K_G);
-        this.conversion = _displayValuesHelper.makeConfigDouble(CONVERSION);
+        this.conversionRotationsToDistance = _displayValuesHelper.makeConfigDouble(CONVERSION);
         this.speed = _displayValuesHelper.makeDisplayDouble(SPEED);
         setControlType(PIDControlType.DUTY_CYCLE);
     }
@@ -69,12 +69,12 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
                         drumRadius.in(Meters), gearing),
                 _motor.getMotorSimulationType(), minHeight.in(Meters), maximumHeight.in(Meters), true,
                 startingHeight.in(Meters));
-        double conversion = this.conversion.getValue();
+        double persistedConversion = this.conversionRotationsToDistance.getValue();
         this.kG.setValue(0 == this.kG.getValue() ? kG : this.kG.getValue());
-        this.conversion
-                .setValue(0 == conversion ? gearing * (drumRadius.in(Meters) * 2.0 * Math.PI) : conversion);
-        encoder.setPositionConversion(this.conversion.getValue());
-        encoder.setVelocityConversion(this.conversion.getValue() / 60.0);
+        this.conversionRotationsToDistance
+                .setValue(0 == persistedConversion ? (drumRadius.in(Meters) * 2.0 * Math.PI) / gearing : persistedConversion);
+        encoder.setPositionConversion(this.conversionRotationsToDistance.getValue());
+        encoder.setVelocityConversion(this.conversionRotationsToDistance.getValue() * 60.0);
         encoder.setPosition(startingHeight.in(Meters));
         position.setValue(startingHeight.in(Meters));
         return this;
@@ -113,19 +113,19 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
     @Override
     public void setReference(double reference) {
         setReference(reference, controller.getControlType(),
-                getFeedForward().in(Volts) / RobotController.getBatteryVoltage());
+                getFeedForward(0).in(Volts) / RobotController.getBatteryVoltage());
     }
 
     public void updateReference() {
         if (PIDControlType.NONE != controller.getControlType()) {
             controller.setReference(reference.getValue(), getControlType(),
-                    getFeedForward().in(Volts) / RobotController.getBatteryVoltage());
+                    getFeedForward(0).in(Volts) / RobotController.getBatteryVoltage());
         }
     }
 
     @Override
     public void set(double speed) {
-        double actual = MathUtil.clamp(speed + getFeedForward().in(Volts) / RobotController.getBatteryVoltage(), -1.0,
+        double actual = MathUtil.clamp(speed + getFeedForward(0).in(Volts) / RobotController.getBatteryVoltage(), -1.0,
                 1.0);
         this.speed.setValue(actual);
         _motor.set(actual);
@@ -144,7 +144,7 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
     }
 
     @Override
-    public Voltage getFeedForward() {
+    public Voltage getFeedForward(double velocity) {
         if (supplyKG.isPresent()) {
             kG.setValue(supplyKG.get().getAsDouble());
         }
@@ -154,7 +154,7 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
                 kV.getValue(),
                 kA.getValue());
         Voltage ff = Volts.of(
-                elevatorFeedforward.calculate(0));
+                elevatorFeedforward.calculate(velocity));
         feedForward.setValue(ff.in(Volts));
         return ff;
     }

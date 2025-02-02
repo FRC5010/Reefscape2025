@@ -257,7 +257,7 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
 
   @Override
   public double calculateControlEffort(double current) {
-    double controlEffort = controller.calculateControlEffort(current) + getFeedForward().in(Volts);
+    double controlEffort = controller.calculateControlEffort(current) + getFeedForward(0).in(Volts);
     if (controlEffort > maxOutput.getValue()) {
       controlEffort = maxOutput.getValue();
     } else if (controlEffort < minOutput.getValue()) {
@@ -283,7 +283,7 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
     return feedFwd;
   }
 
-  public Voltage getFeedForward() {
+  public Voltage getFeedForward(double velocity) {
     double feedforward =
         (null == feedFwd
             ? 0.0

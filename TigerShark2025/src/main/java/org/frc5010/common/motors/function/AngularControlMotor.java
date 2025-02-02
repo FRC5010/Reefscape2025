@@ -129,7 +129,7 @@ public class AngularControlMotor extends GenericControlledMotor {
       effort.setVoltage(calculateControlEffort(simEncoder.getPosition()), Volts);
       _motor.set(effort.getVoltage().in(Volts) / RobotController.getBatteryVoltage());
     } else {
-      controller.setF(getFeedForward().in(Volts) / RobotController.getBatteryVoltage());
+      controller.setF(getFeedForward(0).in(Volts) / RobotController.getBatteryVoltage());
     }
   }
 
@@ -142,7 +142,7 @@ public class AngularControlMotor extends GenericControlledMotor {
   }
 
   @Override
-  public Voltage getFeedForward() {
+  public Voltage getFeedForward(double velocity) {
     ArmFeedforward pivotFeedforward =
         new ArmFeedforward(
             getMotorFeedFwd().getkS(),
