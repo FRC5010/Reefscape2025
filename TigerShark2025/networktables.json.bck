@@ -122,7 +122,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/shooterRight/kP",
     "type": "double",
-    "value": 0.001,
+    "value": 0.0,
     "properties": {
       "persistent": true
     }
@@ -162,7 +162,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/shooterRight/kV",
     "type": "double",
-    "value": 0.396,
+    "value": 0.0,
     "properties": {
       "persistent": true
     }
@@ -226,7 +226,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/elevator/kP",
     "type": "double",
-    "value": 60.0,
+    "value": 0.0,
     "properties": {
       "persistent": true
     }
@@ -242,7 +242,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/elevator/kD",
     "type": "double",
-    "value": 0.5,
+    "value": 0.0,
     "properties": {
       "persistent": true
     }
@@ -266,7 +266,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/elevator/kV",
     "type": "double",
-    "value": 0.5,
+    "value": 0.12,
     "properties": {
       "persistent": true
     }
@@ -290,7 +290,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/elevator/MinOutput",
     "type": "double",
-    "value": -1.0,
+    "value": 0.0,
     "properties": {
       "persistent": true
     }
@@ -298,7 +298,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/elevator/MaxOutput",
     "type": "double",
-    "value": 1.0,
+    "value": 0.0,
     "properties": {
       "persistent": true
     }
@@ -330,7 +330,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/elevator/kG",
     "type": "double",
-    "value": 5.0,
+    "value": 2.0,
     "properties": {
       "persistent": true
     }

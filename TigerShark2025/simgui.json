@@ -62,6 +62,7 @@
       "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
       "/Shuffleboard/BabySwerve/Auto Modes": "String Chooser",
       "/Shuffleboard/ExampleRobot/Auto Modes": "String Chooser",
+      "/Shuffleboard/Pancake/Auto Modes": "String Chooser",
       "/Shuffleboard/Pose/Pose Field": "Field2d",
       "/Shuffleboard/TigerShark/Auto Modes": "String Chooser",
       "/SmartDashboard/Alerts": "Alerts",

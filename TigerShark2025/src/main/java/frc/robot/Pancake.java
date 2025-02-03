@@ -14,7 +14,10 @@ import org.frc5010.common.sensors.Controller;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.AutoRoutines.Right4Coral;
 
@@ -25,6 +28,7 @@ public class Pancake extends GenericRobot {
     public Pancake(String directory) {
         super(directory);
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
+        
     }
 
     @Override
@@ -59,6 +63,8 @@ public class Pancake extends GenericRobot {
             ((YAGSLSwerveDrivetrain) drivetrain).driveToPosePrecise(new Pose2d(5.000, 5.250, new Rotation2d(Degrees.of(-120))))
             );
 
+            
+
         driver.createYButton().whileTrue( // Test drive to Top Station Position 1
             ((YAGSLSwerveDrivetrain) drivetrain).driveToPosePrecise(new Pose2d(1.740, 7.245, new Rotation2d(Degrees.of(-55.000))))
             );
@@ -67,7 +73,33 @@ public class Pancake extends GenericRobot {
 
     @Override
     public void setupDefaultCommands(Controller driver, Controller operator) {
-        drivetrain.setDefaultCommand(drivetrain.createDefaultCommand(driver));
+        //drivetrain.setDefaultCommand(drivetrain.createDefaultCommand(driver));
+        drivetrain.setDefaultCommand(((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorFieldRelative(() ->
+        {
+            double xInput = driver.getAxisValue(XboxController.Axis.kLeftX.value)+0.001;
+            double yInput = driver.getAxisValue(XboxController.Axis.kLeftY.value)+0.001;
+
+            Translation2d inputTranslation = new Translation2d(xInput, yInput);
+            double magnitude = inputTranslation.getNorm();
+            Rotation2d angle = 0 != xInput || 0 != yInput ? inputTranslation.getAngle() : new Rotation2d();
+
+            double curvedMagnitude = Math.pow(magnitude, 3);
+
+            double turnSpeed = driver.getAxisValue(XboxController.Axis.kRightX.value);
+
+            double xSpeed =
+                    curvedMagnitude
+                        * angle.getCos()
+                        * ((YAGSLSwerveDrivetrain)drivetrain).getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond();
+                double ySpeed =
+                    curvedMagnitude
+                        * angle.getSin()
+                        * ((YAGSLSwerveDrivetrain)drivetrain).getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond();
+                turnSpeed =
+                    turnSpeed * ((YAGSLSwerveDrivetrain)drivetrain).getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond();
+
+            return new ChassisSpeeds(xSpeed, ySpeed, turnSpeed);
+        }));
     }
 
     @Override

@@ -14,11 +14,13 @@ import frc.robot.subsystems.ScoringSystem;
 public class TigerShark extends GenericRobot {
     GenericDrivetrain drivetrain;
     ScoringSystem scoringSystem;
+    ReefscapeButtonBoard reefscapeButtonBoard;
 
     public TigerShark(String directory) {
         super(directory);
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
         scoringSystem = new ScoringSystem(mechVisual);
+        reefscapeButtonBoard = new ReefscapeButtonBoard(2);
     }
 
     @Override
