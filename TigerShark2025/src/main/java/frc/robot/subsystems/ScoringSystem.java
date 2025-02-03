@@ -4,10 +4,13 @@
 
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Amp;
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.Volts;
 
 import org.frc5010.common.arch.GenericSubsystem;
 import org.frc5010.common.constants.GenericPID;
@@ -23,6 +26,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -34,6 +38,7 @@ public class ScoringSystem extends GenericSubsystem {
     protected VelocityControlMotor shooterLeft;
     protected VelocityControlMotor shooterRight;
     protected Trigger setReferenceTrigger;
+    protected PIDControlType controlType = PIDControlType.POSITION;
 
     public static enum Position {
         BOTTOM(Meters.of(0)),
@@ -63,22 +68,34 @@ public class ScoringSystem extends GenericSubsystem {
                 displayValues);
         shooterLeft.setupSimulatedMotor(1, 10);
         shooterRight.setupSimulatedMotor(1, 10);
-        shooterLeft.setVisualizer(mechanismSimulation, new Pose3d(new Translation3d(0.1, 0.1, 0.1), new Rotation3d()));
+        shooterLeft.setVisualizer(mechanismSimulation, new Pose3d(
+                new Translation3d(Inches.of(7.15).in(Meters), Inches.of(2.875).in(Meters), Inches.of(16.25).in(Meters)),
+                new Rotation3d()));
         shooterRight.setVisualizer(mechanismSimulation,
-                new Pose3d(new Translation3d(0.1, -0.1, 0.15), new Rotation3d()));
+                new Pose3d(new Translation3d(Inches.of(7.15).in(Meters), Inches.of(2.875).in(Meters),
+                        Inches.of(6.25).in(Meters)), new Rotation3d()));
 
         elevator = new VerticalPositionControlMotor(MotorFactory.TalonFX(9, Motor.KrakenX60), "elevator",
                 displayValues);
-        // elevatorFollower = new FollowerMotor(MotorFactory.Spark(10, Motor.Neo), elevator, "elevatorFollower");
-        elevator.setupSimulatedMotor(6, Pounds.of(15), Inches.of(1.1), Meters.of(0), Meters.of(2), Meters.of(0),
-                Meters.of(0.2), 2);
-        elevator.setVisualizer(mechanismSimulation, new Pose3d(new Translation3d(0.1, 0, 0.5), new Rotation3d()));
+        // elevatorFollower = new FollowerMotor(MotorFactory.Spark(10, Motor.Neo),
+        // elevator, "elevatorFollower");
+        elevator.setupSimulatedMotor(6, Pounds.of(15), Inches.of(1.1), Meters.of(0), Inches.of(83.475 - 6.725),
+                Meters.of(0),
+                Meters.of(0.2), 0.263672);
+        elevator.setVisualizer(mechanismSimulation, new Pose3d(
+                new Translation3d(Inches.of(5.75).in(Meters), Inches.of(4.75).in(Meters), Inches.of(6.725).in(Meters)),
+                new Rotation3d()));
+        elevator.setCurrentLimit(Amps.of(0));
         elevator.setMotorFeedFwd(new MotorFeedFwdConstants(0.25, 0.12, 0.01));
         elevator.setProfiledMaxVelocity(2.0);
-        elevator.setProfiledMaxAcceleration(0.5);
+        elevator.setProfiledMaxAcceleration(5);
         elevator.setValues(new GenericPID(60, 0, 0.5));
         elevator.setOutputRange(-1, 1);
-        elevator.invert(false);
+        // Tell the elevator to run the motor in reverse because the simulator thinks CW
+        // is upwards
+        elevator.invert(true);
+        // Tell the simulator that the motor is CW.
+        elevator.getMotorEncoder().setInverted(true);
         elevator.burnFlash();
         setReferenceTrigger = new Trigger(() -> PIDControlType.NONE != elevator.getControlType())
                 .whileTrue(Commands.run(() -> elevator.updateReference(), this));
@@ -93,19 +110,20 @@ public class ScoringSystem extends GenericSubsystem {
     }
 
     public void elevatorSpeed(double speed) {
-        if (elevator.getControlType() != PIDControlType.DUTY_CYCLE && speed != 0) {
-            elevator.setControlType(PIDControlType.DUTY_CYCLE);
+        if (elevator.getControlType() != PIDControlType.NONE && speed != 0) {
+            elevator.setControlType(PIDControlType.NONE);
         }
-        if (PIDControlType.DUTY_CYCLE == elevator.getControlType()) {
-            elevator.setReference(speed);
+        if (PIDControlType.NONE == elevator.getControlType()) {
+            // elevator.setReference(speed);
+            elevator.set(speed + elevator.getFeedForward(0).in(Volts) / RobotController.getBatteryVoltage());
         }
     }
 
     public void setElevatorPosition(Position position) {
-        if (elevator.getControlType() != PIDControlType.PROFILED_POSITION) {
-            elevator.setControlType(PIDControlType.PROFILED_POSITION);
+        if (elevator.getControlType() != controlType) {
+            elevator.setControlType(controlType);
         }
-        if (PIDControlType.PROFILED_POSITION == elevator.getControlType()) {
+        if (controlType == elevator.getControlType()) {
             elevator.setReference(position.position().in(Meters));
         }
     }
