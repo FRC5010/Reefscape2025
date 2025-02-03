@@ -148,8 +148,11 @@ public class GenericTalonFXMotor implements MotorController5010 {
 
     cfg.refresh(configuration.CurrentLimits);
     cfg.apply(
-        configuration.CurrentLimits.withSupplyCurrentLimit(motorCurrentLimit)
-            .withSupplyCurrentLimitEnable(true));
+        configuration.CurrentLimits
+            .withSupplyCurrentLimit(motorCurrentLimit)
+            .withStatorCurrentLimit(motorCurrentLimit)
+            .withSupplyCurrentLimitEnable(0 != motorCurrentLimit)
+            .withStatorCurrentLimitEnable(0 != motorCurrentLimit));
 
     return this;
   }
