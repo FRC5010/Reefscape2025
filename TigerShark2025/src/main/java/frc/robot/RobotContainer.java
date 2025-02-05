@@ -18,11 +18,8 @@ public class RobotContainer implements WpiHelperInterface {
   public RobotContainer() {
     constants = new Constants();
 
-<<<<<<< HEAD
-=======
-//    robot = new Pancake("pancake_bot");
->>>>>>> 90ea92d9e966fb6ed24826aba70cd51abf695f09
-    robot = new TigerShark("tigershark");
+    robot = new Pancake("pancake_bot");
+    // robot = new TigerShark("tigershark");
 
     initAutoCommands();
     configureButtonBindings();

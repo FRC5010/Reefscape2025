@@ -9,17 +9,20 @@ import org.frc5010.common.sensors.Controller;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.AutoRoutines.Right4Coral;
+import frc.robot.subsystems.AlgaeArm;
 import frc.robot.subsystems.ScoringSystem;
 
 public class TigerShark extends GenericRobot {
     GenericDrivetrain drivetrain;
     ScoringSystem scoringSystem;
+    AlgaeArm algaeArm;
     ReefscapeButtonBoard reefscapeButtonBoard;
 
     public TigerShark(String directory) {
         super(directory);
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
         scoringSystem = new ScoringSystem(mechVisual);
+        algaeArm = new AlgaeArm(mechVisual);
         reefscapeButtonBoard = new ReefscapeButtonBoard(2);
     }
 
@@ -34,8 +37,13 @@ public class TigerShark extends GenericRobot {
         scoringSystem.setDefaultCommand(Commands.run(() -> {
             scoringSystem.shooterLeftSpeed(operator.getLeftTrigger());
             scoringSystem.shooterRightSpeed(operator.getRightTrigger());
-            scoringSystem.elevatorSpeed(operator.getLeftYAxis());
+//            scoringSystem.elevatorSpeed(operator.getLeftYAxis());
         }, scoringSystem));
+
+        algaeArm.setDefaultCommand(Commands.run(() -> {
+            algaeArm.armSpeed(operator.getLeftYAxis());
+        }, algaeArm));
+        
         // Test commands
         operator.createAButton().whileTrue(Commands.run(() -> scoringSystem.shooterRightSpeed(0.5), scoringSystem));
         // operator.createAButton().whileTrue(
@@ -47,9 +55,12 @@ public class TigerShark extends GenericRobot {
         operator.createYButton().whileTrue(
                 Commands.runOnce(() -> scoringSystem.setElevatorPosition(ScoringSystem.Position.L3), scoringSystem)
                         .until(scoringSystem.isAtTarget()));
+        // operator.createBButton().whileTrue(
+        //         Commands.run(() -> scoringSystem.setElevatorPosition(ScoringSystem.Position.L4), scoringSystem)
+        //                 .until(scoringSystem.isAtTarget()));
         operator.createBButton().whileTrue(
-                Commands.run(() -> scoringSystem.setElevatorPosition(ScoringSystem.Position.L4), scoringSystem)
-                        .until(scoringSystem.isAtTarget()));
+                Commands.run(() -> algaeArm.setArmPosition(AlgaeArm.Position.L3), algaeArm)
+                        .until(algaeArm.isAtTarget()));
     }
 
     @Override
@@ -65,7 +76,7 @@ public class TigerShark extends GenericRobot {
     @Override
     public void buildAutoCommands() {
         super.buildAutoCommands();
-           addAutoToChooser("Right 4 Coral", new Right4Coral().raceWith(new AutoErrorTracker()));
+        addAutoToChooser("Right 4 Coral", new Right4Coral().raceWith(new AutoErrorTracker()));
         // addAutoToChooser("Auto New", new ExampleAuto());
     }
 }

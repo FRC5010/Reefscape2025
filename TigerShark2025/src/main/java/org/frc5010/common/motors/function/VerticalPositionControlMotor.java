@@ -11,9 +11,12 @@ import static edu.wpi.first.units.Units.Volts;
 import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
+import org.frc5010.common.arch.GenericRobot;
+import org.frc5010.common.arch.GenericRobot.LogLevel;
 import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.motors.SystemIdentification;
+import org.frc5010.common.subsystems.PhysicsSim;
 import org.frc5010.common.telemetry.DisplayDouble;
 import org.frc5010.common.telemetry.DisplayValuesHelper;
 
@@ -53,6 +56,7 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
     protected DisplayDouble conversionRotationsToDistance;
     protected DisplayDouble speed;
     protected Optional<DoubleSupplier> supplyKG = Optional.empty();
+    protected ElevatorFeedforward elevatorFeedforward;
 
     public VerticalPositionControlMotor(MotorController5010 motor, String visualName, DisplayValuesHelper tab) {
         super(motor, visualName, tab);
@@ -99,7 +103,7 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
                 5,
                 new Color8Bit(MotorFactory.getNextVisualColor()));
         mechanismRoot.append(mechanismStructure);
-        
+
         setPointRoot = visualizer.getRoot(
                 _visualName + "setRoot",
                 getSimX(Meters.of(robotToMotor.getX() + setPointDisplayOffset)),
@@ -165,11 +169,13 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
         if (supplyKG.isPresent()) {
             kG.setValue(supplyKG.get().getAsDouble());
         }
-        ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(
-                kS.getValue(),
-                kG.getValue(),
-                kV.getValue(),
-                kA.getValue());
+        if (null == elevatorFeedforward || supplyKG.isPresent() || GenericRobot.logLevel == LogLevel.CONFIG) {
+            elevatorFeedforward = new ElevatorFeedforward(
+                    kS.getValue(),
+                    kG.getValue(),
+                    kV.getValue(),
+                    kA.getValue());
+        }
         Voltage ff = Volts.of(
                 elevatorFeedforward.calculate(velocity));
         feedForward.setValue(ff.in(Volts));
@@ -193,7 +199,7 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
     public void simulationUpdate() {
         simMechanism.setInput(_motor.getVoltage());
         effort.setVoltage(_motor.getVoltage(), Volts);
-        simMechanism.update(0.020);
+        simMechanism.update(PhysicsSim.SimProfile.getPeriod());
         _motor.simulationUpdate(Optional.of(simMechanism.getPositionMeters()),
                 simMechanism.getVelocityMetersPerSecond());
 

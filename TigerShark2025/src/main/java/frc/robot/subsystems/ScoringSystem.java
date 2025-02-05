@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Amp;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
@@ -28,7 +27,6 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /** Add your docs here. */
@@ -37,7 +35,6 @@ public class ScoringSystem extends GenericSubsystem {
     protected FollowerMotor elevatorFollower;
     protected VelocityControlMotor shooterLeft;
     protected VelocityControlMotor shooterRight;
-    protected Trigger setReferenceTrigger;
     protected PIDControlType controlType = PIDControlType.POSITION;
 
     public static enum Position {
@@ -97,8 +94,6 @@ public class ScoringSystem extends GenericSubsystem {
         // Tell the simulator that the motor is CW.
         elevator.getMotorEncoder().setInverted(true);
         elevator.burnFlash();
-        setReferenceTrigger = new Trigger(() -> PIDControlType.NONE != elevator.getControlType())
-                .whileTrue(Commands.run(() -> elevator.updateReference(), this));
     }
 
     public void shooterLeftSpeed(double speed) {

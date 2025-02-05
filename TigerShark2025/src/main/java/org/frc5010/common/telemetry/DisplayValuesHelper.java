@@ -46,11 +46,18 @@ public class DisplayValuesHelper implements WpiHelperInterface {
         makeDisplayed();
     }
 
+
+    /**
+     * Sets the display state to active, initializes the Shuffleboard tab and layout
+     * for displaying values. Configures the layout size and position based on the
+     * provided column.
+     */
     public void makeDisplayed() {
         isDisplayed = true;
         this.tab = Shuffleboard.getTab(tabName);
         this.layout = this.tab.getLayout(layoutName, BuiltInLayouts.kList).withSize(2, 4).withPosition(column, 0);
     }
+
     /**
      * Advances the column number for the next value to be placed in.
      *
