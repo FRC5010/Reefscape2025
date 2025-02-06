@@ -30,11 +30,9 @@ import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /** Add your docs here. */
-public class ScoringSystem extends GenericSubsystem {
+public class ElevatorSystem extends GenericSubsystem {
     protected VerticalPositionControlMotor elevator;
     protected FollowerMotor elevatorFollower;
-    protected VelocityControlMotor shooterLeft;
-    protected VelocityControlMotor shooterRight;
     protected PIDControlType controlType = PIDControlType.POSITION;
 
     public static enum Position {
@@ -59,18 +57,7 @@ public class ScoringSystem extends GenericSubsystem {
         }
     }
 
-    public ScoringSystem(Mechanism2d mechanismSimulation) {
-        shooterLeft = new VelocityControlMotor(MotorFactory.Spark(11, Motor.Neo), "shooterLeft", displayValues);
-        shooterRight = new VelocityControlMotor(MotorFactory.TalonFX(12, Motor.KrakenX60), "shooterRight",
-                displayValues);
-        shooterLeft.setupSimulatedMotor(1, 10);
-        shooterRight.setupSimulatedMotor(1, 10);
-        shooterLeft.setVisualizer(mechanismSimulation, new Pose3d(
-                new Translation3d(Inches.of(7.15).in(Meters), Inches.of(2.875).in(Meters), Inches.of(16.25).in(Meters)),
-                new Rotation3d()));
-        shooterRight.setVisualizer(mechanismSimulation,
-                new Pose3d(new Translation3d(Inches.of(7.15).in(Meters), Inches.of(2.875).in(Meters),
-                        Inches.of(6.25).in(Meters)), new Rotation3d()));
+    public ElevatorSystem(Mechanism2d mechanismSimulation) {
 
         elevator = new VerticalPositionControlMotor(MotorFactory.TalonFX(9, Motor.KrakenX60), "elevator",
                 displayValues);
@@ -86,7 +73,7 @@ public class ScoringSystem extends GenericSubsystem {
         elevator.setMotorFeedFwd(new MotorFeedFwdConstants(0.25, 0.12, 0.01));
         elevator.setProfiledMaxVelocity(2.0);
         elevator.setProfiledMaxAcceleration(5);
-        elevator.setValues(new GenericPID(60, 0, 0.5));
+        elevator.setValues(new GenericPID(60, 1, 0.5));
         elevator.setOutputRange(-1, 1);
         // Tell the elevator to run the motor in reverse because the simulator thinks CW
         // is upwards
@@ -96,13 +83,6 @@ public class ScoringSystem extends GenericSubsystem {
         elevator.burnFlash();
     }
 
-    public void shooterLeftSpeed(double speed) {
-        shooterLeft.set(speed);
-    }
-
-    public void shooterRightSpeed(double speed) {
-        shooterRight.setReference(speed * shooterRight.getMaxRPM().in(RPM));
-    }
 
     public void elevatorSpeed(double speed) {
         if (elevator.getControlType() != PIDControlType.NONE && speed != 0) {
@@ -129,15 +109,11 @@ public class ScoringSystem extends GenericSubsystem {
 
     @Override
     public void periodic() {
-        shooterLeft.draw();
-        shooterRight.draw();
         elevator.draw();
     }
 
     @Override
     public void simulationPeriodic() {
-        shooterLeft.simulationUpdate();
-        shooterRight.simulationUpdate();
         elevator.simulationUpdate();
     }
 }

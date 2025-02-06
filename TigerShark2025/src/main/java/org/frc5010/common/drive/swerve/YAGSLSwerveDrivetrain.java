@@ -272,7 +272,8 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     );
   }
 
-  public Command driveToPosePrecise(Pose2d pose) {
+  public Supplier<Command> driveToPosePrecise(Supplier<Pose2d> pose) {
+    poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose");
     // Create the constraints to use while pathfinding
     PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond(),
         getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond(),
@@ -282,8 +283,8 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     // swerveDrive.getMaximumChassisVelocity(), 4.0,
     // swerveDrive.getMaximumChassisAngularVelocity(), Units.degreesToRadians(720));
     // Since AutoBuilder is configured, we can use it to build pathfinding commands
-    return new PathfindingCommand5010(
-      pose,
+    return () -> new PathfindingCommand5010(
+      pose.get(),
       constraints,
       0.0,
       this::getPose,

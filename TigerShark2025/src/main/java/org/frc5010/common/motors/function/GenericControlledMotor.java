@@ -124,12 +124,12 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
 
   @Override
   public void setValues(GenericPID pidValues) {
-    if (0 == kP.getValue()) kP.setValue(pidValues.getkP());
-    if (0 == kI.getValue()) kI.setValue(pidValues.getkI());
-    if (0 == kD.getValue()) kD.setValue(pidValues.getkD());
-    kP.setValue(pidValues.getkP());
-    kI.setValue(pidValues.getkI());
-    kD.setValue(pidValues.getkD());
+    if (0 != pidValues.getkP()) kP.setValue(pidValues.getkP());
+    if (0 != pidValues.getkI()) kI.setValue(pidValues.getkI());
+    if (0 != pidValues.getkD()) kD.setValue(pidValues.getkD());
+    pidValues.setkP(kP.getValue());
+    pidValues.setkI(kI.getValue());
+    pidValues.setkD(kD.getValue());
     controller.setValues(pidValues);
   }
 
@@ -269,9 +269,9 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
 
   @Override
   public void setMotorFeedFwd(MotorFeedFwdConstants feedFwd) {
-    if (0 == kS.getValue()) kS.setValue(feedFwd.getkS());
-    if (0 == kV.getValue()) kV.setValue(feedFwd.getkV());
-    if (0 == kA.getValue()) kA.setValue(feedFwd.getkA());
+    if (0 != feedFwd.getkS()) kS.setValue(feedFwd.getkS());
+    if (0 != feedFwd.getkV()) kV.setValue(feedFwd.getkV());
+    if (0 != feedFwd.getkA()) kA.setValue(feedFwd.getkA());
     feedFwd.setkS(kS.getValue());
     feedFwd.setkV(kV.getValue());
     feedFwd.setkA(kA.getValue());

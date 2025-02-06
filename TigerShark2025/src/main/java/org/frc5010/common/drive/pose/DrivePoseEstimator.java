@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.frc5010.common.arch.GenericSubsystem;
-import org.frc5010.common.sensors.camera.QuestNav;
 import org.frc5010.common.subsystems.AprilTagPoseSystem;
 import org.frc5010.common.vision.AprilTags;
 
