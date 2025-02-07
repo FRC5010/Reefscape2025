@@ -5,7 +5,9 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Meters;
 
+import java.lang.reflect.Field;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -26,13 +28,15 @@ public class ReefscapeButtonBoard extends ButtonBoard {
         public int getButton();
     }
 
+    private static Transform2d robotOffset = new Transform2d(Meters.of(0.4), Meters.zero(), Rotation2d.fromDegrees(180)); // Move to more appropriate, common, location
+
     public enum ScoringLocation implements ButtonStateSetting{
-        FRONT_AB(0, new Pose2d(3.179, 4.035, new Rotation2d(0.0))),
-        FRONT_RIGHT_CD(1, new Pose2d(3.832, 2.894, new Rotation2d(Degrees.of(60.0)))),
-        BACK_RIGHT_EF(2, new Pose2d(5.109, 2.894, new Rotation2d(Degrees.of(120.0)))),
-        BACK_GH(3, new Pose2d(5.792, 4.035, new Rotation2d(Degrees.of(180.0)))),
-        BACK_LEFT_IJ(4, new Pose2d(5.099, 5.156, new Rotation2d(Degrees.of(240.0)))),
-        FRONT_LEFT_KL(5, new Pose2d(3.832, 5.156, new Rotation2d(Degrees.of(300.0))));
+        FRONT_AB(0, FieldConstants.Reef.Side.AB.getRobotPose(robotOffset)), // new Pose2d(3.179, 4.035, new Rotation2d(0.0)
+        FRONT_RIGHT_CD(1, FieldConstants.Reef.Side.CD.getRobotPose(robotOffset)),
+        BACK_RIGHT_EF(2, FieldConstants.Reef.Side.EF.getRobotPose(robotOffset)),
+        BACK_GH(3, FieldConstants.Reef.Side.GH.getRobotPose(robotOffset)),
+        BACK_LEFT_IJ(4, FieldConstants.Reef.Side.IJ.getRobotPose(robotOffset)),
+        FRONT_LEFT_KL(5, FieldConstants.Reef.Side.KL.getRobotPose(robotOffset));
 
         private int button;
         private Pose2d pose;
@@ -93,23 +97,31 @@ public class ReefscapeButtonBoard extends ButtonBoard {
     }
 
     public enum LoadingStationLocation  implements ButtonStateSetting{
-        STATION_LEFT_OUTER(15),
-        STATION_LEFT_INNER(16),
-        STATION_RIGHT_INNER(17),
-        STATION_RIGHT_OUTER(18);
+
+        STATION_LEFT_OUTER(15, FieldConstants.CoralStation.getGuideOffsetPose(FieldConstants.CoralStation.leftCenterFace, -3, robotOffset)),
+        STATION_LEFT_INNER(16, FieldConstants.CoralStation.getGuideOffsetPose(FieldConstants.CoralStation.leftCenterFace, 3, robotOffset)),
+        STATION_RIGHT_INNER(17, FieldConstants.CoralStation.getGuideOffsetPose(FieldConstants.CoralStation.rightCenterFace, -3, robotOffset)),
+        STATION_RIGHT_OUTER(18, FieldConstants.CoralStation.getGuideOffsetPose(FieldConstants.CoralStation.rightCenterFace, 3, robotOffset));
+
 
         private int button;
+        private Pose2d pose;
 
-        private LoadingStationLocation(int buttonID) {
+        private LoadingStationLocation(int buttonID, Pose2d pose) {
             this.button = buttonID;
+            this.pose = pose;
         }
 
         public int getButton() {
             return button;
         }
+
+        public Pose2d getPose() {
+            return pose;
+        }
     }
 
-    public static ScoringLocation scoringLocation = ScoringLocation.FRONT_AB;
+    public static ScoringLocation scoringLocation = ScoringLocation.BACK_LEFT_IJ;
     public static ScoringAlignment scoringAlignment = ScoringAlignment.REEF_LEFT;
     public static ScoringLevel scoringLevel = ScoringLevel.L1;
     public static LoadingStationLocation loadingStationLocation = LoadingStationLocation.STATION_LEFT_INNER;
@@ -218,12 +230,20 @@ public class ReefscapeButtonBoard extends ButtonBoard {
         return loadingStationLocation;
     }
 
+    public static Pose2d getStationPose() {
+        return loadingStationLocation.getPose();
+    }
+
     public static void setLoadingStation(LoadingStationLocation loadingLocation) {
         loadingStationLocation = loadingLocation;
     }
 
-    public static Supplier<Pose2d> getScoringPose() {
-        return () -> scoringLocation.getPose().transformBy(scoringAlignment.getTransform2d());
+    public static Pose2d getScoringPose() {
+        return scoringLocation.getPose().transformBy(scoringAlignment.getTransform2d());
+    }
+
+    public static Supplier<Pose2d> getScoringPoseSupplier() {
+        return () -> getScoringPose();
     }
 
 }

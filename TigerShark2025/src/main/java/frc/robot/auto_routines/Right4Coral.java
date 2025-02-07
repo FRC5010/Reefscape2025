@@ -1,4 +1,4 @@
-package frc.robot.AutoRoutines;
+package frc.robot.auto_routines;
 
 import org.frc5010.common.auto.AutoPath;
 import org.frc5010.common.auto.AutoSequence;

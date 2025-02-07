@@ -13,6 +13,7 @@ import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 import org.frc5010.common.sensors.ButtonBoard;
 import org.frc5010.common.sensors.Controller;
+import org.frc5010.common.utils.AllianceFlip;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -22,7 +23,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.AutoRoutines.Right4Coral;
+import frc.robot.auto_routines.Right4Coral;
 
 
 public class Pancake extends GenericRobot {
@@ -31,6 +32,8 @@ public class Pancake extends GenericRobot {
 
     public Pancake(String directory) {
         super(directory);
+        AllianceFlip.configure(FieldConstants.fieldDimensions);
+
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
         buttonBoard = new ReefscapeButtonBoard(0);
         
@@ -71,14 +74,14 @@ public class Pancake extends GenericRobot {
         //     );
 
         driver.createXButton().whileTrue( // Test drive to J Reef Location
-        Commands.deferredProxy(((YAGSLSwerveDrivetrain) drivetrain).driveToPosePrecise(ReefscapeButtonBoard.getScoringPose())));
+        Commands.deferredProxy(((YAGSLSwerveDrivetrain) drivetrain).driveToPosePrecise(() -> AllianceFlip.apply(ReefscapeButtonBoard.getScoringPose()))));
 
         // driver.createYButton().whileTrue( // Test drive to Top Station Position 1
         //     ((YAGSLSwerveDrivetrain) drivetrain).driveToPosePrecise(new Pose2d(1.740, 7.245, new Rotation2d(Degrees.of(-55.000))))
         //     );
         
         driver.createYButton().whileTrue( // Test drive to Top Station Position 1
-        Commands.deferredProxy(((YAGSLSwerveDrivetrain) drivetrain).driveToPosePrecise(() -> new Pose2d(1.740, 7.245, new Rotation2d(Degrees.of(-55.000))))));
+        Commands.deferredProxy(((YAGSLSwerveDrivetrain) drivetrain).driveToPosePrecise(() -> AllianceFlip.apply(ReefscapeButtonBoard.getStationPose()))));
     }
 
     @Override

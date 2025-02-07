@@ -273,7 +273,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   }
 
   public Supplier<Command> driveToPosePrecise(Supplier<Pose2d> pose) {
-    poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose");
+    
     // Create the constraints to use while pathfinding
     PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond(),
         getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond(),
@@ -296,7 +296,11 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
             new PIDConstants(2.302, 3.7, 0.948) // Rotation PID constants
         ),
       config,
-      this);
+      this).beforeStarting(() -> poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose"));
+}
+
+public Supplier<Command> driveToPosePrecise(Pose2d pose) {
+  return driveToPosePrecise(() -> pose);
 }
 
  /**

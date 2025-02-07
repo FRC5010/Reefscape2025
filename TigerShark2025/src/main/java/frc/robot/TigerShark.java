@@ -5,10 +5,11 @@ import org.frc5010.common.auto.AutoErrorTracker;
 import org.frc5010.common.config.ConfigConstants;
 import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.sensors.Controller;
+import org.frc5010.common.utils.AllianceFlip;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.AutoRoutines.Right4Coral;
+import frc.robot.auto_routines.Right4Coral;
 import frc.robot.subsystems.AlgaeArm;
 import frc.robot.subsystems.ElevatorSystem;
 import frc.robot.subsystems.ShooterSystem;
@@ -22,6 +23,8 @@ public class TigerShark extends GenericRobot {
 
     public TigerShark(String directory) {
         super(directory);
+        AllianceFlip.configure(FieldConstants.fieldDimensions);
+
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
         elevatorSystem = new ElevatorSystem(mechVisual);
         shooterSystem = new ShooterSystem(mechVisual);

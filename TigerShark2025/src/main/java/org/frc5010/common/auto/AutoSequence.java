@@ -14,6 +14,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -22,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class AutoSequence extends GenericCommandSequence {
     /** Autonomous event loop used to bind triggers which are only active while the autonomous sequence is running */
     EventLoop autonomousEventLoop = new EventLoop();
+
 
     /**
      * Returns a command that resets the odometry to the specified pose.
