@@ -8,7 +8,6 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Pounds;
-import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Volts;
 
 import org.frc5010.common.arch.GenericSubsystem;
@@ -18,7 +17,6 @@ import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.motors.PIDController5010.PIDControlType;
 import org.frc5010.common.motors.function.FollowerMotor;
-import org.frc5010.common.motors.function.VelocityControlMotor;
 import org.frc5010.common.motors.function.VerticalPositionControlMotor;
 
 import edu.wpi.first.math.geometry.Pose3d;
@@ -33,13 +31,14 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class ElevatorSystem extends GenericSubsystem {
     protected VerticalPositionControlMotor elevator;
     protected FollowerMotor elevatorFollower;
-    protected PIDControlType controlType = PIDControlType.POSITION;
+    protected PIDControlType controlType = PIDControlType.PROFILED_POSITION;
 
     public static enum Position {
         BOTTOM(Meters.of(0)),
         LOAD(Meters.of(0.05)),
         L1(Meters.of(0.1)),
         L2Algae(Meters.of(0.11)),
+        L2Shoot(Meters.of(0.45)),
         L2(Meters.of(0.5)),
         L3Algae(Meters.of(1.1)),
         L3(Meters.of(1)),
@@ -73,7 +72,7 @@ public class ElevatorSystem extends GenericSubsystem {
         elevator.setMotorFeedFwd(new MotorFeedFwdConstants(0.25, 0.12, 0.01));
         elevator.setProfiledMaxVelocity(2.0);
         elevator.setProfiledMaxAcceleration(5);
-        elevator.setValues(new GenericPID(60, 1, 0.5));
+        elevator.setValues(new GenericPID(60, 0, 0.5));
         elevator.setOutputRange(-1, 1);
         // Tell the elevator to run the motor in reverse because the simulator thinks CW
         // is upwards

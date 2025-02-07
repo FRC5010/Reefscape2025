@@ -403,6 +403,7 @@ public class TalonFXController extends GenericPIDController {
   public void setProfiledMaxAcceleration(double maxAcceleration) {
     cfg.refresh(configuration.MotionMagic);
     configuration.MotionMagic.MotionMagicAcceleration = maxAcceleration;
+    configuration.MotionMagic.MotionMagicJerk = maxAcceleration / 1000.0;
     cfg.apply(configuration.MotionMagic);
   }
 

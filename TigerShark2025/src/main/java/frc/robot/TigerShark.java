@@ -44,11 +44,11 @@ public class TigerShark extends GenericRobot {
         shooterSystem.setDefaultCommand(Commands.run(() -> {
             shooterSystem.shooterLeftSpeed(operator.getLeftTrigger());
             shooterSystem.shooterRightSpeed(operator.getRightTrigger());
-//            scoringSystem.elevatorSpeed(operator.getLeftYAxis());
+            elevatorSystem.elevatorSpeed(operator.getLeftYAxis());
         }, shooterSystem));
 
         algaeArm.setDefaultCommand(Commands.run(() -> {
-            algaeArm.armSpeed(operator.getLeftYAxis());
+//            algaeArm.armSpeed(operator.getLeftYAxis());
         }, algaeArm));
         
         // Test commands
