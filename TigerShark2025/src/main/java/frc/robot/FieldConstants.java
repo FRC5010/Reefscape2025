@@ -118,8 +118,6 @@ public class FieldConstants {
         new Pose2d[6];
     public static final Map<Side, List<Map<ReefBranch, Pose3d>>> branchPositions =
         new HashMap<>();
-
-    
   }
 
 public enum ReefBranch{
