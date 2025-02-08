@@ -51,10 +51,4 @@ public final class Constants
     public static final double RIGHT_X_DEADBAND = 0.1;
     public static final double TURN_CONSTANT    = 6;
   }
-
-  public static class Field {
-    public static class Reef {
-      public static final Transform2d REEF_CENTER_BLUE = new Transform2d();
-    }
-  }
 }

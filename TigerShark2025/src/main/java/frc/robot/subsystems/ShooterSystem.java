@@ -29,13 +29,14 @@ public class ShooterSystem extends GenericSubsystem {
 
   protected VelocityControlMotor shooterLeft;
   protected VelocityControlMotor shooterRight;
-  private Trigger entryBroken, alignmentBroken, empty, entry, loading, aligned;
+  private Trigger entryBroken, alignmentBroken;
+  private Trigger isEmpty, isEntryActive, isCoralFullyCaptured, isAligned;
   private CoralState coralState;
 
   public enum CoralState{
     EMPTY,
     ENTRY,
-    LOADING,
+    FULLY_CAPTURED,
     ALIGNED
   }
 
@@ -47,17 +48,22 @@ public class ShooterSystem extends GenericSubsystem {
     entryBeambreak = new Beambreak(1);
 
     entryBroken = new Trigger(entryBeambreak.isBrokenSupplier());
-    entryBroken.and(() -> coralState == CoralState.EMPTY).onTrue(setCoralState(CoralState.ENTRY));
     alignmentBroken = new Trigger(alignmentBeambreak.isBrokenSupplier());
-    alignmentBroken.and(() -> coralState == CoralState.ENTRY).onTrue(setCoralState(CoralState.LOADING));
-    alignmentBroken.and(() -> coralState == CoralState.LOADING).onFalse(setCoralState(CoralState.ALIGNED));
-    alignmentBroken.and(() -> coralState == CoralState.ALIGNED).onFalse(setCoralState(CoralState.EMPTY));
 
-    empty = new Trigger(() -> coralState == CoralState.EMPTY);
-    entry = new Trigger(() -> coralState == CoralState.ENTRY);
-    loading = new Trigger(() -> coralState == CoralState.LOADING);
-    aligned = new Trigger(() -> coralState == CoralState.ALIGNED);
+    isEmpty = new Trigger(() -> coralState == CoralState.EMPTY);
+    isEntryActive = new Trigger(() -> coralState == CoralState.ENTRY);
+    isCoralFullyCaptured = new Trigger(() -> coralState == CoralState.FULLY_CAPTURED);
+    isAligned = new Trigger(() -> coralState == CoralState.ALIGNED);
 
+    setupStateMachine();
+    setupMotors(mechanismSimulation);
+   
+    isEntryActive.whileTrue(captureCoral());
+    isCoralFullyCaptured.whileTrue(alignCoral());
+   
+  }
+
+  private void setupMotors(Mechanism2d mechanismSimulation) {
     shooterLeft = new VelocityControlMotor(MotorFactory.Spark(11, Motor.Neo), "shooterLeft", displayValues);
     shooterRight = new VelocityControlMotor(MotorFactory.TalonFX(12, Motor.KrakenX60), "shooterRight",
             displayValues);
@@ -69,10 +75,22 @@ public class ShooterSystem extends GenericSubsystem {
     shooterRight.setVisualizer(mechanismSimulation,
             new Pose3d(new Translation3d(Inches.of(7.15).in(Meters), Inches.of(2.875).in(Meters),
                   Inches.of(6.25).in(Meters)), new Rotation3d()));
+  }
 
-    empty.onTrue(runMotors(0.0));
-    entry.whileTrue(runMotors(0.1));
-    loading.whileTrue(runMotors(-0.1));
+  private void setupStateMachine() {
+    Trigger coralOutOfShooter = entryBroken.negate().and(alignmentBroken.negate());
+
+    // Empty
+    entryBroken.and(isEmpty).onTrue(setCoralState(CoralState.ENTRY));
+    // Entry
+    alignmentBroken.and(isEntryActive).onTrue(setCoralState(CoralState.FULLY_CAPTURED)); // Entry -> Fully Captured
+    coralOutOfShooter.and(isEntryActive).onTrue(setCoralState(CoralState.EMPTY)); // Entry -> Empty
+    // Fully Captured
+    alignmentBroken.and(isCoralFullyCaptured).onFalse(setCoralState(CoralState.ALIGNED)); // Fully Captured -> Aligned
+    coralOutOfShooter.and(isCoralFullyCaptured).onTrue(setCoralState(CoralState.EMPTY)); // Fully Captured -> Empty
+    // Aligned
+    alignmentBroken.and(isAligned).onFalse(setCoralState(CoralState.FULLY_CAPTURED)); // Aligned -> Fully Captured
+    coralOutOfShooter.and(isAligned).onTrue(setCoralState(CoralState.EMPTY)); // Aligned -> Empty
   }
 
   public void shooterLeftSpeed(double speed) {
@@ -90,12 +108,20 @@ public class ShooterSystem extends GenericSubsystem {
     }, this);
   }
 
+  public Command captureCoral() {
+    return runMotors(0.1);
+  }
+
+  public Command alignCoral() {
+    return runMotors(-0.1).until(isAligned);
+  }
+
   public Command setCoralState(CoralState state) {
     return Commands.runOnce(() -> coralState = state);
   }
 
   public Command intakeCoral() {
-    return runMotors(0.1).until(empty.negate());
+    return runMotors(0.1).until(isEmpty.negate());
   }
 
   @Override
