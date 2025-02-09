@@ -61,6 +61,7 @@
       "/LiveWindow/Ungrouped/Pigeon 2 [13]": "Gyro",
       "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
       "/Shuffleboard/BabySwerve/Auto Modes": "String Chooser",
+      "/Shuffleboard/Elphaba/Auto Modes": "String Chooser",
       "/Shuffleboard/ExampleRobot/Auto Modes": "String Chooser",
       "/Shuffleboard/Pancake/Auto Modes": "String Chooser",
       "/Shuffleboard/Pose/Pose Field": "Field2d",
@@ -75,6 +76,7 @@
       "/SmartDashboard/Motors": "Alerts",
       "/SmartDashboard/Pigeon 2 (v6) [13]": "Gyro",
       "/SmartDashboard/Pigeon 2 (v6) [15]": "Gyro",
+      "/SmartDashboard/Pigeon 2 (v6) [50]": "Gyro",
       "/SmartDashboard/Pigeon 2 [13]": "Gyro",
       "/SmartDashboard/Right4Coral": "Command",
       "/SmartDashboard/Robot Visual": "Mechanism2d",
@@ -665,10 +667,7 @@
         "left": 534,
         "right": 3466,
         "top": 291,
-        "width": 17.54825210571289,
-        "window": {
-          "visible": true
-        }
+        "width": 17.54825210571289
       }
     }
   },

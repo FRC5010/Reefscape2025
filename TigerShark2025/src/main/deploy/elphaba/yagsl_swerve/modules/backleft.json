@@ -5,18 +5,18 @@
     "canbus": null
   },
   "angle": {
-    "type": "nova_neo",
+    "type": "sparkmax_neo",
     "id": 4,
     "canbus": null
   },
   "encoder": {
-    "type": "thrifty_nova",
+    "type": "canandmag",
     "id": 1,
     "canbus": null
   },
   "inverted": {
     "drive": false,
-    "angle": true
+    "angle": false
   },
   "absoluteEncoderOffset": 0.0,
   "absoluteEncoderInverted": true,
