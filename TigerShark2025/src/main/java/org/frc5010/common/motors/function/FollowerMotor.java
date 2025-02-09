@@ -18,4 +18,9 @@ public class FollowerMotor extends GenericFunctionalMotor {
     super(motor, visualName);
     setFollow(leader);
   }
+
+  public FollowerMotor(MotorController5010 motor, MotorController5010 leader, String visualName, boolean inversion) {
+    super(motor, visualName);
+    setFollow(leader, inversion);
+  }
 }

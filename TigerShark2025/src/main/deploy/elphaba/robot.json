@@ -1,0 +1,19 @@
+{
+    "userConfig": "competition_mode.json",
+    "logLevel": "CONFIG",
+    "driveType": "YAGSL_SWERVE_DRIVE",
+    "trackWidth": 22,
+    "trackWidthUom": "in",
+    "wheelBase": 22,
+    "wheelBaseUom": "in",
+    "wheelDiameter": 0.103386904,
+    "wheelDiameterUom": "m",
+    "physicalMaxSpeed": 5.4,
+    "physicalMaxSpeedUom": "m/s",
+    "driveMotorGearRatio": 6.75,
+    "gamePieceA": "Coral",
+    "gamePieceB": "Algae",
+    "devices": {
+        "gyro": "gyro_settings.json"
+    }
+}

@@ -196,7 +196,7 @@ public class GenericTalonFXMotor implements MotorController5010 {
    */
   @Override
   public MotorController5010 setFollow(MotorController5010 motor, boolean inverted) {
-    this.motor.setControl(new Follower(((TalonFX) motor).getDeviceID(), inverted));
+    this.motor.setControl(new Follower(((TalonFX) motor.getMotor()).getDeviceID(), inverted));
     return this;
   }
 

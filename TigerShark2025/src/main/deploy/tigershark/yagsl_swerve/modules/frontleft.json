@@ -1,11 +1,11 @@
 {
   "drive": {
-    "type": "neo",
+    "type": "krakenx60foc",
     "id": 1,
     "canbus": null
   },
   "angle": {
-    "type": "neo",
+    "type": "nova_neo",
     "id": 2,
     "canbus": null
   },

@@ -77,7 +77,7 @@ public class ReefscapeButtonBoard extends ButtonBoard {
         }
     }
 
-    public enum ScoringLevel implements ButtonStateSetting{
+    public static enum ScoringLevel implements ButtonStateSetting{
         INTAKE(9),
         L1(10),
         L2(11),

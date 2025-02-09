@@ -49,6 +49,7 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
     protected double setPointDisplayOffset = 0.03;
     Distance carriageHeight = Meters.of(0.0);
     Distance mechanismHeight = Meters.of(0.0);
+    Distance minHeight = Meters.of(0.0);
     protected final String K_G = "kG";
     protected final String CONVERSION = "Conversion";
     protected final String SPEED = "Speed";
@@ -57,6 +58,7 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
     protected DisplayDouble speed;
     protected Optional<DoubleSupplier> supplyKG = Optional.empty();
     protected ElevatorFeedforward elevatorFeedforward;
+
 
     public VerticalPositionControlMotor(MotorController5010 motor, String visualName, DisplayValuesHelper tab) {
         super(motor, visualName, tab);
@@ -70,6 +72,7 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
             Distance minHeight,
             Distance maximumHeight, Distance startingHeight, Distance carriageHeight, double kG) {
         this.carriageHeight = carriageHeight;
+        this.minHeight = minHeight;
         mechanismHeight = maximumHeight;
         simMechanism = new ElevatorSim(
                 LinearSystemId.createElevatorSystem(_motor.getMotorSimulationType(), mass.in(Kilograms),
@@ -131,6 +134,22 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
         return this;
     }
 
+    public Boolean isAtMax() {
+        return isCloseToMax(Meters.of(0));
+    }
+
+    public Boolean isAtMin() {
+        return isCloseToMin(Meters.of(0));
+    }
+
+    public Boolean isCloseToMax(Distance closeZone) {
+        return getPosition() >= mechanismHeight.minus(closeZone).in(Meters) ;
+    }
+
+    public Boolean isCloseToMin(Distance closeZone) {
+        return getPosition() <= minHeight.plus(closeZone).in(Meters);
+    }
+
     @Override
     public void setReference(double reference) {
         setReference(reference, controller.getControlType(),
@@ -186,6 +205,7 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
     public void draw() {
         updateReference();
         double currentPosition = 0;
+        effort.setVoltage(_motor.getVoltage(), Volts);
         currentPosition = getPosition();
         setPointRoot.setPosition(getSimX(Meters.of(_robotToMotor.getX())) + setPointDisplayOffset,
                 getSimY(Meters.of(_robotToMotor.getZ())) + getReference());

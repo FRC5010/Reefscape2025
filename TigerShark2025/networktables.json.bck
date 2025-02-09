@@ -226,7 +226,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/elevator/kP",
     "type": "double",
-    "value": 0.0,
+    "value": 60.0,
     "properties": {
       "persistent": true
     }
@@ -234,7 +234,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/elevator/kI",
     "type": "double",
-    "value": 0.0,
+    "value": 1.0,
     "properties": {
       "persistent": true
     }
@@ -242,7 +242,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/elevator/kD",
     "type": "double",
-    "value": 0.0,
+    "value": 0.5,
     "properties": {
       "persistent": true
     }
@@ -290,7 +290,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/elevator/MinOutput",
     "type": "double",
-    "value": 0.0,
+    "value": -1.0,
     "properties": {
       "persistent": true
     }
@@ -298,7 +298,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/elevator/MaxOutput",
     "type": "double",
-    "value": 0.0,
+    "value": 1.0,
     "properties": {
       "persistent": true
     }
@@ -322,7 +322,7 @@
   {
     "name": "/SmartDashboard/ScoringSystem/elevator/Max Acceleration",
     "type": "double",
-    "value": 0.5,
+    "value": 5.0,
     "properties": {
       "persistent": true
     }
@@ -339,6 +339,238 @@
     "name": "/SmartDashboard/ScoringSystem/elevator/Conversion",
     "type": "double",
     "value": 1.053313184895586,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kP",
+    "type": "double",
+    "value": 0.1,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kI",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kD",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kF",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kS",
+    "type": "double",
+    "value": 0.12,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kV",
+    "type": "double",
+    "value": 0.12,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kA",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/IZone",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/MinOutput",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/MaxOutput",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/Tolerance",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/Max Velocity",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/Max Acceleration",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kG",
+    "type": "double",
+    "value": 0.1478,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ElevatorSystem/elevator/kP",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ElevatorSystem/elevator/kI",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ElevatorSystem/elevator/kD",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ElevatorSystem/elevator/kF",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ElevatorSystem/elevator/kS",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ElevatorSystem/elevator/kV",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ElevatorSystem/elevator/kA",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ElevatorSystem/elevator/IZone",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ElevatorSystem/elevator/MinOutput",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ElevatorSystem/elevator/MaxOutput",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ElevatorSystem/elevator/Tolerance",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ElevatorSystem/elevator/Max Velocity",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ElevatorSystem/elevator/Max Acceleration",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ElevatorSystem/elevator/kG",
+    "type": "double",
+    "value": 0.263672,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ElevatorSystem/elevator/Conversion",
+    "type": "double",
+    "value": 0.02925869958043294,
     "properties": {
       "persistent": true
     }

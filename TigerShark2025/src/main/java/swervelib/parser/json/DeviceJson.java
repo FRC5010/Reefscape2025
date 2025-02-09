@@ -181,6 +181,7 @@ public class DeviceJson
     {
       canIdWarning.set(true);
     }
+
     switch (type)
     {
       case "sparkmax_neo":
