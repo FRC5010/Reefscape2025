@@ -63,8 +63,6 @@ public class ThriftyNovaSwerve extends SwerveMotor
    */
   private       double        velocityConversionFactor = 1.0 / 60.0;
 
-  private       boolean       firstEncoderSet = false;
-
   /**
    * Initialize the swerve motor.
    *
@@ -90,8 +88,10 @@ public class ThriftyNovaSwerve extends SwerveMotor
       velocityConversion = new Conversion(VelocityUnit.ROTATIONS_PER_SEC, EncoderType.INTERNAL);
     } else
     {
-      positionConversion = new Conversion(PositionUnit.DEGREES, EncoderType.INTERNAL);
-      velocityConversion = new Conversion(VelocityUnit.DEGREES_PER_SEC, EncoderType.INTERNAL);
+      positionConversion = new Conversion(PositionUnit.ROTATIONS, EncoderType.INTERNAL);
+      velocityConversion = new Conversion(VelocityUnit.ROTATIONS_PER_SEC, EncoderType.INTERNAL);
+      positionConversionFactor *= 360;
+      velocityConversionFactor *= 360;    
     }
   }
 
@@ -152,16 +152,8 @@ public class ThriftyNovaSwerve extends SwerveMotor
   @Override
   public SwerveMotor setAbsoluteEncoder(SwerveAbsoluteEncoder encoder)
   {
-    if (isDriveMotor)
-    {
-      positionConversion = new Conversion(PositionUnit.ROTATIONS, EncoderType.ABS);
-      velocityConversion = new Conversion(VelocityUnit.ROTATIONS_PER_SEC, EncoderType.ABS);
-    } else
-    {
-      positionConversion = new Conversion(PositionUnit.DEGREES, EncoderType.ABS);
-      velocityConversion = new Conversion(VelocityUnit.DEGREES_PER_SEC, EncoderType.ABS);
-    }
-    motor.useEncoderType(EncoderType.ABS);
+    positionConversion = new Conversion(PositionUnit.DEGREES, EncoderType.ABS);
+    velocityConversion = new Conversion(VelocityUnit.DEGREES_PER_SEC, EncoderType.ABS);
     encoderType = EncoderType.ABS;
     return this;
   }
@@ -169,7 +161,6 @@ public class ThriftyNovaSwerve extends SwerveMotor
   @Override
   public void configureIntegratedEncoder(double positionConversionFactor)
   {
-    motor.useEncoderType(EncoderType.INTERNAL);
     if (isDriveMotor)
     {
       positionConversion = new Conversion(PositionUnit.ROTATIONS, EncoderType.INTERNAL);
@@ -178,9 +169,11 @@ public class ThriftyNovaSwerve extends SwerveMotor
     {
       positionConversion = new Conversion(PositionUnit.ROTATIONS, EncoderType.INTERNAL);
       velocityConversion = new Conversion(VelocityUnit.ROTATIONS_PER_SEC, EncoderType.INTERNAL);
+      positionConversionFactor *= 360;
+      velocityConversionFactor *= 360;
     }
     this.positionConversionFactor = positionConversionFactor;
-    this.velocityConversionFactor = positionConversionFactor / 60.0;
+    this.velocityConversionFactor = positionConversionFactor;
     configureCANStatusFrames(0.25, 0.01, 0.01, 0.02, 0.20);
   }
 
@@ -213,6 +206,7 @@ public class ThriftyNovaSwerve extends SwerveMotor
   public void configurePIDF(PIDFConfig config)
   {
     motor.pid0.setP(config.p).setI(config.i).setD(config.d);
+    motor.usePIDSlot(PIDSlot.SLOT0);
     checkErrors("Configuring PIDF failed: ");
   }
 
@@ -297,10 +291,12 @@ public class ThriftyNovaSwerve extends SwerveMotor
     if (isDriveMotor)
     {
       motor.pid0.setFF(feedforward);
-      motor.setVelocity(setpoint);
+      motor.setVelocity(velocityConversion.toMotor(setpoint / positionConversionFactor));
     } else
     {
-      motor.setPosition(setpoint / 360.0);
+      double convertedSetpoint = setpoint;
+      double motorSetpoint = positionConversion.toMotor(convertedSetpoint);
+      motor.setPosition(motorSetpoint);
     }
   }
 
@@ -356,7 +352,16 @@ public class ThriftyNovaSwerve extends SwerveMotor
   @Override
   public double getPosition()
   {
-    return positionConversion.fromMotor(motor.getPosition()) * positionConversionFactor;
+    if (EncoderType.ABS == encoderType) 
+    {
+      motor.useEncoderType(EncoderType.ABS);
+      return positionConversion.fromMotor(motor.getPosition()) * positionConversionFactor;
+    }
+    else 
+    {
+      motor.useEncoderType(EncoderType.INTERNAL);
+      return positionConversion.fromMotor(motor.getPosition()) * positionConversionFactor;
+    }
   }
 
   /**
@@ -367,9 +372,10 @@ public class ThriftyNovaSwerve extends SwerveMotor
   @Override
   public void setPosition(double position)
   {
-    if (EncoderType.ABS != encoderType || !firstEncoderSet) {
-      motor.setEncoderPosition(positionConversion.toMotor(position));
-      firstEncoderSet = true;
+    if (EncoderType.ABS != encoderType) 
+    {
+      motor.useEncoderType(EncoderType.INTERNAL);
+      motor.setEncoderPosition(positionConversion.toMotor(position / positionConversionFactor));
     }
   }
 
