@@ -129,6 +129,12 @@ public class SparkFlexSwerve extends SwerveMotor
     failureConfiguring.set(true);
   }
 
+  @Override
+  public void close()
+  {
+    motor.close();
+  }
+
   /**
    * Get the current configuration of the {@link SparkFlex}
    *
@@ -222,7 +228,7 @@ public class SparkFlexSwerve extends SwerveMotor
    * @return connected absolute encoder state.
    */
   @Override
-  public boolean isAttachedAbsoluteEncoder()
+  public boolean usingExternalFeedbackSensor()
   {
     return absoluteEncoder.isPresent();
   }
@@ -371,6 +377,15 @@ public class SparkFlexSwerve extends SwerveMotor
         .positionWrappingEnabled(true)
         .positionWrappingInputRange(minInput, maxInput);
 
+  }
+
+  /**
+   * Disable PID Wrapping on the motor.
+   */
+  @Override
+  public void disablePIDWrapping()
+  {
+    cfg.closedLoop.positionWrappingEnabled(false);
   }
 
   /**

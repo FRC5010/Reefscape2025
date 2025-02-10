@@ -3,6 +3,7 @@ package swervelib.encoders;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.Timer;
 
 /**
  * DutyCycle encoders such as "US Digital MA3 with DIO Output, the CTRE Mag Encoder, the Rev Hex Encoder, and the AM Mag
@@ -40,11 +41,18 @@ public class DIODutyCycleEncoderSwerve extends SwerveAbsoluteEncoder
   public DIODutyCycleEncoderSwerve(int pin)
   {
     encoder = new DutyCycleEncoder(pin);
+    Timer.delay(2);
     inaccurateVelocities = new Alert(
         "Encoders",
         "The DIO Duty Cycle encoder may not report accurate velocities!",
         AlertType.kWarning);
 
+  }
+
+  @Override
+  public void close()
+  {
+    encoder.close();
   }
 
   /**

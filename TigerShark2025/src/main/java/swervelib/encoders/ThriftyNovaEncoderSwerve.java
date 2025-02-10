@@ -47,6 +47,15 @@ public class ThriftyNovaEncoderSwerve extends SwerveAbsoluteEncoder
     this.motor = (ThriftyNova) motor.getMotor();
     positionConversion = new Conversion(PositionUnit.DEGREES, EncoderType.ABS);
     velocityConversion = new Conversion(VelocityUnit.DEGREES_PER_SEC, EncoderType.ABS);
+    this.motor.useEncoderType(EncoderType.ABS);
+  }
+
+  @Override
+  public void close()
+  {
+    // ThriftyNova encoder gets closed with the motor
+    // I don't think an encoder getting closed should 
+    // close the entire motor so i will keep this empty
   }
 
   /**
@@ -84,7 +93,6 @@ public class ThriftyNovaEncoderSwerve extends SwerveAbsoluteEncoder
   @Override
   public double getAbsolutePosition()
   {
-    motor.useEncoderType(EncoderType.ABS);
     double rawMotor = motor.getPosition();
     double convertedMotor = positionConversion.fromMotor(rawMotor);
     return (convertedMotor + offset) * (inverted ? -1.0 : 1.0);
@@ -120,8 +128,6 @@ public class ThriftyNovaEncoderSwerve extends SwerveAbsoluteEncoder
   @Override
   public double getVelocity()
   {
-    motor.useEncoderType(EncoderType.ABS);
     return velocityConversion.fromMotor(motor.getVelocity()) * (inverted ? -1.0 : 1.0);
-
   }
 }

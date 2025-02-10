@@ -71,7 +71,7 @@ import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 /**
  * Swerve Drive class representing and controlling the swerve drive.
  */
-public class SwerveDrive
+public class SwerveDrive implements AutoCloseable
 {
 
   /**
@@ -332,6 +332,16 @@ public class SwerveDrive
     checkIfTunerXCompatible();
 
     HAL.report(kResourceType_RobotDrive, kRobotDriveSwerve_YAGSL);
+  }
+
+  @Override
+  public void close() {
+    imu.close();
+    tunerXRecommendation.close();
+
+    for (var module : swerveModules) {
+      module.close();
+    }
   }
 
   /**
@@ -766,12 +776,8 @@ public class SwerveDrive
     }
     for (SwerveModule module : swerveModules)
     {
-      // SwerveModuleState optimization might be desired to be disabled while debugging.
-      if (module.getModuleStateOptimization())
-      {
-        states[module.moduleNumber].optimize(Rotation2d.fromDegrees(module.getAbsolutePosition()));
-        module.applyAntiJitter(states[module.moduleNumber], false);
-      }
+      module.applyStateOptimizations(states[module.moduleNumber]);
+      module.applyAntiJitter(states[module.moduleNumber], false);
       
       // from the module configuration, obtain necessary information to calculate feed-forward
       // Warning: Will not work well if motor is not what we are expecting.
@@ -1381,9 +1387,33 @@ public class SwerveDrive
   }
 
   /**
+   * Set the motor controller closed loop feedback device to the defined external absolute encoder, with the given
+   * offset from the supplied configuration, overwriting any native offset.
+   */
+  public void useExternalFeedbackSensor()
+  {
+    for (SwerveModule module : swerveModules)
+    {
+      module.useExternalFeedbackSensor();
+    }
+  }
+
+  /**
+   * Set the motor controller closed loop feedback device to the internal encoder instead of the absolute encoder.
+   */
+  public void useInternalFeedbackSensor()
+  {
+    for (SwerveModule module : swerveModules)
+    {
+      module.useInternalFeedbackSensor();
+    }
+  }
+
+  /**
    * Pushes the Absolute Encoder offsets to the Encoder or Motor Controller, depending on type. Also removes the
    * internal offsets to prevent double offsetting.
    */
+  @Deprecated
   public void pushOffsetsToEncoders()
   {
     for (SwerveModule module : swerveModules)
@@ -1395,6 +1425,7 @@ public class SwerveDrive
   /**
    * Restores Internal YAGSL Encoder offsets and sets the Encoder stored offset back to 0
    */
+  @Deprecated
   public void restoreInternalOffset()
   {
     for (SwerveModule module : swerveModules)
