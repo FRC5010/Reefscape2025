@@ -17,7 +17,7 @@ public class Elphaba extends GenericRobot {
     GenericDrivetrain drivetrain;
     ElevatorSystem elevatorSystem;
     ShooterSystem shooter;
-    //AlgaeArm algaeArm;
+    // AlgaeArm algaeArm;
     ReefscapeButtonBoard reefscapeButtonBoard;
 
     public Elphaba(String directory) {
@@ -27,7 +27,7 @@ public class Elphaba extends GenericRobot {
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
         elevatorSystem = new ElevatorSystem(mechVisual);
         shooter = new ShooterSystem(mechVisual);
-        //algaeArm = new AlgaeArm(mechVisual);
+        // algaeArm = new AlgaeArm(mechVisual);
 
         reefscapeButtonBoard = new ReefscapeButtonBoard(2);
     }
@@ -35,8 +35,10 @@ public class Elphaba extends GenericRobot {
     @Override
     public void configureButtonBindings(Controller driver, Controller operator) {
         reefscapeButtonBoard.configureOperatorButtonBindings(operator);
-        driver.createLeftBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem.driveToPosition(elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()))));
-        driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem.driveToPosition(elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.ScoringLevel.INTAKE))));
+        driver.createLeftBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
+                .profiledBangBangCmd(elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()))));
+        driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
+                .profiledBangBangCmd(elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.ScoringLevel.INTAKE))));
     }
 
     @Override
@@ -45,25 +47,28 @@ public class Elphaba extends GenericRobot {
         reefscapeButtonBoard.configureOperatorButtonBindings(operator);
 
         shooter.setDefaultCommand(shooter.runMotors(() -> operator.getLeftTrigger()));
-        
 
         // operator.createAButton().whileTrue(
-        //         Commands.runOnce(() -> scoringSystem.setElevatorPosition(ScoringSystem.Position.BOTTOM),
-        //                 scoringSystem).until(scoringSystem.isAtTarget()));
+        // Commands.runOnce(() ->
+        // scoringSystem.setElevatorPosition(ScoringSystem.Position.BOTTOM),
+        // scoringSystem).until(scoringSystem.isAtTarget()));
         // operator.createXButton().whileTrue(
-        //         Commands.runOnce(() -> elevatorSystem.setElevatorPosition(ElevatorSystem.Position.L2), elevatorSystem)
-        //                 .until(elevatorSystem.isAtTarget()));
+        // Commands.runOnce(() ->
+        // elevatorSystem.setElevatorPosition(ElevatorSystem.Position.L2),
+        // elevatorSystem)
+        // .until(elevatorSystem.isAtTarget()));
         // operator.createYButton().whileTrue(
-        //         Commands.runOnce(() -> elevatorSystem.setElevatorPosition(ElevatorSystem.Position.L3), elevatorSystem)
-        //                 .until(elevatorSystem.isAtTarget()));
+        // Commands.runOnce(() ->
+        // elevatorSystem.setElevatorPosition(ElevatorSystem.Position.L3),
+        // elevatorSystem)
+        // .until(elevatorSystem.isAtTarget()));
         // operator.createBButton().whileTrue(
-        //         Commands.run(() -> scoringSystem.setElevatorPosition(ScoringSystem.Position.L4), scoringSystem)
-        //                 .until(scoringSystem.isAtTarget()));
+        // Commands.run(() ->
+        // scoringSystem.setElevatorPosition(ScoringSystem.Position.L4), scoringSystem)
+        // .until(scoringSystem.isAtTarget()));
 
         elevatorSystem.setDefaultCommand(elevatorSystem.basicSuppliersMovement(operator::getLeftYAxis));
-        //algaeArm.setDefaultCommand(algaeArm.getInitialCommand(operator::getRightTrigger));
-    
-        
+        // algaeArm.setDefaultCommand(algaeArm.getInitialCommand(operator::getRightTrigger));
 
     }
 
