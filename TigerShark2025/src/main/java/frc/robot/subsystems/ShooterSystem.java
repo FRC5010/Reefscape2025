@@ -8,11 +8,14 @@ import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RPM;
 
+import java.util.function.DoubleSupplier;
+
 import org.frc5010.common.arch.GenericSubsystem;
 import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.motors.function.VelocityControlMotor;
 import org.frc5010.common.sensors.Beambreak;
+import org.frc5010.common.telemetry.DisplayBoolean;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -32,6 +35,7 @@ public class ShooterSystem extends GenericSubsystem {
   private Trigger entryBroken, alignmentBroken;
   private Trigger isEmpty, isEntryActive, isCoralFullyCaptured, isAligned;
   private CoralState coralState;
+  private DisplayBoolean entryBeamBreakDisplay, alignmentBeamBreakDisplay;
 
   public enum CoralState{
     EMPTY,
@@ -44,8 +48,14 @@ public class ShooterSystem extends GenericSubsystem {
   public ShooterSystem(Mechanism2d mechanismSimulation) {
     coralState = CoralState.EMPTY;
 
-    alignmentBeambreak = new Beambreak(0);
-    entryBeambreak = new Beambreak(1);
+    alignmentBeambreak = new Beambreak(1);
+    entryBeambreak = new Beambreak(0);
+
+    entryBeamBreakDisplay = displayValues.makeDisplayBoolean("Entry Beam Break");
+    alignmentBeamBreakDisplay = displayValues.makeDisplayBoolean("Alignment Beam Break");
+    
+    entryBeamBreakDisplay.setValue(false);
+    alignmentBeamBreakDisplay.setValue(false);
 
     entryBroken = new Trigger(entryBeambreak.isBrokenSupplier());
     alignmentBroken = new Trigger(alignmentBeambreak.isBrokenSupplier());
@@ -55,7 +65,7 @@ public class ShooterSystem extends GenericSubsystem {
     isCoralFullyCaptured = new Trigger(() -> coralState == CoralState.FULLY_CAPTURED);
     isAligned = new Trigger(() -> coralState == CoralState.ALIGNED);
 
-    setupStateMachine();
+    // setupStateMachine();
     setupMotors(mechanismSimulation);
    
     isEntryActive.whileTrue(captureCoral());
@@ -64,9 +74,13 @@ public class ShooterSystem extends GenericSubsystem {
   }
 
   private void setupMotors(Mechanism2d mechanismSimulation) {
-    shooterLeft = new VelocityControlMotor(MotorFactory.Spark(11, Motor.Neo), "shooterLeft", displayValues);
-    shooterRight = new VelocityControlMotor(MotorFactory.TalonFX(12, Motor.KrakenX60), "shooterRight",
+    shooterLeft = new VelocityControlMotor(MotorFactory.Thrifty(11, Motor.Neo), "shooterLeft", displayValues);
+    shooterRight = new VelocityControlMotor(MotorFactory.Thrifty(12, Motor.Neo), "shooterRight",
             displayValues);
+    shooterLeft.invert(true);
+    shooterRight.invert(false);
+
+
     shooterLeft.setupSimulatedMotor(1, 10);
     shooterRight.setupSimulatedMotor(1, 10);
     shooterLeft.setVisualizer(mechanismSimulation, new Pose3d(
@@ -98,22 +112,22 @@ public class ShooterSystem extends GenericSubsystem {
   }
 
   public void shooterRightSpeed(double speed) {
-      shooterRight.setReference(speed * shooterRight.getMaxRPM().in(RPM));
+      shooterRight.set(speed);
   }
 
-  public Command runMotors(double speed) {
+  public Command runMotors(DoubleSupplier speed) {
     return Commands.run(() -> {
-      shooterLeftSpeed(speed);
-      shooterRightSpeed(speed);
+      shooterLeftSpeed(speed.getAsDouble()*0.25);
+      shooterRightSpeed(speed.getAsDouble()*0.25);
     }, this);
   }
 
   public Command captureCoral() {
-    return runMotors(0.1);
+    return runMotors(() -> 0.1);
   }
 
   public Command alignCoral() {
-    return runMotors(-0.1).until(isAligned);
+    return runMotors(() -> -0.1).until(isAligned);
   }
 
   public Command setCoralState(CoralState state) {
@@ -121,13 +135,15 @@ public class ShooterSystem extends GenericSubsystem {
   }
 
   public Command intakeCoral() {
-    return runMotors(0.1).until(isEmpty.negate());
+    return runMotors(() -> 0.1).until(isEmpty.negate());
   }
 
   @Override
   public void periodic() {
       shooterLeft.draw();
       shooterRight.draw();
+      entryBeamBreakDisplay.setValue(entryBroken.getAsBoolean());
+      alignmentBeamBreakDisplay.setValue(alignmentBroken.getAsBoolean());
   }
 
   @Override

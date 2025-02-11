@@ -11,10 +11,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.auto_routines.Right4Coral;
 import frc.robot.subsystems.ElevatorSystem;
+import frc.robot.subsystems.ShooterSystem;
 
 public class Elphaba extends GenericRobot {
     GenericDrivetrain drivetrain;
     ElevatorSystem elevatorSystem;
+    ShooterSystem shooter;
+    //AlgaeArm algaeArm;
     ReefscapeButtonBoard reefscapeButtonBoard;
 
     public Elphaba(String directory) {
@@ -23,6 +26,8 @@ public class Elphaba extends GenericRobot {
 
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
         elevatorSystem = new ElevatorSystem(mechVisual);
+        shooter = new ShooterSystem(mechVisual);
+        //algaeArm = new AlgaeArm(mechVisual);
 
         reefscapeButtonBoard = new ReefscapeButtonBoard(2);
     }
@@ -38,6 +43,8 @@ public class Elphaba extends GenericRobot {
     public void setupDefaultCommands(Controller driver, Controller operator) {
         drivetrain.setDefaultCommand(drivetrain.createDefaultCommand(driver));
         reefscapeButtonBoard.configureOperatorButtonBindings(operator);
+
+        shooter.setDefaultCommand(shooter.runMotors(() -> operator.getLeftTrigger()));
         
 
         // operator.createAButton().whileTrue(
@@ -54,6 +61,8 @@ public class Elphaba extends GenericRobot {
         //                 .until(scoringSystem.isAtTarget()));
 
         elevatorSystem.setDefaultCommand(elevatorSystem.basicSuppliersMovement(operator::getLeftYAxis));
+        //algaeArm.setDefaultCommand(algaeArm.getInitialCommand(operator::getRightTrigger));
+    
         
 
     }

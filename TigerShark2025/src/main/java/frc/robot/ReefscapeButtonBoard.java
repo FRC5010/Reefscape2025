@@ -123,7 +123,7 @@ public class ReefscapeButtonBoard extends ButtonBoard {
 
     public static ScoringLocation scoringLocation = ScoringLocation.BACK_LEFT_IJ;
     public static ScoringAlignment scoringAlignment = ScoringAlignment.REEF_LEFT;
-    public static ScoringLevel scoringLevel = ScoringLevel.L1;
+    public static ScoringLevel scoringLevel = ScoringLevel.INTAKE;
     public static LoadingStationLocation loadingStationLocation = LoadingStationLocation.STATION_LEFT_INNER;
     public boolean fineControl = false;
     public ShuffleboardTab tab = Shuffleboard.getTab("Driver");

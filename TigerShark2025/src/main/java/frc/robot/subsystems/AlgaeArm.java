@@ -12,6 +12,8 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.function.DoubleSupplier;
+
 import org.frc5010.common.arch.GenericSubsystem;
 import org.frc5010.common.constants.GenericPID;
 import org.frc5010.common.constants.MotorFeedFwdConstants;
@@ -24,15 +26,20 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /** Add your docs here. */
 public class AlgaeArm extends GenericSubsystem {
     protected AngularControlMotor motor;
+    protected Angle safeDistance = Degrees.of(10);
     protected PIDControlType controlType = PIDControlType.POSITION;
-        public static enum Position {
+
+    public static enum Position {
         UP(Degrees.of(90)),
         DOWN(Degrees.of(-45)),
         L2(Degrees.of(30)),
@@ -61,9 +68,12 @@ public class AlgaeArm extends GenericSubsystem {
         motor.setValues(new GenericPID(0.1, 0.0, 0.0));
         motor.setMotorFeedFwd(new MotorFeedFwdConstants(0.12, 0.12, 0));
         motor.setCurrentLimit(Amps.of(0));
+
+        // Ensure this angle works
+        motor.getMotorEncoder().setPosition(110);
     }
 
-        public void armSpeed(double speed) {
+    public void armSpeed(double speed) {
         if (motor.getControlType() != PIDControlType.NONE && speed != 0) {
             motor.setControlType(PIDControlType.NONE);
         }
@@ -80,6 +90,34 @@ public class AlgaeArm extends GenericSubsystem {
         if (controlType == motor.getControlType()) {
             motor.setReference(position.position().in(Degrees));
         }
+    }
+
+    public Command getInitialCommand(DoubleSupplier inputSpeeDoubleSupplier){
+        return Commands.run(()->{
+            double armPosition = 90 - inputSpeeDoubleSupplier.getAsDouble() * 120;
+            driveToAngle(armPosition);
+        }, this);
+    }
+
+    public Command driveToAngle(Double position) {
+        return Commands.run(() -> {
+            driveToAngle(position);
+        }, this);
+    }
+
+    public void driveToAngle(double position){
+        double difference = position - motor.getPivotPosition();
+            double sign = Math.signum(difference);
+            double effort = 0.5;
+            if (Math.abs(difference) < safeDistance.in(Degrees)) {
+                effort *= Math.max(Math.abs(difference) / safeDistance.in(Degrees), 0.05);
+
+                if (Math.abs(difference) < 0.01) {
+                    effort = 0;
+                }
+            }
+            effort *= sign;
+            motor.set(effort);
     }
 
     public Trigger isAtTarget() {

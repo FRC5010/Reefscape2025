@@ -126,8 +126,9 @@ public class ElevatorSystem extends GenericSubsystem {
             double difference = position.position().in(Meters) - elevator.getPosition();
             double sign = Math.signum(difference);
             double effort = 0.5;
-            if (Math.abs(difference) < 0.1) {
-                effort = 0.1;
+            if (Math.abs(difference) < safeDistance.in(Meters)) {
+                effort *= Math.max(Math.abs(difference) / safeDistance.in(Meters), 0.05);
+
 
                 if (Math.abs(difference) < 0.01) {
                     effort = 0;
