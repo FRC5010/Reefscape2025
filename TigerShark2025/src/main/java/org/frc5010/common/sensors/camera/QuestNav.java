@@ -253,7 +253,7 @@ public class QuestNav implements PoseProvider {
             Commands.run(
             () -> {
                 drivetrain.drive(new ChassisSpeeds(0, 0, 0.314), null);
-            }, drivetrain).withTimeout(2.0),
+            }, drivetrain).withTimeout(1.0),
             Commands.runOnce(() -> {
                 // Update current offset
                 Translation2d offset = calculateOffsetToRobotCenter();
@@ -264,7 +264,7 @@ public class QuestNav implements PoseProvider {
 
                 SmartDashboard.putNumberArray("Quest Calculated Offset to Robot Center", new double[] { _calculatedOffsetToRobotCenter.getX(), _calculatedOffsetToRobotCenter.getY() });
 
-            })).withTimeout(10.0);
+            })).withTimeout(20.0);
     }
 
 }

@@ -5,6 +5,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 
 import java.lang.reflect.Field;
@@ -28,7 +29,8 @@ public class ReefscapeButtonBoard extends ButtonBoard {
         public int getButton();
     }
 
-    private static Transform2d robotOffset = new Transform2d(Meters.of(0.4), Meters.zero(), Rotation2d.fromDegrees(180)); // Move to more appropriate, common, location
+    private static Transform2d robotOffset = new Transform2d(Inches.of(16.1), Meters.zero(), Rotation2d.fromDegrees(180)); // Move to more appropriate, common, location
+    private static Transform2d robotStationOffset = new Transform2d(Inches.of(16.1), Meters.zero(), Rotation2d.fromDegrees(0));
 
     public enum ScoringLocation implements ButtonStateSetting{
         FRONT_AB(0, FieldConstants.Reef.Side.AB.getRobotPose(robotOffset)), // new Pose2d(3.179, 4.035, new Rotation2d(0.0)
@@ -56,9 +58,9 @@ public class ReefscapeButtonBoard extends ButtonBoard {
     }
 
     public enum ScoringAlignment implements ButtonStateSetting{
-        REEF_LEFT(6, new Transform2d(0.0, 0.16, new Rotation2d())),
+        REEF_LEFT(6, new Transform2d(Inches.zero(), Inches.of(6.4688), new Rotation2d())),
         ALGAE(7, new Transform2d()),
-        REEF_RIGHT(8, new Transform2d(0.0, -0.16, new Rotation2d()));
+        REEF_RIGHT(8, new Transform2d(Inches.zero(), Inches.of(-6.4688), new Rotation2d()));
 
         private int button;
         private Transform2d transform;
@@ -98,10 +100,10 @@ public class ReefscapeButtonBoard extends ButtonBoard {
 
     public enum LoadingStationLocation  implements ButtonStateSetting{
 
-        STATION_LEFT_OUTER(15, FieldConstants.CoralStation.getGuideOffsetPose(FieldConstants.CoralStation.leftCenterFace, -3, robotOffset)),
-        STATION_LEFT_INNER(16, FieldConstants.CoralStation.getGuideOffsetPose(FieldConstants.CoralStation.leftCenterFace, 3, robotOffset)),
-        STATION_RIGHT_INNER(17, FieldConstants.CoralStation.getGuideOffsetPose(FieldConstants.CoralStation.rightCenterFace, -3, robotOffset)),
-        STATION_RIGHT_OUTER(18, FieldConstants.CoralStation.getGuideOffsetPose(FieldConstants.CoralStation.rightCenterFace, 3, robotOffset));
+        STATION_LEFT_OUTER(15, FieldConstants.CoralStation.getGuideOffsetPose(FieldConstants.CoralStation.leftCenterFace, -3, robotStationOffset)),
+        STATION_LEFT_INNER(16, FieldConstants.CoralStation.getGuideOffsetPose(FieldConstants.CoralStation.leftCenterFace, 3, robotStationOffset)),
+        STATION_RIGHT_INNER(17, FieldConstants.CoralStation.getGuideOffsetPose(FieldConstants.CoralStation.rightCenterFace, -3, robotStationOffset)),
+        STATION_RIGHT_OUTER(18, FieldConstants.CoralStation.getGuideOffsetPose(FieldConstants.CoralStation.rightCenterFace, 3, robotStationOffset));
 
 
         private int button;

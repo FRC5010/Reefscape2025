@@ -458,7 +458,7 @@
   {
     "name": "/SmartDashboard/ElevatorSystem/elevator/kP",
     "type": "double",
-    "value": 0.0,
+    "value": 60.0,
     "properties": {
       "persistent": true
     }
@@ -466,7 +466,7 @@
   {
     "name": "/SmartDashboard/ElevatorSystem/elevator/kI",
     "type": "double",
-    "value": 0.0,
+    "value": 1.0,
     "properties": {
       "persistent": true
     }
@@ -474,7 +474,7 @@
   {
     "name": "/SmartDashboard/ElevatorSystem/elevator/kD",
     "type": "double",
-    "value": 0.0,
+    "value": 0.5,
     "properties": {
       "persistent": true
     }
@@ -490,7 +490,7 @@
   {
     "name": "/SmartDashboard/ElevatorSystem/elevator/kS",
     "type": "double",
-    "value": 0.0,
+    "value": 0.25,
     "properties": {
       "persistent": true
     }
@@ -498,7 +498,7 @@
   {
     "name": "/SmartDashboard/ElevatorSystem/elevator/kV",
     "type": "double",
-    "value": 0.0,
+    "value": 0.12,
     "properties": {
       "persistent": true
     }
@@ -506,7 +506,7 @@
   {
     "name": "/SmartDashboard/ElevatorSystem/elevator/kA",
     "type": "double",
-    "value": 0.0,
+    "value": 0.01,
     "properties": {
       "persistent": true
     }
@@ -522,7 +522,7 @@
   {
     "name": "/SmartDashboard/ElevatorSystem/elevator/MinOutput",
     "type": "double",
-    "value": 0.0,
+    "value": -1.0,
     "properties": {
       "persistent": true
     }
@@ -530,7 +530,7 @@
   {
     "name": "/SmartDashboard/ElevatorSystem/elevator/MaxOutput",
     "type": "double",
-    "value": 0.0,
+    "value": 1.0,
     "properties": {
       "persistent": true
     }
@@ -546,7 +546,7 @@
   {
     "name": "/SmartDashboard/ElevatorSystem/elevator/Max Velocity",
     "type": "double",
-    "value": 0.0,
+    "value": 2.0,
     "properties": {
       "persistent": true
     }
@@ -554,7 +554,7 @@
   {
     "name": "/SmartDashboard/ElevatorSystem/elevator/Max Acceleration",
     "type": "double",
-    "value": 0.0,
+    "value": 5.0,
     "properties": {
       "persistent": true
     }
@@ -571,6 +571,214 @@
     "name": "/SmartDashboard/ElevatorSystem/elevator/Conversion",
     "type": "double",
     "value": 0.02925869958043294,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterLeft/kP",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterLeft/kI",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterLeft/kD",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterLeft/kF",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterLeft/kS",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterLeft/kV",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterLeft/kA",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterLeft/IZone",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterLeft/MinOutput",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterLeft/MaxOutput",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterLeft/Tolerance",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterLeft/Max Velocity",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterLeft/Max Acceleration",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterRight/kP",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterRight/kI",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterRight/kD",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterRight/kF",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterRight/kS",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterRight/kV",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterRight/kA",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterRight/IZone",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterRight/MinOutput",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterRight/MaxOutput",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterRight/Tolerance",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterRight/Max Velocity",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/ShooterSystem/shooterRight/Max Acceleration",
+    "type": "double",
+    "value": 0.0,
     "properties": {
       "persistent": true
     }

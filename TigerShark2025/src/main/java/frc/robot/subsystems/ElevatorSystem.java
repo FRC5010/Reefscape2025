@@ -31,14 +31,15 @@ import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.ReefscapeButtonBoard;
 
 /** Add your docs here. */
 public class ElevatorSystem extends GenericSubsystem {
     protected VerticalPositionControlMotor elevator;
     protected FollowerMotor elevatorFollower;
-    protected PIDControlType controlType = PIDControlType.POSITION;
-    protected Distance safeDistance = Inches.of(10);
+    protected PIDControlType controlType = PIDControlType.NONE;
+    protected Distance safeDistance = Inches.of(6);
     public DisplayLength BOTTOM = displayValues.makeConfigLength(Position.BOTTOM.name());
     public DisplayLength LOAD = displayValues.makeConfigLength(Position.LOAD.name());
     public DisplayLength PROCESSOR = displayValues.makeConfigLength(Position.PROCESSOR.name());
@@ -54,18 +55,18 @@ public class ElevatorSystem extends GenericSubsystem {
     public DisplayLength NET = displayValues.makeConfigLength(Position.NET.name());
     
     public static enum Position {
-        BOTTOM(Meters.of(0)),
-        LOAD(Meters.of(0.05)),
+        BOTTOM(Meters.of(0.0)),
+        LOAD(Meters.of(0.14)),
         PROCESSOR(Meters.of(0.15)),
-        L1(Meters.of(0.65)),
+        L1(Meters.of(0.72)),
         L2Algae(Meters.of(0.11)),
-        L2Shoot(Meters.of(0.45)),
-        L2(Meters.of(0.81)),
+        L2Shoot(Meters.of(0.87)),
+        L2(Meters.of(1.0)),
         L3Algae(Meters.of(1.1)),
-        L3Shoot(Meters.of(1.1)),
-        L3(Meters.of(1.19)),
-        L4Shoot(Meters.of(1.7)),
-        L4(Meters.of(1.82)),
+        L3Shoot(Meters.of(1.27)),
+        L3(Meters.of(1.32)),
+        L4Shoot(Meters.of(1.83)),
+        L4(Meters.of(1.88)),
         NET(Meters.of(1.9));
 
         private final Distance position;
@@ -98,6 +99,10 @@ public class ElevatorSystem extends GenericSubsystem {
                 displayValues);
         elevatorFollower = new FollowerMotor(MotorFactory.TalonFX(10, Motor.KrakenX60),
         elevator, "elevatorFollower", true);
+        elevator.setControlType(controlType);
+
+        elevator.setMotorBrake(true);
+        elevatorFollower.setMotorBrake(true);
         
         
         elevator.setupSimulatedMotor(6, Pounds.of(15), Inches.of(1.1), Meters.of(0), Inches.of(83.475 - 6.725),
@@ -129,6 +134,11 @@ public class ElevatorSystem extends GenericSubsystem {
         }
         return false;
     }
+    
+
+    public Command elevatorSysIdCommand() {
+        return elevator.getSysIdCommand(this);    
+    }
 
     public double safeSpeed(double speed) {
         if (!validSpeed(speed)) {
@@ -154,10 +164,10 @@ public class ElevatorSystem extends GenericSubsystem {
         return Commands.run(() -> {
             double difference = position.in(Meters) - elevator.getPosition();
             double sign = Math.signum(difference);
-            double effort = 0.5;
+            double effort = 0.4;
             if (Math.abs(difference) < safeDistance.in(Meters)) {
-                effort *= Math.max(Math.abs(difference) / safeDistance.in(Meters), 0.05);
-                if (Math.abs(difference) < 0.01) {
+                effort *= Math.abs(difference) / safeDistance.in(Meters);
+                if (Math.abs(difference) < 0.002) {
                     effort = 0;
                 }
             }
@@ -175,6 +185,10 @@ public class ElevatorSystem extends GenericSubsystem {
         }
     }
 
+    public Command zeroElevator() {
+        return Commands.runOnce(() -> elevator.getMotorEncoder().setPosition(0.0));
+    }
+
     public Command basicSuppliersMovement(DoubleSupplier speed) {
         return Commands.run(
             () -> elevatorSpeed(speed.getAsDouble()), this);
@@ -190,11 +204,11 @@ public class ElevatorSystem extends GenericSubsystem {
             case L1:
                 return L1.getLength();
             case L2:
-                return L2.getLength();
+                return L2Shoot.getLength();
             case L3:
-                return L3.getLength();
+                return L3Shoot.getLength();
             case L4:
-                return L4.getLength();
+                return L4Shoot.getLength();
             default:
                 return LOAD.getLength();
         }

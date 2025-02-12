@@ -117,8 +117,8 @@ public class ShooterSystem extends GenericSubsystem {
 
   public Command runMotors(DoubleSupplier speed) {
     return Commands.run(() -> {
-      shooterLeftSpeed(speed.getAsDouble()*0.25);
-      shooterRightSpeed(speed.getAsDouble()*0.25);
+      shooterLeftSpeed(speed.getAsDouble() * 0.5);
+      shooterRightSpeed(speed.getAsDouble() * 0.5);
     }, this);
   }
 
@@ -150,5 +150,9 @@ public class ShooterSystem extends GenericSubsystem {
   public void simulationPeriodic() {
       shooterLeft.simulationUpdate();
       shooterRight.simulationUpdate();
+  }
+
+  public Command getSysIdCommand() {
+    return shooterLeft.getSysIdCommand(this).andThen(shooterRight.getSysIdCommand(this));
   }
 }

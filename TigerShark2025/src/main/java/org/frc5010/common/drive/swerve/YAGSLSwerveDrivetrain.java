@@ -162,20 +162,20 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     // offsets onto it. Throws warning if not possible
 
     /** 5010 Code */
-    SwerveConstants swerveConstants = (SwerveConstants) constants;
-    if (swerveConstants.getSwerveModuleConstants().getDriveFeedForward().size() > 0) {
-      Map<String, MotorFeedFwdConstants> motorFFMap = swerveConstants.getSwerveModuleConstants().getDriveFeedForward();
-      Map<String, SwerveModule> swerveModuleMap = swerveDrive.getModuleMap();
-      motorFFMap.keySet().stream()
-          .forEach(
-              module -> {
-                MotorFeedFwdConstants ff = motorFFMap.get(module);
-                double kS = ff.getkS();
-                double kV = ff.getkV();
-                double kA = ff.getkA();
-                swerveModuleMap.get(module).setFeedforward(new SimpleMotorFeedforward(kS, kV, kA));
-              });
-    }
+    // SwerveConstants swerveConstants = (SwerveConstants) constants;
+    // if (swerveConstants.getSwerveModuleConstants().getDriveFeedForward().size() > 0) {
+    //   Map<String, MotorFeedFwdConstants> motorFFMap = swerveConstants.getSwerveModuleConstants().getDriveFeedForward();
+    //   Map<String, SwerveModule> swerveModuleMap = swerveDrive.getModuleMap();
+    //   motorFFMap.keySet().stream()
+    //       .forEach(
+    //           module -> {
+    //             MotorFeedFwdConstants ff = motorFFMap.get(module);
+    //             double kS = ff.getkS();
+    //             double kV = ff.getkV();
+    //             double kA = ff.getkA();
+    //             swerveModuleMap.get(module).setFeedforward(new SimpleMotorFeedforward(kS, kV, kA));
+    //           });
+    // }
 
     setDrivetrainPoseEstimator(new DrivePoseEstimator(new YAGSLSwervePose(this)));
 
@@ -213,8 +213,8 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         // RELATIVE ChassisSpeeds
         new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic
                                         // drive trains
-            new PIDConstants(7.0, 0, 0.5), // Translation PID constants
-            new PIDConstants(2.302, 3.7, 0.948) // Rotation PID constants
+            new PIDConstants(5, 0, 0), // Translation PID constants
+            new PIDConstants(5, 0, 0) // Rotation PID constants
         ),
         config, // The robot configuration
         () -> {
@@ -367,7 +367,7 @@ public Supplier<Command> driveToPosePrecise(Pose2d pose) {
   public Command sysIdDriveMotorCommand() {
     return SwerveDriveTest.generateSysIdCommand(
         SwerveDriveTest.setDriveSysIdRoutine(
-            new SysIdRoutine.Config(Volts.of(0.5).per(Second), Volts.of(12), Second.of(20)),
+            new SysIdRoutine.Config(Volts.of(0.5).per(Second), Volts.of(7), Second.of(20)),
             this, swerveDrive, 12, true),
         3.0, 6.0, 4.0);
   }
