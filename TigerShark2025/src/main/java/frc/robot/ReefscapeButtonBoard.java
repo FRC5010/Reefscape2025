@@ -196,13 +196,54 @@ public class ReefscapeButtonBoard extends ButtonBoard {
         }));
 
         operator.createBackButton().onTrue(Commands.runOnce(() -> {
-            setScoringLocation(ScoringLocation.values()[scoringLocation.ordinal() >= ScoringLocation.values().length - 1 ? 0 : scoringLocation.ordinal() + 1]);
+            switch (scoringLocation) {
+                case FRONT_AB:
+                    setScoringLocation(ScoringLocation.FRONT_LEFT_KL);
+                    break;
+                case FRONT_LEFT_KL:
+                    setScoringLocation(ScoringLocation.BACK_LEFT_IJ);
+                    break;
+                case BACK_LEFT_IJ:
+                    setScoringLocation(ScoringLocation.BACK_GH);
+                    break;
+                case BACK_GH:
+                    setScoringLocation(ScoringLocation.BACK_RIGHT_EF);
+                    break;
+                case BACK_RIGHT_EF:
+                    setScoringLocation(ScoringLocation.FRONT_RIGHT_CD);
+                    break;
+                case FRONT_RIGHT_CD:
+                    setScoringLocation(ScoringLocation.FRONT_AB);
+                    break;
+                default:
+                    break;
+            }
         }));
 
         operator.createStartButton().onTrue(Commands.runOnce(() -> {
-            setScoringLocation(ScoringLocation.values()[scoringLocation.ordinal() <= 0 ? ScoringLocation.values().length - 1  : scoringLocation.ordinal() - 1]);
+            switch (scoringLocation) {
+                case FRONT_AB:
+                    setScoringLocation(ScoringLocation.FRONT_RIGHT_CD);
+                    break;
+                case FRONT_RIGHT_CD:
+                    setScoringLocation(ScoringLocation.BACK_RIGHT_EF);
+                    break;
+                case BACK_RIGHT_EF:
+                    setScoringLocation(ScoringLocation.BACK_GH);
+                    break;
+                case BACK_GH:
+                    setScoringLocation(ScoringLocation.BACK_LEFT_IJ);
+                    break;
+                case BACK_LEFT_IJ:
+                    setScoringLocation(ScoringLocation.FRONT_LEFT_KL);
+                    break;
+                case FRONT_LEFT_KL:
+                    setScoringLocation(ScoringLocation.FRONT_AB);
+                    break;
+                default:
+                    break;
+            }
         }));
-
     }
 
 

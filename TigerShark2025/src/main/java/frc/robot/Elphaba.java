@@ -101,7 +101,6 @@ public class Elphaba extends GenericRobot {
     @Override
     public void setupDefaultCommands(Controller driver, Controller operator) {
         drivetrain.setDefaultCommand(drivetrain.createDefaultCommand(driver));
-        reefscapeButtonBoard.configureOperatorButtonBindings(operator);
 
         shooter.setDefaultCommand(shooter.runMotors(() -> operator.getLeftTrigger()));
 
