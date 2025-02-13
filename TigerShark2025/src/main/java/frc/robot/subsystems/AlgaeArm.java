@@ -32,12 +32,21 @@ import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.ReefscapeButtonBoard;
+import frc.robot.ReefscapeButtonBoard.ScoringAlignment;
 
 /** Add your docs here. */
 public class AlgaeArm extends GenericSubsystem {
     protected AngularControlMotor motor;
     protected Angle safeDistance = Degrees.of(10);
-    protected PIDControlType controlType = PIDControlType.POSITION;
+    protected PIDControlType controlType = PIDControlType.NONE;
+    protected State state = State.POSITION;
+    
+    public static enum State {
+        POSITION,
+        DEPLOY,
+        RETRACT
+    }
 
     public static enum Position {
         UP(Degrees.of(90)),
@@ -59,18 +68,26 @@ public class AlgaeArm extends GenericSubsystem {
     public AlgaeArm(Mechanism2d mechanismSimulation) {
         super(mechanismSimulation);
 
-        motor = new AngularControlMotor(MotorFactory.TalonFX(0, Motor.KrakenX60), "Algae Arm", displayValues);
-        motor.setupSimulatedMotor(3.0, Pounds.of(0.25).in(Kilograms), Inches.of(18), Degrees.of(-45), Degrees.of(90),
+        motor = new AngularControlMotor(MotorFactory.TalonFX(14, Motor.KrakenX60), "Algae Arm", displayValues);
+        motor.setupSimulatedMotor(6, Pounds.of(0.25).in(Kilograms), Inches.of(18), Degrees.of(-45), Degrees.of(90),
                 true, 0.147800, Degrees.of(90), false, 360);
         motor.setVisualizer(mechanismSimulation, new Pose3d(
                 new Translation3d(Inches.of(8).in(Meters), Inches.of(2.875).in(Meters), Inches.of(16.25).in(Meters)),
                 new Rotation3d()));
         motor.setValues(new GenericPID(0.1, 0.0, 0.0));
         motor.setMotorFeedFwd(new MotorFeedFwdConstants(0.12, 0.12, 0));
-        motor.setCurrentLimit(Amps.of(0));
+        motor.setCurrentLimit(Amps.of(80));
+        motor.setControlType(PIDControlType.NONE);
+        motor.invert(true);
 
         // Ensure this angle works
-        motor.getMotorEncoder().setPosition(110);
+        motor.getMotorEncoder().setPosition(90);
+    }
+
+    public static Trigger algaeSelected = new Trigger(() -> ReefscapeButtonBoard.algaeSelected);
+
+    public Command getDeployCommand() {
+        return driveToAngleCommand(-10.0);
     }
 
     public void armSpeed(double speed) {
@@ -81,6 +98,10 @@ public class AlgaeArm extends GenericSubsystem {
             // elevator.setReference(speed);
             motor.set(speed + motor.getFeedForward(0).in(Volts) / RobotController.getBatteryVoltage());
         }
+    }
+
+    public Command getSysIdCommand() {
+        return motor.getSysIdCommand(this);
     }
 
     public void setArmPosition(Position position) {
@@ -99,7 +120,7 @@ public class AlgaeArm extends GenericSubsystem {
         }, this);
     }
 
-    public Command driveToAngle(Double position) {
+    public Command driveToAngleCommand(Double position) {
         return Commands.run(() -> {
             driveToAngle(position);
         }, this);
@@ -108,11 +129,11 @@ public class AlgaeArm extends GenericSubsystem {
     public void driveToAngle(double position){
         double difference = position - motor.getPivotPosition();
             double sign = Math.signum(difference);
-            double effort = 0.5;
+            double effort = 0.05;
             if (Math.abs(difference) < safeDistance.in(Degrees)) {
                 effort *= Math.max(Math.abs(difference) / safeDistance.in(Degrees), 0.05);
 
-                if (Math.abs(difference) < 0.01) {
+                if (Math.abs(difference) < 5) {
                     effort = 0;
                 }
             }

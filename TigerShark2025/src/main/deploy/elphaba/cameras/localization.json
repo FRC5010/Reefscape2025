@@ -4,10 +4,10 @@
     "type": "limelight",
     "strategy": "LOWEST_AMBIGUITY",
     "column": 0,
-    "x": 0.298,
-    "y": -0.1915668,
-    "z": 0.635,
+    "x": 0,
+    "y": -0.31,
+    "z": 0.62,
     "roll": 0,
-    "pitch": -15,
+    "pitch": -16,
     "yaw": 0
 }

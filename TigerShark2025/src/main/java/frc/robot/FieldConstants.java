@@ -76,7 +76,7 @@ public class FieldConstants {
             new Transform2d(
                 new Translation2d(Inches.zero(), 
                     GuideHalfSpacing.times(Math.abs(guideNumber) * 2 - 1).times(direction)),
-                Rotation2d.fromDegrees(0))).transformBy(poseOffset);
+                Rotation2d.fromDegrees(0))).transformBy(new Transform2d(Inches.of(0), Inches.zero(), new Rotation2d())).transformBy(poseOffset);
     }
   }
 
@@ -110,7 +110,7 @@ public class FieldConstants {
         }
 
         public Pose2d getRobotPose(Transform2d centerFaceToRobotTransform) {
-            return getCenterFace().transformBy(centerFaceToRobotTransform);
+            return getCenterFace().transformBy(new Transform2d(Inches.of(0), Inches.zero(), new Rotation2d())).transformBy(centerFaceToRobotTransform);
         }
     }
 

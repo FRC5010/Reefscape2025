@@ -89,7 +89,7 @@ public class AngularControlMotor extends GenericControlledMotor {
 
     encoder.setInverted(inverted);
     encoder.setPosition(startingAngle.in(Degrees));
-    encoder.setPositionConversion(conversion);
+    encoder.setPositionConversion(conversion / gearing);
     position.setValue(startingAngle.in(Degrees));
     return this;
   }

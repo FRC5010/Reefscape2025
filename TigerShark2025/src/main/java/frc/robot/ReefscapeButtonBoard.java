@@ -21,6 +21,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /** Add your docs here. */
 public class ReefscapeButtonBoard extends ButtonBoard {
@@ -29,8 +30,8 @@ public class ReefscapeButtonBoard extends ButtonBoard {
         public int getButton();
     }
 
-    private static Transform2d robotOffset = new Transform2d(Inches.of(16.1), Meters.zero(), Rotation2d.fromDegrees(180)); // Move to more appropriate, common, location
-    private static Transform2d robotStationOffset = new Transform2d(Inches.of(16.1), Meters.zero(), Rotation2d.fromDegrees(0));
+    private static Transform2d robotOffset = new Transform2d(Inches.of(17), Meters.zero(), Rotation2d.fromDegrees(180)); // Move to more appropriate, common, location
+    private static Transform2d robotStationOffset = new Transform2d(Inches.of(17), Meters.zero(), Rotation2d.fromDegrees(0));
 
     public enum ScoringLocation implements ButtonStateSetting{
         FRONT_AB(0, FieldConstants.Reef.Side.AB.getRobotPose(robotOffset)), // new Pose2d(3.179, 4.035, new Rotation2d(0.0)
@@ -123,8 +124,9 @@ public class ReefscapeButtonBoard extends ButtonBoard {
         }
     }
 
-    public static ScoringLocation scoringLocation = ScoringLocation.BACK_LEFT_IJ;
+    public static ScoringLocation scoringLocation = ScoringLocation.FRONT_AB;
     public static ScoringAlignment scoringAlignment = ScoringAlignment.REEF_LEFT;
+    public static boolean algaeSelected = false;
     public static ScoringLevel scoringLevel = ScoringLevel.INTAKE;
     public static LoadingStationLocation loadingStationLocation = LoadingStationLocation.STATION_LEFT_INNER;
     public boolean fineControl = false;
@@ -146,7 +148,7 @@ public class ReefscapeButtonBoard extends ButtonBoard {
         tab.addBoolean(ScoringLocation.BACK_LEFT_IJ.name(), () -> ScoringLocation.BACK_LEFT_IJ == scoringLocation).withPosition(0, 4);
         tab.addBoolean(ScoringLocation.FRONT_LEFT_KL.name(), () -> ScoringLocation.FRONT_LEFT_KL == scoringLocation).withPosition(0, 6);
         tab.addBoolean(ScoringAlignment.REEF_LEFT.name(), () -> ScoringAlignment.REEF_LEFT == scoringAlignment).withPosition(6, 6);
-        tab.addBoolean(ScoringAlignment.ALGAE.name(), () -> ScoringAlignment.ALGAE == scoringAlignment).withPosition(8, 4);
+        tab.addBoolean(ScoringAlignment.ALGAE.name(), () -> algaeSelected).withPosition(8, 4);
         tab.addBoolean(ScoringAlignment.REEF_RIGHT.name(), () -> ScoringAlignment.REEF_RIGHT == scoringAlignment).withPosition(10, 6);
         tab.addBoolean(LoadingStationLocation.STATION_LEFT_OUTER.name(), () -> LoadingStationLocation.STATION_LEFT_OUTER == loadingStationLocation).withPosition(0, 0);
         tab.addBoolean(LoadingStationLocation.STATION_LEFT_INNER.name(), () -> LoadingStationLocation.STATION_LEFT_INNER == loadingStationLocation).withPosition(2, 0);
@@ -171,6 +173,7 @@ public class ReefscapeButtonBoard extends ButtonBoard {
         bindStateSettorButtons(ReefscapeButtonBoard::setAlignment, ScoringAlignment.values());
         bindStateSettorButtons(ReefscapeButtonBoard::setScoringLevel, ScoringLevel.values());
         bindStateSettorButtons(ReefscapeButtonBoard::setLoadingStation, LoadingStationLocation.values());
+        getButton(ScoringAlignment.ALGAE.getButton()).onTrue(Commands.runOnce(() -> algaeSelected = !algaeSelected));
     }
 
     public void configureOperatorButtonBindings(Controller operator) {
@@ -182,7 +185,7 @@ public class ReefscapeButtonBoard extends ButtonBoard {
 
         
         operator.createLeftPovButton().onTrue(Commands.runOnce(() -> setAlignment(ScoringAlignment.REEF_LEFT)));
-        operator.createUpPovButton().onTrue(Commands.runOnce(() -> setAlignment(ScoringAlignment.ALGAE)));
+        operator.createUpPovButton().debounce(0.25).onTrue(Commands.runOnce(() -> algaeSelected = !algaeSelected));
         operator.createRightPovButton().onTrue(Commands.runOnce(() -> setAlignment(ScoringAlignment.REEF_RIGHT)));
 
         operator.createRightBumper().onTrue(Commands.runOnce(() -> {
@@ -248,4 +251,7 @@ public class ReefscapeButtonBoard extends ButtonBoard {
         return () -> getScoringPose();
     }
 
+    public static Trigger algaeLevelIsSelected = new Trigger(() -> {
+        return scoringLevel == ScoringLevel.L2 || scoringLevel == ScoringLevel.L3;
+    });
 }

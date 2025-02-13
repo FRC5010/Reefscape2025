@@ -103,7 +103,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
         elevator.setMotorBrake(true);
         elevatorFollower.setMotorBrake(true);
-        
+        elevatorFollower.setCurrentLimit(Amps.of(60));
         
         elevator.setupSimulatedMotor(6, Pounds.of(15), Inches.of(1.1), Meters.of(0), Inches.of(83.475 - 6.725),
                 Meters.of(0),
@@ -111,7 +111,7 @@ public class ElevatorSystem extends GenericSubsystem {
         elevator.setVisualizer(mechanismSimulation, new Pose3d(
                 new Translation3d(Inches.of(5.75).in(Meters), Inches.of(4.75).in(Meters), Inches.of(6.725).in(Meters)),
                 new Rotation3d()));
-        elevator.setCurrentLimit(Amps.of(0));
+        elevator.setCurrentLimit(Amps.of(60));
         elevator.setMotorFeedFwd(new MotorFeedFwdConstants(0.0, 0.0, 0.0));
         elevator.setProfiledMaxVelocity(2.0);
         elevator.setProfiledMaxAcceleration(5);
@@ -167,6 +167,7 @@ public class ElevatorSystem extends GenericSubsystem {
             double effort = 0.4;
             if (Math.abs(difference) < safeDistance.in(Meters)) {
                 effort *= Math.abs(difference) / safeDistance.in(Meters);
+                effort = Math.min(effort, 0.05);
                 if (Math.abs(difference) < 0.002) {
                     effort = 0;
                 }
@@ -204,11 +205,11 @@ public class ElevatorSystem extends GenericSubsystem {
             case L1:
                 return L1.getLength();
             case L2:
-                return L2Shoot.getLength();
+                return AlgaeArm.algaeSelected.getAsBoolean() ? L2Algae.getLength() : L2.getLength();
             case L3:
-                return L3Shoot.getLength();
+                return AlgaeArm.algaeSelected.getAsBoolean() ? L3Algae.getLength() : L3.getLength();
             case L4:
-                return L4Shoot.getLength();
+                return L4.getLength();
             default:
                 return LOAD.getLength();
         }

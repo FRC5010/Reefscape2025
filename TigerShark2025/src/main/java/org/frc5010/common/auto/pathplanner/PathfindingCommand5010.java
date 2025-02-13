@@ -270,7 +270,7 @@ public class PathfindingCommand5010 extends Command {
       }
     }
 
-    if (currentPose.getTranslation().getDistance(targetPose.getTranslation()) < 0.05) {
+    if (currentPose.getTranslation().getDistance(targetPose.getTranslation()) < 0.01) {
       output.accept(new ChassisSpeeds(), DriveFeedforwards.zeros(robotConfig.numModules));
       finish = true;
     } else {
@@ -294,7 +294,7 @@ public class PathfindingCommand5010 extends Command {
             && currentPose
                     .getTranslation()
                     .getDistance(currentTrajectory.getEndState().pose.getTranslation())
-                < 2.0;
+                < 0.5;
 
     if (!skipUpdates && Pathfinding.isNewPathAvailable()) {
       currentPath = Pathfinding.getCurrentPath(constraints, goalEndState);
@@ -392,7 +392,7 @@ public class PathfindingCommand5010 extends Command {
     if (targetPath != null && !targetPath.isChoreoPath()) {
       Pose2d currentPose = poseSupplier.get();
       return currentPose.getTranslation().getDistance(targetPose.getTranslation())
-          <= 0.05;
+          <= 0.005;
     }
 
     return false;
@@ -404,7 +404,7 @@ public class PathfindingCommand5010 extends Command {
 
     // Only output 0 speeds when ending a path that is supposed to stop, this allows interrupting
     // the command to smoothly transition into some auto-alignment routine
-    if (!interrupted && goalEndState.velocityMPS() < 0.1) {
+    if (!interrupted && goalEndState.velocityMPS() < 0.01) {
       output.accept(new ChassisSpeeds(), DriveFeedforwards.zeros(robotConfig.numModules));
     }
 

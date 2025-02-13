@@ -18,7 +18,7 @@ public class Controller {
 
   private Joystick joystick;
   private boolean singleControllerMode;
-  private JoystickButton A_BUTTON,
+  public JoystickButton A_BUTTON,
       B_BUTTON,
       X_BUTTON,
       Y_BUTTON,
