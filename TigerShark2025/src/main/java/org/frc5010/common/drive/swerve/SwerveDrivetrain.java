@@ -149,7 +149,7 @@ public class SwerveDrivetrain extends GenericDrivetrain {
       }
       driver.createBackButton().onTrue(Commands.runOnce(() -> toggleFieldOrientedDrive()));
       driver
-          .createLeftBumper()
+          .createDownPovButton()
           .whileTrue(
               Commands.run(
                   () -> {
