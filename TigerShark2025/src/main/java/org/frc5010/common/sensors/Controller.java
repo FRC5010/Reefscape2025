@@ -295,8 +295,8 @@ public class Controller {
     Y_BUTTON,
     LEFT_BUMPER,
     RIGHT_BUMPER,
-    START_BUTTON,
     BACK_BUTTON,
+    START_BUTTON,
     LEFT_STICK_BUTT,
     RIGHT_STICK_BUTT;
   }

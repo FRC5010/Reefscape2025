@@ -4,11 +4,9 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 
-import java.lang.reflect.Field;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 

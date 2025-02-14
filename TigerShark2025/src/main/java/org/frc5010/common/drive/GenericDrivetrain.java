@@ -7,7 +7,6 @@ package org.frc5010.common.drive;
 import static edu.wpi.first.units.Units.Kilogram;
 
 import org.frc5010.common.arch.GenericRobot;
-import org.frc5010.common.arch.GenericRobot.LogLevel;
 import org.frc5010.common.arch.GenericSubsystem;
 import org.frc5010.common.commands.DefaultDriveCommand;
 import org.frc5010.common.drive.pose.DrivePoseEstimator;
@@ -60,7 +59,8 @@ public abstract class GenericDrivetrain extends GenericSubsystem {
           DCMotor.getNEO(1), 40, 4), 0.5);
     }
 
-    isFieldOrientedDrive = new DisplayBoolean(true, "Field Oriented", logPrefix, LogLevel.COMPETITION);
+    isFieldOrientedDrive = displayValues.makeDisplayBoolean("Field Oriented Drive");
+    isFieldOrientedDrive.setValue(true);
   }
 
   /**
@@ -121,6 +121,10 @@ public abstract class GenericDrivetrain extends GenericSubsystem {
 
   /** Called when the robot is disabled */
   public void disabledBehavior() {
+  }
+
+  /** Called when the configuring the button bindings */
+  public void configureButtonBindings(Controller driver, Controller operator) {
   }
 
   /** Toggles the field oriented drive mode */

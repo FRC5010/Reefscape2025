@@ -690,8 +690,7 @@
             "open": true
           },
           "open": true
-        },
-        "open": true
+        }
       },
       "elevator": {
         "open": true
@@ -704,6 +703,12 @@
         }
       },
       "SmartDashboard": {
+        "AlgaeArm": {
+          "Algae Arm": {
+            "open": true
+          },
+          "open": true
+        },
         "ScoringSystem": {
           "elevator": {
             "open": true
@@ -716,6 +721,15 @@
             "open": true
           }
         },
+        "YAGSLSwerveDrivetrain": {
+          "YAGSLSwerveDrivetrain": {
+            "open": true
+          },
+          "open": true
+        },
+        "open": true
+      },
+      "YAGSLSwerveDrivetrain": {
         "open": true
       }
     }

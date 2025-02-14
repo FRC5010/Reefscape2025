@@ -138,15 +138,16 @@ public class SwerveDrivetrain extends GenericDrivetrain {
    * Left Bumper Field
    * Oriented - B Button
    */
+  @Override
   public void configureButtonBindings(Controller driver, Controller operator) {
     // If there needs to be some commands that are real or simulation only use this
     if (!DriverStation.isTest()) {
       if (RobotBase.isReal()) {
-        driver.createBButton().onTrue(Commands.runOnce(() -> toggleFieldOrientedDrive()));
         driver.createStartButton().onTrue(Commands.runOnce(() -> resetOrientation()));
       } else {
 
       }
+      driver.createBackButton().onTrue(Commands.runOnce(() -> toggleFieldOrientedDrive()));
       driver
           .createLeftBumper()
           .whileTrue(
@@ -156,11 +157,6 @@ public class SwerveDrivetrain extends GenericDrivetrain {
                   },
                   this));
     }
-    // Put commands that can be both real and simulation afterwards
-
-    driver.setLeftXAxis(driver.createLeftXAxis().negate().deadzone(0.08));
-    driver.setLeftYAxis(driver.createLeftYAxis().negate().deadzone(0.08));
-    driver.setRightXAxis(driver.createRightXAxis().negate().deadzone(0.08));
   }
 
   @Override

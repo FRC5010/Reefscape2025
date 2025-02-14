@@ -43,6 +43,7 @@ public class Elphaba extends GenericRobot {
 
     @Override
     public void configureButtonBindings(Controller driver, Controller operator) {
+        drivetrain.configureButtonBindings(driver, operator);
         if (DriverStation.isTest()) {
             driver.createAButton().whileTrue(((YAGSLSwerveDrivetrain) drivetrain).sysIdDriveMotorCommand());
             driver.createBButton().whileTrue(((YAGSLSwerveDrivetrain) drivetrain).sysIdAngleMotorCommand());
