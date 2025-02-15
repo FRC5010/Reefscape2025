@@ -56,13 +56,13 @@ public class TigerShark extends GenericRobot {
         // operator.createAButton().whileTrue(
         //         Commands.runOnce(() -> scoringSystem.setElevatorPosition(ScoringSystem.Position.BOTTOM),
         //                 scoringSystem).until(scoringSystem.isAtTarget()));
-        operator.createXButton().whileTrue(
-                Commands.runOnce(() -> elevatorSystem.setElevatorPosition(ElevatorSystem.Position.L2), elevatorSystem)
-                        .until(elevatorSystem.isAtTarget()));
-        operator.createYButton().whileTrue(
-                Commands.runOnce(() -> elevatorSystem.setElevatorPosition(ElevatorSystem.Position.L3), elevatorSystem)
-                        .until(elevatorSystem.isAtTarget()));
-        // operator.createBButton().whileTrue(
+        // operator.createXButton().whileTrue(
+        //         Commands.runOnce(() -> elevatorSystem.setElevatorPosition(ElevatorSystem.Position.L2), elevatorSystem)
+        //                 .until(elevatorSystem.isAtTarget()));
+        // operator.createYButton().whileTrue(
+        //         Commands.runOnce(() -> elevatorSystem.setElevatorPosition(ElevatorSystem.Position.L3), elevatorSystem)
+        //                 .until(elevatorSystem.isAtTarget()));
+        // // operator.createBButton().whileTrue(
         //         Commands.run(() -> scoringSystem.setElevatorPosition(ScoringSystem.Position.L4), scoringSystem)
         //                 .until(scoringSystem.isAtTarget()));
         operator.createBButton().whileTrue(

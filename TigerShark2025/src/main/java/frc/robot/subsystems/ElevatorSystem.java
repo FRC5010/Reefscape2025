@@ -38,7 +38,7 @@ import frc.robot.ReefscapeButtonBoard;
 public class ElevatorSystem extends GenericSubsystem {
     protected VerticalPositionControlMotor elevator;
     protected FollowerMotor elevatorFollower;
-    protected PIDControlType controlType = PIDControlType.NONE;
+    protected PIDControlType controlType = PIDControlType.POSITION;
     protected Distance safeDistance = Inches.of(6);
     public DisplayLength BOTTOM = displayValues.makeConfigLength(Position.BOTTOM.name());
     public DisplayLength LOAD = displayValues.makeConfigLength(Position.LOAD.name());
@@ -112,10 +112,10 @@ public class ElevatorSystem extends GenericSubsystem {
                 new Translation3d(Inches.of(5.75).in(Meters), Inches.of(4.75).in(Meters), Inches.of(6.725).in(Meters)),
                 new Rotation3d()));
         elevator.setCurrentLimit(Amps.of(60));
-        elevator.setMotorFeedFwd(new MotorFeedFwdConstants(0.0, 0.0, 0.0));
+        elevator.setMotorFeedFwd(new MotorFeedFwdConstants(0.26329, 0.38506, 0.04261));
         elevator.setProfiledMaxVelocity(2.0);
         elevator.setProfiledMaxAcceleration(5);
-        elevator.setValues(new GenericPID(0, 0, 0));
+        elevator.setValues(new GenericPID(1.3264E-05, 0, 5.8465E-07));
         elevator.setOutputRange(-1, 1);
         // Tell the elevator to run the motor in reverse because the simulator thinks CW
         // is upwards
@@ -177,14 +177,15 @@ public class ElevatorSystem extends GenericSubsystem {
         }, this);
     }
 
-    public void setElevatorPosition(Position position) {
+    public void setElevatorPosition(Distance position) {
         if (elevator.getControlType() != controlType) {
             elevator.setControlType(controlType);
         }
         if (controlType == elevator.getControlType()) {
-            elevator.setReference(position.position().in(Meters));
+            elevator.setReference(position.in(Meters));
         }
     }
+
 
     public Command zeroElevator() {
         return Commands.runOnce(() -> elevator.getMotorEncoder().setPosition(0.0));

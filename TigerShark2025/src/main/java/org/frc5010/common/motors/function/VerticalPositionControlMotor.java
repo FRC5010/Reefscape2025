@@ -152,7 +152,7 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
 
     @Override
     public void setReference(double reference) {
-        setReference(reference, controller.getControlType(),
+        setReference(reference/encoder.getPositionConversion(), controller.getControlType(),
                 getFeedForward(0).in(Volts) / RobotController.getBatteryVoltage());
     }
 
@@ -231,8 +231,8 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
     public Command getSysIdCommand(SubsystemBase subsystemBase) {
         return SystemIdentification.getSysIdFullCommand(
                 SystemIdentification.angleSysIdRoutine(_motor, encoder, "Vertical Motor", subsystemBase),
-                5,
-                3,
+                4,
+                2,
                 3);
     }
 

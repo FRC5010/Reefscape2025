@@ -392,7 +392,7 @@ public class PathfindingCommand5010 extends Command {
     if (targetPath != null && !targetPath.isChoreoPath()) {
       Pose2d currentPose = poseSupplier.get();
       return currentPose.getTranslation().getDistance(targetPose.getTranslation())
-          <= 0.005;
+          <= 0.3;
     }
 
     return false;

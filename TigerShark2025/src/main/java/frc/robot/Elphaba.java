@@ -1,5 +1,7 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
+
 import java.util.function.Consumer;
 
 import org.frc5010.common.arch.GenericRobot;
@@ -12,7 +14,9 @@ import org.frc5010.common.sensors.Controller;
 import org.frc5010.common.sensors.camera.QuestNav;
 import org.frc5010.common.utils.AllianceFlip;
 
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -49,10 +53,11 @@ public class Elphaba extends GenericRobot {
             driver.createBButton().whileTrue(((YAGSLSwerveDrivetrain) drivetrain).sysIdAngleMotorCommand());
             operator.createYButton().whileTrue(elevatorSystem.elevatorSysIdCommand());
 
-            QuestNav calibrationQuest = new QuestNav(new Transform3d());
+            QuestNav calibrationQuest = new QuestNav(new Transform3d(new Translation3d(), new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(-94))));
             driver.createXButton().whileTrue(calibrationQuest.determineOffsetToRobotCenter(drivetrain));
 
             driver.createYButton().whileTrue(shooter.getSysIdCommand());
+            operator.createXButton().whileTrue(algaeArm.getSysIdCommand());
 
             operator.createAButton().whileTrue(
                     new RelayPIDAutoTuner(
@@ -81,18 +86,22 @@ public class Elphaba extends GenericRobot {
                 Commands.deferredProxy(((YAGSLSwerveDrivetrain) drivetrain)
                         .driveToPosePrecise(() -> AllianceFlip.apply(ReefscapeButtonBoard.getStationPose()))));
 
-        driver.createLeftBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
-                .profiledBangBangCmd(
-                        elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()))));
+        driver.createLeftBumper();
+        // driver.createLeftBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
+        //         .profiledBangBangCmd(
+        //                 elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()))));
 
         driver.LEFT_BUMPER.and(AlgaeArm.algaeSelected).and(ReefscapeButtonBoard.algaeLevelIsSelected)
             .whileTrue(algaeArm.getDeployCommand());
 
         driver.createBButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
 
-        driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
-                .profiledBangBangCmd(
-                        elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.ScoringLevel.INTAKE))));
+        // driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
+        //         .profiledBangBangCmd(
+        //                 elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.ScoringLevel.INTAKE))));
+
+        driver.createLeftBumper().whileTrue(Commands.run(() -> elevatorSystem.setElevatorPosition(elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()))));
+        driver.createRightBumper().whileTrue(Commands.run(() -> elevatorSystem.setElevatorPosition(elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.ScoringLevel.INTAKE))));
 
         driver.createRightPovButton().onTrue(elevatorSystem.zeroElevator());
 

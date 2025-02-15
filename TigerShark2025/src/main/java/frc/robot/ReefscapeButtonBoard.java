@@ -28,8 +28,8 @@ public class ReefscapeButtonBoard extends ButtonBoard {
         public int getButton();
     }
 
-    private static Transform2d robotOffset = new Transform2d(Inches.of(17), Meters.zero(), Rotation2d.fromDegrees(180)); // Move to more appropriate, common, location
-    private static Transform2d robotStationOffset = new Transform2d(Inches.of(17), Meters.zero(), Rotation2d.fromDegrees(0));
+    private static Transform2d robotOffset = new Transform2d(Inches.of(18), Meters.zero(), Rotation2d.fromDegrees(180)); // Move to more appropriate, common, location
+    private static Transform2d robotStationOffset = new Transform2d(Inches.of(18), Meters.zero(), Rotation2d.fromDegrees(0));
 
     public enum ScoringLocation implements ButtonStateSetting{
         FRONT_AB(0, FieldConstants.Reef.Side.AB.getRobotPose(robotOffset)), // new Pose2d(3.179, 4.035, new Rotation2d(0.0)

@@ -23,6 +23,7 @@ import java.util.function.Supplier;
 import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.arch.GenericRobot.LogLevel;
 import org.frc5010.common.auto.pathplanner.PathfindingCommand5010;
+import org.frc5010.common.commands.DriveToPosition;
 import org.frc5010.common.commands.JoystickToSwerve;
 import org.frc5010.common.constants.Constants;
 import org.frc5010.common.constants.GenericDrivetrainConstants;
@@ -53,6 +54,8 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -273,7 +276,8 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   }
 
   public Supplier<Command> driveToPosePrecise(Supplier<Pose2d> pose) {
-    
+    Supplier<Pose3d> pose3D = () -> new Pose3d(pose.get());
+    Supplier<DriveToPosition> finishDriving = () -> new DriveToPosition((SwerveDrivetrain) this, this::getPose, pose3D, new Transform2d()).withInitialVelocity(() -> getFieldVelocity());
     // Create the constraints to use while pathfinding
     PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond(),
         getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond(),
@@ -296,7 +300,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
             new PIDConstants(2.0, 0, 0.0) // Rotation PID constants
         ),
       config,
-      this).beforeStarting(() -> poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose"));
+      this).beforeStarting(() -> poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose")).until(() -> poseEstimator.getCurrentPose().getTranslation().getDistance(pose.get().getTranslation()) < 0.3).andThen(finishDriving.get());
 }
 
 public Supplier<Command> driveToPosePrecise(Pose2d pose) {
