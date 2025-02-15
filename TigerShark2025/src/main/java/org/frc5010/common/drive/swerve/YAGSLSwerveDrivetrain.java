@@ -216,7 +216,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         // RELATIVE ChassisSpeeds
         new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic
                                         // drive trains
-            new PIDConstants(5, 0, 0), // Translation PID constants
+            new PIDConstants(2, 0, 0), // Translation PID constants
             new PIDConstants(5, 0, 0) // Rotation PID constants
         ),
         config, // The robot configuration
@@ -279,8 +279,8 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     Supplier<Pose3d> pose3D = () -> new Pose3d(pose.get());
     Supplier<DriveToPosition> finishDriving = () -> new DriveToPosition((SwerveDrivetrain) this, this::getPose, pose3D, new Transform2d()).withInitialVelocity(() -> getFieldVelocity());
     // Create the constraints to use while pathfinding
-    PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond(),
-        getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond(),
+    PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond()*0.8,
+        getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond()*0.5,
         getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond(),
         getSwerveConstants().getkTeleDriveMaxAngularAccelerationUnitsPerSecond());
     // PathConstraints constraints = new PathConstraints(
@@ -300,7 +300,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
             new PIDConstants(2.0, 0, 0.0) // Rotation PID constants
         ),
       config,
-      this).beforeStarting(() -> poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose")).until(() -> poseEstimator.getCurrentPose().getTranslation().getDistance(pose.get().getTranslation()) < 0.3).andThen(finishDriving.get());
+      this).beforeStarting(() -> poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose")).until(() -> poseEstimator.getCurrentPose().getTranslation().getDistance(pose.get().getTranslation()) < 0.5).andThen(finishDriving.get());
 }
 
 public Supplier<Command> driveToPosePrecise(Pose2d pose) {

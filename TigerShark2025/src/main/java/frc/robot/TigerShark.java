@@ -29,7 +29,7 @@ public class TigerShark extends GenericRobot {
         elevatorSystem = new ElevatorSystem(mechVisual);
         shooterSystem = new ShooterSystem(mechVisual);
         algaeArm = new AlgaeArm(mechVisual);
-        reefscapeButtonBoard = new ReefscapeButtonBoard(2);
+        reefscapeButtonBoard = new ReefscapeButtonBoard(2, 3);
     }
 
     @Override

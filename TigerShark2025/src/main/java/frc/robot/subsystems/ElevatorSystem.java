@@ -38,8 +38,8 @@ import frc.robot.ReefscapeButtonBoard;
 public class ElevatorSystem extends GenericSubsystem {
     protected VerticalPositionControlMotor elevator;
     protected FollowerMotor elevatorFollower;
-    protected PIDControlType controlType = PIDControlType.POSITION;
-    protected Distance safeDistance = Inches.of(6);
+    protected PIDControlType controlType = PIDControlType.NONE;
+    protected Distance safeDistance = Inches.of(3);
     public DisplayLength BOTTOM = displayValues.makeConfigLength(Position.BOTTOM.name());
     public DisplayLength LOAD = displayValues.makeConfigLength(Position.LOAD.name());
     public DisplayLength PROCESSOR = displayValues.makeConfigLength(Position.PROCESSOR.name());
@@ -103,7 +103,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
         elevator.setMotorBrake(true);
         elevatorFollower.setMotorBrake(true);
-        elevatorFollower.setCurrentLimit(Amps.of(60));
+        elevatorFollower.setCurrentLimit(Amps.of(100));
         
         elevator.setupSimulatedMotor(6, Pounds.of(15), Inches.of(1.1), Meters.of(0), Inches.of(83.475 - 6.725),
                 Meters.of(0),
@@ -111,7 +111,7 @@ public class ElevatorSystem extends GenericSubsystem {
         elevator.setVisualizer(mechanismSimulation, new Pose3d(
                 new Translation3d(Inches.of(5.75).in(Meters), Inches.of(4.75).in(Meters), Inches.of(6.725).in(Meters)),
                 new Rotation3d()));
-        elevator.setCurrentLimit(Amps.of(60));
+        elevator.setCurrentLimit(Amps.of(100));
         elevator.setMotorFeedFwd(new MotorFeedFwdConstants(0.26329, 0.38506, 0.04261));
         elevator.setProfiledMaxVelocity(2.0);
         elevator.setProfiledMaxAcceleration(5);
@@ -145,7 +145,7 @@ public class ElevatorSystem extends GenericSubsystem {
             return 0.0;
         }
         if ((speed > 0 && elevator.isCloseToMax(safeDistance)) || (speed < 0 && elevator.isCloseToMin(safeDistance))) {
-            return 0.1 * speed;
+            return Math.max(speed*0.1, Math.signum(speed)*0.15);
         }
         return speed;
     }
@@ -164,7 +164,7 @@ public class ElevatorSystem extends GenericSubsystem {
         return Commands.run(() -> {
             double difference = position.in(Meters) - elevator.getPosition();
             double sign = Math.signum(difference);
-            double effort = 0.4;
+            double effort = 0.8;
             if (Math.abs(difference) < safeDistance.in(Meters)) {
                 effort *= Math.abs(difference) / safeDistance.in(Meters);
                 effort = Math.min(effort, 0.05);
@@ -199,6 +199,10 @@ public class ElevatorSystem extends GenericSubsystem {
 
     public Trigger isAtTarget() {
         return new Trigger(() -> elevator.isAtTarget());
+    }
+
+    public Boolean isAtLocation(Distance position)  {
+        return Math.abs(position.in(Meters) - elevator.getPosition()) < 0.1;
     }
 
     public Distance selectElevatorLevel(Supplier<ReefscapeButtonBoard.ScoringLevel> level) {

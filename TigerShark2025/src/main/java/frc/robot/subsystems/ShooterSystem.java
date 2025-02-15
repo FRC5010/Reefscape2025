@@ -77,8 +77,8 @@ public class ShooterSystem extends GenericSubsystem {
     shooterLeft = new VelocityControlMotor(MotorFactory.Thrifty(11, Motor.Neo), "shooterLeft", displayValues);
     shooterRight = new VelocityControlMotor(MotorFactory.Thrifty(12, Motor.Neo), "shooterRight",
             displayValues);
-    shooterLeft.invert(true);
-    shooterRight.invert(false);
+    shooterLeft.invert(false);
+    shooterRight.invert(true);
 
 
     shooterLeft.setupSimulatedMotor(1, 10);

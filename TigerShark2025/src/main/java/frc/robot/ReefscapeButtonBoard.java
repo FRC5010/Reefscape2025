@@ -19,25 +19,31 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /** Add your docs here. */
-public class ReefscapeButtonBoard extends ButtonBoard {
+public class ReefscapeButtonBoard {
+
+    private static ButtonBoard controller1;
+    private static ButtonBoard controller2;
+    private final static int buttonsPerBoard = 12;
+    private final static int axisPerBoard = 4;
 
     private interface ButtonStateSetting {
         public int getButton();
     }
 
-    private static Transform2d robotOffset = new Transform2d(Inches.of(18), Meters.zero(), Rotation2d.fromDegrees(180)); // Move to more appropriate, common, location
-    private static Transform2d robotStationOffset = new Transform2d(Inches.of(18), Meters.zero(), Rotation2d.fromDegrees(0));
+    private static Transform2d robotOffset = new Transform2d(Inches.of(18.5), Meters.zero(), Rotation2d.fromDegrees(180)); // Move to more appropriate, common, location
+    private static Transform2d robotStationOffset = new Transform2d(Inches.of(17), Meters.zero(), Rotation2d.fromDegrees(0));
 
     public enum ScoringLocation implements ButtonStateSetting{
-        FRONT_AB(0, FieldConstants.Reef.Side.AB.getRobotPose(robotOffset)), // new Pose2d(3.179, 4.035, new Rotation2d(0.0)
-        FRONT_RIGHT_CD(1, FieldConstants.Reef.Side.CD.getRobotPose(robotOffset)),
+        FRONT_AB(21, FieldConstants.Reef.Side.AB.getRobotPose(robotOffset)), // new Pose2d(3.179, 4.035, new Rotation2d(0.0)
+        FRONT_RIGHT_CD(20, FieldConstants.Reef.Side.CD.getRobotPose(robotOffset)),
         BACK_RIGHT_EF(2, FieldConstants.Reef.Side.EF.getRobotPose(robotOffset)),
-        BACK_GH(3, FieldConstants.Reef.Side.GH.getRobotPose(robotOffset)),
-        BACK_LEFT_IJ(4, FieldConstants.Reef.Side.IJ.getRobotPose(robotOffset)),
-        FRONT_LEFT_KL(5, FieldConstants.Reef.Side.KL.getRobotPose(robotOffset));
+        BACK_GH(15, FieldConstants.Reef.Side.GH.getRobotPose(robotOffset)),
+        BACK_LEFT_IJ(22, FieldConstants.Reef.Side.IJ.getRobotPose(robotOffset)),
+        FRONT_LEFT_KL(9, FieldConstants.Reef.Side.KL.getRobotPose(robotOffset));
 
         private int button;
         private Pose2d pose;
@@ -57,9 +63,9 @@ public class ReefscapeButtonBoard extends ButtonBoard {
     }
 
     public enum ScoringAlignment implements ButtonStateSetting{
-        REEF_LEFT(6, new Transform2d(Inches.zero(), Inches.of(6.4688), new Rotation2d())),
-        ALGAE(7, new Transform2d()),
-        REEF_RIGHT(8, new Transform2d(Inches.zero(), Inches.of(-6.4688), new Rotation2d()));
+        REEF_LEFT(18, new Transform2d(Inches.zero(), Inches.of(6.4688), new Rotation2d())),
+        ALGAE(3, new Transform2d()),
+        REEF_RIGHT(14, new Transform2d(Inches.zero(), Inches.of(-6.4688), new Rotation2d()));
 
         private int button;
         private Transform2d transform;
@@ -79,12 +85,12 @@ public class ReefscapeButtonBoard extends ButtonBoard {
     }
 
     public static enum ScoringLevel implements ButtonStateSetting{
-        INTAKE(9),
-        L1(10),
-        L2(11),
-        L3(12),
-        L4(13),
-        NET(14);
+        INTAKE(17),
+        L1(16),
+        L2(19),
+        L3(13),
+        L4(6),
+        NET(4);
 
         private int button;
 
@@ -99,10 +105,10 @@ public class ReefscapeButtonBoard extends ButtonBoard {
 
     public enum LoadingStationLocation  implements ButtonStateSetting{
 
-        STATION_LEFT_OUTER(15, FieldConstants.CoralStation.getGuideOffsetPose(FieldConstants.CoralStation.leftCenterFace, -3, robotStationOffset)),
-        STATION_LEFT_INNER(16, FieldConstants.CoralStation.getGuideOffsetPose(FieldConstants.CoralStation.leftCenterFace, 3, robotStationOffset)),
-        STATION_RIGHT_INNER(17, FieldConstants.CoralStation.getGuideOffsetPose(FieldConstants.CoralStation.rightCenterFace, -3, robotStationOffset)),
-        STATION_RIGHT_OUTER(18, FieldConstants.CoralStation.getGuideOffsetPose(FieldConstants.CoralStation.rightCenterFace, 3, robotStationOffset));
+        STATION_LEFT_OUTER(99, FieldConstants.CoralStation.getGuideOffsetPose(FieldConstants.CoralStation.leftCenterFace, -3, robotStationOffset)),
+        STATION_LEFT_INNER(109, FieldConstants.CoralStation.getGuideOffsetPose(FieldConstants.CoralStation.leftCenterFace, 3, robotStationOffset)),
+        STATION_RIGHT_INNER(89, FieldConstants.CoralStation.getGuideOffsetPose(FieldConstants.CoralStation.rightCenterFace, -3, robotStationOffset)),
+        STATION_RIGHT_OUTER(209, FieldConstants.CoralStation.getGuideOffsetPose(FieldConstants.CoralStation.rightCenterFace, 3, robotStationOffset));
 
 
         private int button;
@@ -130,8 +136,9 @@ public class ReefscapeButtonBoard extends ButtonBoard {
     public boolean fineControl = false;
     public ShuffleboardTab tab = Shuffleboard.getTab("Driver");
 
-    public ReefscapeButtonBoard(int port) {
-        super(port);
+    public ReefscapeButtonBoard(int port1, int port2) {
+        controller1 = new ButtonBoard(port1);
+        controller2 = new ButtonBoard(port2);
         initializeElasticDisplay();
         
     }
@@ -158,6 +165,16 @@ public class ReefscapeButtonBoard extends ButtonBoard {
         tab.addBoolean(ScoringLevel.L3.name(), () -> ScoringLevel.L3 == scoringLevel).withPosition(12, 2);
         tab.addBoolean(ScoringLevel.L4.name(), () -> ScoringLevel.L4 == scoringLevel).withPosition(12, 0);
         tab.addBoolean(ScoringLevel.NET.name(), () -> ScoringLevel.NET == scoringLevel).withPosition(10, 0);
+    }
+
+    public JoystickButton getButton(int number) {
+        if (number > buttonsPerBoard) {
+            return controller2.getButton(number%buttonsPerBoard);
+        } else {
+            return controller1.getButton(number);
+        }
+
+
     }
 
     private <E extends Enum<E> & ButtonStateSetting> void bindStateSettorButtons(Consumer<E> setter, E[] buttonEnums) {
@@ -284,6 +301,10 @@ public class ReefscapeButtonBoard extends ButtonBoard {
 
     public static Pose2d getScoringPose() {
         return scoringLocation.getPose().transformBy(scoringAlignment.getTransform2d());
+    }
+
+    public static Pose2d getScoringPose(ScoringLocation location, ScoringAlignment alignment) {
+        return location.getPose().transformBy(alignment.getTransform2d());
     }
 
     public static Supplier<Pose2d> getScoringPoseSupplier() {

@@ -24,9 +24,11 @@ public class DriveToPosition extends GenericCommand {
   /** The subsystem that this command will run on */
   private SwerveDrivetrain swerveSubsystem;
   /** The PID constants for translation */
-  private final GenericPID pidTranslation = new GenericPID(2.0, 0, 0);
+  private final GenericPID pidTranslation = new GenericPID(2.5, 0, 0);
   /** The PID constants for rotation */
-  private final GenericPID pidRotation = new GenericPID(.25, 0, 0);
+  private final GenericPID pidRotation = new GenericPID(1, 0, 0);
+
+  private int onTargetCounter = 0;
 
   /** The constraints for translation in the X direction */
   private final TrapezoidProfile.Constraints xConstraints;
@@ -98,9 +100,9 @@ public class DriveToPosition extends GenericCommand {
     this.poseProvider = poseProvider;
     this.targetPoseProvider = targetPoseProvider;
 
-    xController.setTolerance(0.001);
-    yController.setTolerance(0.001);
-    thetaController.setTolerance(Units.degreesToRadians(2));
+    xController.setTolerance(0.01);
+    yController.setTolerance(0.005);
+    thetaController.setTolerance(Units.degreesToRadians(3));
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
     targetTransform = offset;
@@ -126,6 +128,7 @@ public class DriveToPosition extends GenericCommand {
   @Override
   public void init() {
     Pose2d robotPose = poseProvider.get();
+    onTargetCounter = 0;
 
     thetaController.reset(robotPose.getRotation().getRadians(), initialVelocity.get().omegaRadiansPerSecond);
     xController.reset(robotPose.getX(), initialVelocity.get().vxMetersPerSecond);
@@ -160,17 +163,17 @@ public class DriveToPosition extends GenericCommand {
     thetaSpeed = thetaController.calculate(robotPose2d.getRotation().getRadians())
         * swerveSubsystem.getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond();
 
-    if (xController.atGoal()) {
-      xSpeed = 0;
-    }
+    // if (xController.atGoal()) {
+    //   xSpeed = 0;
+    // }
 
-    if (yController.atGoal()) {
-      ySpeed = 0;
-    }
+    // if (yController.atGoal()) {
+    //   ySpeed = 0;
+    // }
 
-    if (thetaController.atGoal()) {
-      thetaSpeed = 0;
-    }
+    // if (thetaController.atGoal()) {
+    //   thetaSpeed = 0;
+    // }
 
     // // Transform the tag's pose to set our goal
 
@@ -215,6 +218,11 @@ public class DriveToPosition extends GenericCommand {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return xController.atGoal() && yController.atGoal() && thetaController.atGoal();
+
+    if (xController.atGoal() && yController.atGoal() && thetaController.atGoal()) {
+      onTargetCounter++;
+    }
+
+    return onTargetCounter > 5;
   }
 }

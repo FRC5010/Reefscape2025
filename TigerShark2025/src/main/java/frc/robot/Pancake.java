@@ -35,7 +35,7 @@ public class Pancake extends GenericRobot {
         AllianceFlip.configure(FieldConstants.fieldDimensions);
 
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
-        buttonBoard = new ReefscapeButtonBoard(0);
+        buttonBoard = new ReefscapeButtonBoard(2, 3);
         
     }
 

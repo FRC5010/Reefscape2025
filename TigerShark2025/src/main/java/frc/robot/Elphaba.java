@@ -21,6 +21,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.auto_routines.AutoDriveAuto;
 import frc.robot.auto_routines.Right4Coral;
 import frc.robot.subsystems.AlgaeArm;
 import frc.robot.subsystems.ElevatorSystem;
@@ -42,7 +43,7 @@ public class Elphaba extends GenericRobot {
         shooter = new ShooterSystem(mechVisual);
         algaeArm = new AlgaeArm(mechVisual);
 
-        reefscapeButtonBoard = new ReefscapeButtonBoard(2);
+        reefscapeButtonBoard = new ReefscapeButtonBoard(2, 3);
     }
 
     @Override
@@ -87,21 +88,21 @@ public class Elphaba extends GenericRobot {
                         .driveToPosePrecise(() -> AllianceFlip.apply(ReefscapeButtonBoard.getStationPose()))));
 
         driver.createLeftBumper();
-        // driver.createLeftBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
-        //         .profiledBangBangCmd(
-        //                 elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()))));
+        driver.createLeftBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
+                .profiledBangBangCmd(
+                        elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()))));
 
         driver.LEFT_BUMPER.and(AlgaeArm.algaeSelected).and(ReefscapeButtonBoard.algaeLevelIsSelected)
             .whileTrue(algaeArm.getDeployCommand());
 
         driver.createBButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
 
-        // driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
-        //         .profiledBangBangCmd(
-        //                 elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.ScoringLevel.INTAKE))));
+        driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
+                .profiledBangBangCmd(
+                        elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.ScoringLevel.INTAKE))));
 
-        driver.createLeftBumper().whileTrue(Commands.run(() -> elevatorSystem.setElevatorPosition(elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()))));
-        driver.createRightBumper().whileTrue(Commands.run(() -> elevatorSystem.setElevatorPosition(elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.ScoringLevel.INTAKE))));
+        // driver.createLeftBumper().whileTrue(Commands.run(() -> elevatorSystem.setElevatorPosition(elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()))));
+        // driver.createRightBumper().whileTrue(Commands.run(() -> elevatorSystem.setElevatorPosition(elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.ScoringLevel.INTAKE))));
 
         driver.createRightPovButton().onTrue(elevatorSystem.zeroElevator());
 
@@ -137,7 +138,8 @@ public class Elphaba extends GenericRobot {
     @Override
     public void buildAutoCommands() {
         super.buildAutoCommands();
-        addAutoToChooser("Right 4 Coral", new Right4Coral().raceWith(new AutoErrorTracker()));
+        addAutoToChooser("Right 4 Coral", new Right4Coral());
+        addAutoToChooser("Auto Drive Auto", new AutoDriveAuto(((YAGSLSwerveDrivetrain)drivetrain), shooter, elevatorSystem));
         // addAutoToChooser("Auto New", new ExampleAuto());
     }
 }
