@@ -231,10 +231,10 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double getDriveFactor() {
-        if (elevator.getPosition() > 1.0) {
-            return 0.0;
+        if (elevator.getPosition() < 0.5) {
+            return 1.0;
         } else {
-            return (1.0 + LOAD.getLengthInMeters()) - elevator.getPosition();
+            return (2.0 - elevator.getPosition()) * 0.5; // ratio of position to max height of 2m
         }
     }
     public Distance selectElevatorLevel(Supplier<ReefscapeButtonBoard.ScoringLevel> level) {

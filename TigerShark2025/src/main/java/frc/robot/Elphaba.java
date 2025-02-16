@@ -122,8 +122,8 @@ public class Elphaba extends GenericRobot {
     @Override
     public void setupDefaultCommands(Controller driver, Controller operator) {
         JoystickToSwerve driveCmd = (JoystickToSwerve)drivetrain.createDefaultCommand(driver);
-        driveCmd.setXSpeedFunction(() -> {
-            return elevatorSystem.getDriveFactor() * driver.getLeftYAxis();
+        driveCmd.setRobotSpeedFactor(() -> {
+            return elevatorSystem.getDriveFactor();
         });
         drivetrain.setDefaultCommand(driveCmd);
 

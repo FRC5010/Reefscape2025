@@ -22,6 +22,7 @@ public class JoystickToSwerve extends Command {
   private DoubleSupplier xSpdFunction, ySpdFunction, turnSpdFunction;
   private BooleanSupplier fieldOrientedDrive;
   private Supplier<Alliance> allianceSupplier;
+  private DoubleSupplier robotSpeedFactor = () -> 1.0;
 
   public JoystickToSwerve(
       SwerveDrivetrain swerveSubsystem,
@@ -56,6 +57,10 @@ public class JoystickToSwerve extends Command {
   public void setYSpeedFunction(DoubleSupplier ySpeedFunction) {
     ySpdFunction = ySpeedFunction;
   } 
+
+  public void setRobotSpeedFactor(DoubleSupplier robotSpeedFactor) {
+    this.robotSpeedFactor = robotSpeedFactor;
+  }
   
   public DoubleSupplier getTurnSpeedFunction() {
     return turnSpdFunction;
@@ -65,9 +70,9 @@ public class JoystickToSwerve extends Command {
   @Override
   public void execute() {
     // get values on sticks and deadzone them
-
-    double xInput = (xSpdFunction.getAsDouble());
-    double yInput = (ySpdFunction.getAsDouble());
+    double robotSpeedFactor = this.robotSpeedFactor.getAsDouble();
+    double xInput = (xSpdFunction.getAsDouble()) * robotSpeedFactor;
+    double yInput = (ySpdFunction.getAsDouble()) * robotSpeedFactor;
 
     Translation2d inputTranslation = new Translation2d(xInput, yInput);
     double magnitude = inputTranslation.getNorm();
@@ -75,7 +80,7 @@ public class JoystickToSwerve extends Command {
 
     double curvedMagnitude = Math.pow(magnitude, 3);
 
-    double turnSpeed = (turnSpdFunction.getAsDouble());
+    double turnSpeed = (turnSpdFunction.getAsDouble()) * robotSpeedFactor;
 
     // limit power
     double xSpeed =
