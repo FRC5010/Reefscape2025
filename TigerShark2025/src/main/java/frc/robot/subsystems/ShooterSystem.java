@@ -6,7 +6,6 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.RPM;
 
 import java.util.function.DoubleSupplier;
 
@@ -21,6 +20,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -46,7 +46,7 @@ public class ShooterSystem extends GenericSubsystem {
 
   /** Creates a new Shooter. */
   public ShooterSystem(Mechanism2d mechanismSimulation) {
-    coralState = CoralState.EMPTY;
+    
 
     alignmentBeambreak = new Beambreak(1);
     entryBeambreak = new Beambreak(0);
@@ -60,16 +60,18 @@ public class ShooterSystem extends GenericSubsystem {
     entryBroken = new Trigger(entryBeambreak.isBrokenSupplier());
     alignmentBroken = new Trigger(alignmentBeambreak.isBrokenSupplier());
 
+    coralState = entryBeambreak.isBroken() ? CoralState.FULLY_CAPTURED : CoralState.EMPTY;
+
     isEmpty = new Trigger(() -> coralState == CoralState.EMPTY);
     isEntryActive = new Trigger(() -> coralState == CoralState.ENTRY);
     isCoralFullyCaptured = new Trigger(() -> coralState == CoralState.FULLY_CAPTURED);
     isAligned = new Trigger(() -> coralState == CoralState.ALIGNED);
 
-    // setupStateMachine();
+    setupStateMachine();
     setupMotors(mechanismSimulation);
    
-    isEntryActive.whileTrue(captureCoral());
-    isCoralFullyCaptured.whileTrue(alignCoral());
+    // isEntryActive.whileTrue(captureCoral());
+    // isCoralFullyCaptured.whileTrue(alignCoral());
    
   }
 
@@ -138,12 +140,22 @@ public class ShooterSystem extends GenericSubsystem {
     return runMotors(() -> 0.1).until(isEmpty.negate());
   }
 
+  public Trigger isEmpty() {
+    return isEmpty;
+  }
+
+  public Trigger isFullyCaptured() {
+    return isCoralFullyCaptured;
+  }
+
   @Override
   public void periodic() {
       shooterLeft.draw();
       shooterRight.draw();
       entryBeamBreakDisplay.setValue(entryBroken.getAsBoolean());
       alignmentBeamBreakDisplay.setValue(alignmentBroken.getAsBoolean());
+
+      SmartDashboard.putString("Coral State", coralState.name());
   }
 
   @Override

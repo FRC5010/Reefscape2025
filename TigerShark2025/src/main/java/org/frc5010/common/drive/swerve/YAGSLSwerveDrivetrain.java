@@ -297,7 +297,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
       new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic
                                         // drive trains
             new PIDConstants(2.0, 0, 0.0), // Translation PID constants
-            new PIDConstants(2.0, 0, 0.0) // Rotation PID constants
+            new PIDConstants(1.0, 0, 0.0) // Rotation PID constants
         ),
       config,
       this).beforeStarting(() -> poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose")).until(() -> poseEstimator.getCurrentPose().getTranslation().getDistance(pose.get().getTranslation()) < 0.5).andThen(finishDriving.get());

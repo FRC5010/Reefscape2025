@@ -5,7 +5,6 @@ import static edu.wpi.first.units.Units.Degrees;
 import java.util.function.Consumer;
 
 import org.frc5010.common.arch.GenericRobot;
-import org.frc5010.common.auto.AutoErrorTracker;
 import org.frc5010.common.auto.RelayPIDAutoTuner;
 import org.frc5010.common.config.ConfigConstants;
 import org.frc5010.common.drive.GenericDrivetrain;
@@ -21,8 +20,9 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.auto_routines.AutoDriveAuto;
+import frc.robot.auto_routines.Right1Coral;
 import frc.robot.auto_routines.Right4Coral;
+import frc.robot.managers.TargetingSystem;
 import frc.robot.subsystems.AlgaeArm;
 import frc.robot.subsystems.ElevatorSystem;
 import frc.robot.subsystems.ShooterSystem;
@@ -38,10 +38,13 @@ public class Elphaba extends GenericRobot {
         super(directory);
         AllianceFlip.configure(FieldConstants.fieldDimensions);
 
+
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
         elevatorSystem = new ElevatorSystem(mechVisual);
         shooter = new ShooterSystem(mechVisual);
         algaeArm = new AlgaeArm(mechVisual);
+
+        TargetingSystem.setupParamaters((YAGSLSwerveDrivetrain) drivetrain, shooter, elevatorSystem, algaeArm);
 
         reefscapeButtonBoard = new ReefscapeButtonBoard(2, 3);
     }
@@ -87,26 +90,32 @@ public class Elphaba extends GenericRobot {
                 Commands.deferredProxy(((YAGSLSwerveDrivetrain) drivetrain)
                         .driveToPosePrecise(() -> AllianceFlip.apply(ReefscapeButtonBoard.getStationPose()))));
 
-        driver.createLeftBumper();
+        driver.createAButton().whileTrue(
+        Commands.deferredProxy(() ->
+        TargetingSystem.createCoralScoringSequence(AllianceFlip.apply(ReefscapeButtonBoard.getScoringPose()), ReefscapeButtonBoard.getScoringLevel())));
+
+        driver.createBButton().whileTrue(
+            Commands.deferredProxy( () ->
+        TargetingSystem.createLoadingSequence(AllianceFlip.apply(ReefscapeButtonBoard.getStationPose())) 
+        ));
+        
+        
+
+        //driver.createLeftBumper().whileTrue(Commands.run(() -> elevatorSystem.setElevatorPosition(elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel())), elevatorSystem));
         driver.createLeftBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
-                .profiledBangBangCmd(
+                .pidControlCommand(
                         elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()))));
 
         driver.LEFT_BUMPER.and(AlgaeArm.algaeSelected).and(ReefscapeButtonBoard.algaeLevelIsSelected)
             .whileTrue(algaeArm.getDeployCommand());
 
-        driver.createBButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
+       // driver.createBButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
 
-        driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
-                .profiledBangBangCmd(
+       driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
+                .pidControlCommand(
                         elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.ScoringLevel.INTAKE))));
 
-        // driver.createLeftBumper().whileTrue(Commands.run(() -> elevatorSystem.setElevatorPosition(elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()))));
-        // driver.createRightBumper().whileTrue(Commands.run(() -> elevatorSystem.setElevatorPosition(elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.ScoringLevel.INTAKE))));
-
         driver.createRightPovButton().onTrue(elevatorSystem.zeroElevator());
-
-
     }
 
     @Override
@@ -139,7 +148,7 @@ public class Elphaba extends GenericRobot {
     public void buildAutoCommands() {
         super.buildAutoCommands();
         addAutoToChooser("Right 4 Coral", new Right4Coral());
-        addAutoToChooser("Auto Drive Auto", new AutoDriveAuto(((YAGSLSwerveDrivetrain)drivetrain), shooter, elevatorSystem));
+        addAutoToChooser("Right 1 Coral", new Right1Coral(((YAGSLSwerveDrivetrain)drivetrain), shooter, elevatorSystem));
         // addAutoToChooser("Auto New", new ExampleAuto());
     }
 }

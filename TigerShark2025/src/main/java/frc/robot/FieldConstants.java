@@ -75,7 +75,7 @@ public class FieldConstants {
         return centerFace.transformBy(
             new Transform2d(
                 new Translation2d(Inches.zero(), 
-                    GuideHalfSpacing.times(Math.abs(guideNumber) * 2 - 1).times(direction)),
+                    GuideHalfSpacing.times(Math.abs(guideNumber) * 2).times(direction)),
                 Rotation2d.fromDegrees(0))).transformBy(new Transform2d(Inches.of(0), Inches.zero(), new Rotation2d())).transformBy(poseOffset);
     }
   }

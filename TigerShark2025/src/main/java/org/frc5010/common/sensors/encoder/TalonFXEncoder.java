@@ -33,19 +33,19 @@ public class TalonFXEncoder implements GenericEncoder {
     talonFXSim.Orientation = ChassisReference.CounterClockwise_Positive;
   }
 
-  private double rotationsToDistance(double position) {
+  public double rotationsToDistance(double position) {
     return position * metersPerRotation;
   }
 
-  private double distanceToRotations(double position) {
+  public double distanceToRotations(double position) {
     return position / metersPerRotation;
   }
 
-  private double rotationsPerMinToVelocity(double velocity) {
+  public double rotationsPerMinToVelocity(double velocity) {
     return velocity * metersPerSecPerRPM;
   }
 
-  private double velocityToRotationsPerMin(double velocity) {
+  public double velocityToRotationsPerMin(double velocity) {
     return velocity / metersPerSecPerRPM;
   }
 

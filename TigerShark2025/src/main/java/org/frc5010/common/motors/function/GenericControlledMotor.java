@@ -217,7 +217,7 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
 
   @Override
   public double getP() {
-    return controller.getP();
+    return kP.getValue();
   }
 
   @Override
@@ -227,7 +227,7 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
 
   @Override
   public double getD() {
-    return controller.getD();
+    return kD.getValue();
   }
 
   @Override

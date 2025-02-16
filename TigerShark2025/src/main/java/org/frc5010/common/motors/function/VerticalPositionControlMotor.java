@@ -85,7 +85,7 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
                 .setValue(0 == persistedConversion ? (drumRadius.in(Meters) * 2.0 * Math.PI) / gearing
                         : persistedConversion);
         encoder.setPositionConversion(this.conversionRotationsToDistance.getValue());
-        encoder.setVelocityConversion(this.conversionRotationsToDistance.getValue() * 60.0);
+        encoder.setVelocityConversion(this.conversionRotationsToDistance.getValue() / 60.0);
         encoder.setPosition(startingHeight.in(Meters));
         position.setValue(startingHeight.in(Meters));
         return this;
@@ -152,14 +152,14 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
 
     @Override
     public void setReference(double reference) {
-        setReference(reference/encoder.getPositionConversion(), controller.getControlType(),
-                getFeedForward(0).in(Volts) / RobotController.getBatteryVoltage());
+        setReference(reference, controller.getControlType(),
+                getFeedForward(0.0001 * Math.signum(reference - getPosition())).in(Volts));
     }
 
     public void updateReference() {
         if (PIDControlType.NONE != controller.getControlType()) {
             controller.setReference(reference.getValue(), getControlType(),
-                    getFeedForward(0).in(Volts) / RobotController.getBatteryVoltage());
+                    getFeedForward(0.0001 * Math.signum(reference.getValue() - getPosition())).in(Volts));
         }
     }
 
