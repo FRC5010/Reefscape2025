@@ -49,6 +49,14 @@ public class JoystickToSwerve extends Command {
     turnSpdFunction = turnSpeedFunction;
   }
 
+  public void setXSpeedFunction(DoubleSupplier xSpeedFunction) {
+    xSpdFunction = xSpeedFunction;
+  }
+
+  public void setYSpeedFunction(DoubleSupplier ySpeedFunction) {
+    ySpdFunction = ySpeedFunction;
+  } 
+  
   public DoubleSupplier getTurnSpeedFunction() {
     return turnSpdFunction;
   }

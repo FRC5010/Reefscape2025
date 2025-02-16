@@ -78,6 +78,7 @@
       "/SmartDashboard/Pigeon 2 (v6) [15]": "Gyro",
       "/SmartDashboard/Pigeon 2 (v6) [50]": "Gyro",
       "/SmartDashboard/Pigeon 2 [13]": "Gyro",
+      "/SmartDashboard/Right1Coral": "Command",
       "/SmartDashboard/Right4Coral": "Command",
       "/SmartDashboard/Robot Visual": "Mechanism2d",
       "/SmartDashboard/SendableChooser[0]": "String Chooser",

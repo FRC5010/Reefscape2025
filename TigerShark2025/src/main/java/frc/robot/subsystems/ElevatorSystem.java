@@ -230,6 +230,13 @@ public class ElevatorSystem extends GenericSubsystem {
         return Math.abs(position.in(Meters) - elevator.getPosition()) < 0.02;
     }
 
+    public double getDriveFactor() {
+        if (elevator.getPosition() > 1.0) {
+            return 0.0;
+        } else {
+            return (1.0 + LOAD.getLengthInMeters()) - elevator.getPosition();
+        }
+    }
     public Distance selectElevatorLevel(Supplier<ReefscapeButtonBoard.ScoringLevel> level) {
         switch (level.get()) {
             case L1:

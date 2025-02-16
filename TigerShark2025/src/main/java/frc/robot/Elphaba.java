@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 
 import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.auto.RelayPIDAutoTuner;
+import org.frc5010.common.commands.JoystickToSwerve;
 import org.frc5010.common.config.ConfigConstants;
 import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
@@ -120,7 +121,11 @@ public class Elphaba extends GenericRobot {
 
     @Override
     public void setupDefaultCommands(Controller driver, Controller operator) {
-        drivetrain.setDefaultCommand(drivetrain.createDefaultCommand(driver));
+        JoystickToSwerve driveCmd = (JoystickToSwerve)drivetrain.createDefaultCommand(driver);
+        driveCmd.setXSpeedFunction(() -> {
+            return elevatorSystem.getDriveFactor() * driver.getLeftYAxis();
+        });
+        drivetrain.setDefaultCommand(driveCmd);
 
         shooter.setDefaultCommand(shooter.runMotors(() -> operator.getLeftTrigger()));
 
