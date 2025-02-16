@@ -50,6 +50,8 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
     Distance carriageHeight = Meters.of(0.0);
     Distance mechanismHeight = Meters.of(0.0);
     Distance minHeight = Meters.of(0.0);
+    Distance maximumHeight = Meters.of(0.0);
+    Distance startingHeight = Meters.of(0.0);
     protected final String K_G = "kG";
     protected final String CONVERSION = "Conversion";
     protected final String SPEED = "Speed";
@@ -73,6 +75,8 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
             Distance maximumHeight, Distance startingHeight, Distance carriageHeight, double kG) {
         this.carriageHeight = carriageHeight;
         this.minHeight = minHeight;
+        this.maximumHeight = maximumHeight;
+        this.startingHeight = startingHeight;
         mechanismHeight = maximumHeight;
         simMechanism = new ElevatorSim(
                 LinearSystemId.createElevatorSystem(_motor.getMotorSimulationType(), mass.in(Kilograms),
@@ -135,11 +139,11 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
     }
 
     public Boolean isAtMax() {
-        return isCloseToMax(Meters.of(0));
+        return isCloseToMax(Meters.of(0.01));
     }
 
     public Boolean isAtMin() {
-        return isCloseToMin(Meters.of(0));
+        return isCloseToMin(Meters.of(0.01));
     }
 
     public Boolean isCloseToMax(Distance closeZone) {

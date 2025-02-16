@@ -17,6 +17,7 @@ import org.frc5010.common.telemetry.DisplayString;
 import org.frc5010.common.telemetry.DisplayValuesHelper;
 import org.frc5010.common.telemetry.DisplayVoltage;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -215,16 +216,31 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
     return controller.getValues();
   }
 
+  /**
+   * Gets the proportional value of the PID controller from the config values.
+   * 
+   * @return the proportional value.
+   */
   @Override
   public double getP() {
     return kP.getValue();
   }
 
+  /**
+   * Gets the integral value of the PID controller from the config values.
+   * 
+   * @return the integral value.
+   */
   @Override
   public double getI() {
-    return controller.getI();
+    return kI.getValue();
   }
 
+  /**
+   * Gets the derivative value of the PID controller from the config values.
+   * 
+   * @return the derivative value.
+   */
   @Override
   public double getD() {
     return kD.getValue();
@@ -232,17 +248,17 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
 
   @Override
   public double getF() {
-    return controller.getF();
+    return kF.getValue();
   }
 
   @Override
   public double getIZone() {
-    return controller.getIZone();
+    return iZone.getValue();
   }
 
   @Override
   public double getReference() {
-    return controller.getReference();
+    return reference.getValue();
   }
 
   @Override
@@ -258,11 +274,7 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
   @Override
   public double calculateControlEffort(double current) {
     double controlEffort = controller.calculateControlEffort(current) + getFeedForward(0).in(Volts);
-    if (controlEffort > maxOutput.getValue()) {
-      controlEffort = maxOutput.getValue();
-    } else if (controlEffort < minOutput.getValue()) {
-      controlEffort = minOutput.getValue();
-    }
+    MathUtil.clamp(controlEffort, minOutput.getValue(), maxOutput.getValue()); // clamp effort to (min, max, 0)
     effort.setVoltage(controlEffort, Volts);
     return controlEffort;
   }

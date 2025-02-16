@@ -12,8 +12,6 @@ import static edu.wpi.first.units.Units.Pounds;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-import javax.print.attribute.PrintServiceAttributeSet;
-
 import org.frc5010.common.arch.GenericSubsystem;
 import org.frc5010.common.constants.GenericPID;
 import org.frc5010.common.constants.MotorFeedFwdConstants;
@@ -42,7 +40,7 @@ public class ElevatorSystem extends GenericSubsystem {
     protected VerticalPositionControlMotor elevator;
     protected FollowerMotor elevatorFollower;
     protected PIDControlType controlType = PIDControlType.NONE;
-    protected Distance safeDistance = Inches.of(6);
+    protected Distance safeDistance = Inches.of(12);
     public DisplayLength BOTTOM = displayValues.makeConfigLength(Position.BOTTOM.name());
     public DisplayLength LOAD = displayValues.makeConfigLength(Position.LOAD.name());
     public DisplayLength PROCESSOR = displayValues.makeConfigLength(Position.PROCESSOR.name());
@@ -56,7 +54,7 @@ public class ElevatorSystem extends GenericSubsystem {
     public DisplayLength L4Shoot = displayValues.makeConfigLength(Position.L4Shoot.name());
     public DisplayLength L4 = displayValues.makeConfigLength(Position.L4.name());
     public DisplayLength NET = displayValues.makeConfigLength(Position.NET.name());
-    
+
     public static enum Position {
         BOTTOM(Meters.of(0.0)),
         LOAD(Meters.of(0.09)),
@@ -87,33 +85,46 @@ public class ElevatorSystem extends GenericSubsystem {
     private double lastTimestamp = 0;
 
     public ElevatorSystem(Mechanism2d mechanismSimulation) {
-        if (0 == BOTTOM.getLength().in(Meters)) BOTTOM.setLength(Position.BOTTOM.position());
-        if (0 == LOAD.getLength().in(Meters)) LOAD.setLength(Position.LOAD.position());
-        if (0 == PROCESSOR.getLength().in(Meters)) PROCESSOR.setLength(Position.PROCESSOR.position());
-        if (0 == L1.getLength().in(Meters)) L1.setLength(Position.L1.position());
-        if (0 == L2Algae.getLength().in(Meters)) L2Algae.setLength(Position.L2Algae.position());
-        if (0 == L2Shoot.getLength().in(Meters)) L2Shoot.setLength(Position.L2Shoot.position());
-        if (0 == L2.getLength().in(Meters)) L2.setLength(Position.L2.position());
-        if (0 == L3Algae.getLength().in(Meters)) L3Algae.setLength(Position.L3Algae.position());
-        if (0 == L3Shoot.getLength().in(Meters)) L3Shoot.setLength(Position.L3Shoot.position());
-        if (0 == L3.getLength().in(Meters)) L3.setLength(Position.L3.position());
-        if (0 == L4Shoot.getLength().in(Meters)) L4Shoot.setLength(Position.L4Shoot.position());
-        if (0 == L4.getLength().in(Meters)) L4.setLength(Position.L4.position());
-        if (0 == NET.getLength().in(Meters)) NET.setLength(Position.NET.position());
+        if (0 == BOTTOM.getLength().in(Meters))
+            BOTTOM.setLength(Position.BOTTOM.position());
+        if (0 == LOAD.getLength().in(Meters))
+            LOAD.setLength(Position.LOAD.position());
+        if (0 == PROCESSOR.getLength().in(Meters))
+            PROCESSOR.setLength(Position.PROCESSOR.position());
+        if (0 == L1.getLength().in(Meters))
+            L1.setLength(Position.L1.position());
+        if (0 == L2Algae.getLength().in(Meters))
+            L2Algae.setLength(Position.L2Algae.position());
+        if (0 == L2Shoot.getLength().in(Meters))
+            L2Shoot.setLength(Position.L2Shoot.position());
+        if (0 == L2.getLength().in(Meters))
+            L2.setLength(Position.L2.position());
+        if (0 == L3Algae.getLength().in(Meters))
+            L3Algae.setLength(Position.L3Algae.position());
+        if (0 == L3Shoot.getLength().in(Meters))
+            L3Shoot.setLength(Position.L3Shoot.position());
+        if (0 == L3.getLength().in(Meters))
+            L3.setLength(Position.L3.position());
+        if (0 == L4Shoot.getLength().in(Meters))
+            L4Shoot.setLength(Position.L4Shoot.position());
+        if (0 == L4.getLength().in(Meters))
+            L4.setLength(Position.L4.position());
+        if (0 == NET.getLength().in(Meters))
+            NET.setLength(Position.NET.position());
 
         elevator = new VerticalPositionControlMotor(MotorFactory.TalonFX(9, Motor.KrakenX60), "elevator",
                 displayValues);
         elevatorFollower = new FollowerMotor(MotorFactory.TalonFX(10, Motor.KrakenX60),
-        elevator, "elevatorFollower", true);
+                elevator, "elevatorFollower", true);
         elevator.setControlType(controlType);
 
         elevator.setMotorBrake(true);
         elevatorFollower.setMotorBrake(true);
         elevatorFollower.setCurrentLimit(Amps.of(100));
-        
-        elevator.setupSimulatedMotor(6, Pounds.of(15), Inches.of(1.1), Meters.of(0), Inches.of(83.475 - 6.725),
-                Meters.of(0),
-                Meters.of(0.2), 0.263672);
+
+        elevator.setupSimulatedMotor(6, Pounds.of(30), Inches.of(1.1), 
+                LOAD.getLength(), Inches.of(83.475 - 6.725), LOAD.getLength(),
+                Meters.of(0.2), RobotBase.isSimulation() ? 0.75 : 0.263672);
         elevator.setVisualizer(mechanismSimulation, new Pose3d(
                 new Translation3d(Inches.of(5.75).in(Meters), Inches.of(4.75).in(Meters), Inches.of(6.725).in(Meters)),
                 new Rotation3d()));
@@ -132,10 +143,8 @@ public class ElevatorSystem extends GenericSubsystem {
             elevator.invert(true);
             // Tell the simulator that the motor is CW.
             elevator.getMotorEncoder().setInverted(true);
-
-
         }
-        
+
         elevator.burnFlash();
     }
 
@@ -145,10 +154,9 @@ public class ElevatorSystem extends GenericSubsystem {
         }
         return false;
     }
-    
 
     public Command elevatorSysIdCommand() {
-        return elevator.getSysIdCommand(this);    
+        return elevator.getSysIdCommand(this);
     }
 
     public double safeSpeed(double speed) {
@@ -156,7 +164,7 @@ public class ElevatorSystem extends GenericSubsystem {
             return 0.0;
         }
         if ((speed > 0 && elevator.isCloseToMax(safeDistance)) || (speed < 0 && elevator.isCloseToMin(safeDistance))) {
-            return Math.max(speed*0.1, Math.signum(speed)*0.15);
+            return speed * 0.15;
         }
         return speed;
     }
@@ -195,7 +203,7 @@ public class ElevatorSystem extends GenericSubsystem {
             double currentError = position.in(Meters) - elevator.getPosition();
             double currentTimestamp = RobotController.getFPGATime() / 10E3;
             double d = (currentError - lastError) / (currentTimestamp - lastTimestamp);
-            double effort = MathUtil.clamp(elevator.getP() * currentError + elevator.getD() * d, -0.5, 0.5);
+            double effort = MathUtil.clamp(elevator.getP() * currentError + elevator.getD() * d, -0.8, 0.8);
             elevator.set(effort);
             lastTimestamp = currentTimestamp;
             lastError = currentError;
@@ -211,14 +219,13 @@ public class ElevatorSystem extends GenericSubsystem {
         }
     }
 
-
     public Command zeroElevator() {
         return Commands.runOnce(() -> elevator.getMotorEncoder().setPosition(0.09));
     }
 
     public Command basicSuppliersMovement(DoubleSupplier speed) {
         return Commands.run(
-            () -> elevatorSpeed(speed.getAsDouble()), this);
+                () -> elevatorSpeed(speed.getAsDouble()), this);
 
     }
 
@@ -226,7 +233,7 @@ public class ElevatorSystem extends GenericSubsystem {
         return new Trigger(() -> elevator.isAtTarget());
     }
 
-    public Boolean isAtLocation(Distance position)  {
+    public Boolean isAtLocation(Distance position) {
         return Math.abs(position.in(Meters) - elevator.getPosition()) < 0.02;
     }
 
@@ -237,6 +244,7 @@ public class ElevatorSystem extends GenericSubsystem {
             return (2.0 - elevator.getPosition()) * 0.5; // ratio of position to max height of 2m
         }
     }
+
     public Distance selectElevatorLevel(Supplier<ReefscapeButtonBoard.ScoringLevel> level) {
         switch (level.get()) {
             case L1:

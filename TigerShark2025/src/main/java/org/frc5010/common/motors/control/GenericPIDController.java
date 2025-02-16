@@ -10,6 +10,7 @@ public abstract class GenericPIDController implements PIDController5010 {
     controller.setPID(getP(), getI(), getD());
     controller.setIZone(getIZone());
     controller.setSetpoint(getReference());
+    controller.setTolerance(getTolerance());
     double control = controller.calculate(current);
     return control + getF();
   }

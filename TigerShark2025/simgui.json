@@ -68,6 +68,7 @@
       "/Shuffleboard/TigerShark/Auto Modes": "String Chooser",
       "/SmartDashboard/Alerts": "Alerts",
       "/SmartDashboard/Drive Visual": "Mechanism2d",
+      "/SmartDashboard/DriveToPosition": "Command",
       "/SmartDashboard/Encoders": "Alerts",
       "/SmartDashboard/Field": "Field2d",
       "/SmartDashboard/IMU": "Alerts",
@@ -686,12 +687,18 @@
         }
       },
       "SmartDashboard": {
-        "ScoringSystem": {
+        "ElevatorSystem": {
           "elevator": {
             "open": true
           },
           "open": true
-        }
+        },
+        "ScoringSystem": {
+          "elevator": {
+            "open": true
+          }
+        },
+        "open": true
       },
       "elevator": {
         "open": true
@@ -704,8 +711,8 @@
         }
       },
       "SmartDashboard": {
-        "AlgaeArm": {
-          "Algae Arm": {
+        "ElevatorSystem": {
+          "elevator": {
             "open": true
           },
           "open": true
