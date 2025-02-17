@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 
@@ -64,7 +65,7 @@ public class ReefscapeButtonBoard {
 
     public enum ScoringAlignment implements ButtonStateSetting{
         REEF_LEFT(18, new Transform2d(Inches.zero(), Inches.of(6.4688), new Rotation2d())),
-        ALGAE(3, new Transform2d()),
+        ALGAE(3, new Transform2d(Feet.of(2), Inches.zero(), new Rotation2d())),
         REEF_RIGHT(14, new Transform2d(Inches.zero(), Inches.of(-6.4688), new Rotation2d()));
 
         private int button;
@@ -130,7 +131,6 @@ public class ReefscapeButtonBoard {
 
     public static ScoringLocation scoringLocation = ScoringLocation.FRONT_AB;
     public static ScoringAlignment scoringAlignment = ScoringAlignment.REEF_LEFT;
-    public static boolean algaeSelected = false;
     public static ScoringLevel scoringLevel = ScoringLevel.INTAKE;
     public static LoadingStationLocation loadingStationLocation = LoadingStationLocation.STATION_LEFT_OUTER;
     public boolean fineControl = false;
@@ -157,7 +157,7 @@ public class ReefscapeButtonBoard {
         tab.addBoolean(ScoringLocation.BACK_LEFT_IJ.name(), () -> ScoringLocation.BACK_LEFT_IJ == scoringLocation).withPosition(0, 4);
         tab.addBoolean(ScoringLocation.FRONT_LEFT_KL.name(), () -> ScoringLocation.FRONT_LEFT_KL == scoringLocation).withPosition(0, 6);
         tab.addBoolean(ScoringAlignment.REEF_LEFT.name(), () -> ScoringAlignment.REEF_LEFT == scoringAlignment).withPosition(6, 6);
-        tab.addBoolean(ScoringAlignment.ALGAE.name(), () -> algaeSelected).withPosition(8, 4);
+        tab.addBoolean(ScoringAlignment.ALGAE.name(), () -> ScoringAlignment.ALGAE == scoringAlignment).withPosition(8, 4);
         tab.addBoolean(ScoringAlignment.REEF_RIGHT.name(), () -> ScoringAlignment.REEF_RIGHT == scoringAlignment).withPosition(10, 6);
         tab.addBoolean(LoadingStationLocation.STATION_LEFT_OUTER.name(), () -> LoadingStationLocation.STATION_LEFT_OUTER == loadingStationLocation).withPosition(0, 0);
         tab.addBoolean(LoadingStationLocation.STATION_LEFT_INNER.name(), () -> LoadingStationLocation.STATION_LEFT_INNER == loadingStationLocation).withPosition(2, 0);
@@ -192,7 +192,6 @@ public class ReefscapeButtonBoard {
         bindStateSettorButtons(ReefscapeButtonBoard::setAlignment, ScoringAlignment.values());
         bindStateSettorButtons(ReefscapeButtonBoard::setScoringLevel, ScoringLevel.values());
         //bindStateSettorButtons(ReefscapeButtonBoard::setLoadingStation, LoadingStationLocation.values());
-        getButton(ScoringAlignment.ALGAE.getButton()).onTrue(Commands.runOnce(() -> algaeSelected = !algaeSelected));
     }
 
     public JoystickButton getFireButton() {
@@ -208,7 +207,7 @@ public class ReefscapeButtonBoard {
 
         
         operator.createLeftPovButton().onTrue(Commands.runOnce(() -> setAlignment(ScoringAlignment.REEF_LEFT)));
-        operator.createUpPovButton().debounce(0.25).onTrue(Commands.runOnce(() -> algaeSelected = !algaeSelected));
+        operator.createUpPovButton().onTrue(Commands.runOnce(() -> setAlignment(ScoringAlignment.ALGAE)));
         operator.createRightPovButton().onTrue(Commands.runOnce(() -> setAlignment(ScoringAlignment.REEF_RIGHT)));
 
         operator.createRightBumper().onTrue(Commands.runOnce(() -> {

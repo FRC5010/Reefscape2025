@@ -147,7 +147,7 @@ public class ElevatorSystem extends GenericSubsystem {
         elevator.setMotorFeedFwd(new MotorFeedFwdConstants(0.26329, 0.38506, 0.04261));
         elevator.setProfiledMaxVelocity(5.0);
         elevator.setProfiledMaxAcceleration(30);
-        elevator.setValues(new GenericPID(3.0, 0.0, 0.0));
+        elevator.setValues(new GenericPID(3, 0.0, 0.0));
         elevator.setOutputRange(-1, 1);
 
         PIDConstraints = new TrapezoidProfile.Constraints(elevator.getProfiledMaxVelocity(), elevator.getProfiledMaxAcceleration());

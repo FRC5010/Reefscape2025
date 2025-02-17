@@ -14,6 +14,7 @@ import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.motors.function.VelocityControlMotor;
 import org.frc5010.common.sensors.Beambreak;
+import org.frc5010.common.sensors.ValueSwitch;
 import org.frc5010.common.telemetry.DisplayBoolean;
 
 import edu.wpi.first.math.geometry.Pose3d;
@@ -30,6 +31,7 @@ public class ShooterSystem extends GenericSubsystem {
   Beambreak alignmentBeambreak;
   Beambreak entryBeambreak;
 
+  protected ValueSwitch currentSwitch;
   protected VelocityControlMotor shooterLeft;
   protected VelocityControlMotor shooterRight;
   private Trigger entryBroken, alignmentBroken;
@@ -47,7 +49,7 @@ public class ShooterSystem extends GenericSubsystem {
   /** Creates a new Shooter. */
   public ShooterSystem(Mechanism2d mechanismSimulation) {
     
-
+    
     alignmentBeambreak = new Beambreak(1);
     entryBeambreak = new Beambreak(0);
 
