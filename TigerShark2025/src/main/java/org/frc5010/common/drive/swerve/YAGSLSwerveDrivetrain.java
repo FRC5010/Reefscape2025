@@ -279,8 +279,8 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     Supplier<Pose3d> pose3D = () -> new Pose3d(pose.get());
     Supplier<DriveToPosition> finishDriving = () -> new DriveToPosition((SwerveDrivetrain) this, this::getPose, pose3D, new Transform2d()).withInitialVelocity(() -> getFieldVelocity());
     // Create the constraints to use while pathfinding
-    PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond()*0.8,
-        getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond()*0.5,
+    PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond()*1.0,
+        getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond()*0.7,
         getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond(),
         getSwerveConstants().getkTeleDriveMaxAngularAccelerationUnitsPerSecond());
     // PathConstraints constraints = new PathConstraints(

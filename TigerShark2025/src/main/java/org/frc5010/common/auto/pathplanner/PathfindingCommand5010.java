@@ -270,7 +270,7 @@ public class PathfindingCommand5010 extends Command {
       }
     }
 
-    if (currentPose.getTranslation().getDistance(targetPose.getTranslation()) < 0.01) {
+    if (currentPose.getTranslation().getDistance(targetPose.getTranslation()) < 0.1) {
       output.accept(new ChassisSpeeds(), DriveFeedforwards.zeros(robotConfig.numModules));
       finish = true;
     } else {
@@ -294,7 +294,7 @@ public class PathfindingCommand5010 extends Command {
             && currentPose
                     .getTranslation()
                     .getDistance(currentTrajectory.getEndState().pose.getTranslation())
-                < 0.5;
+                < 1.5;
 
     if (!skipUpdates && Pathfinding.isNewPathAvailable()) {
       currentPath = Pathfinding.getCurrentPath(constraints, goalEndState);
@@ -404,7 +404,7 @@ public class PathfindingCommand5010 extends Command {
 
     // Only output 0 speeds when ending a path that is supposed to stop, this allows interrupting
     // the command to smoothly transition into some auto-alignment routine
-    if (!interrupted && goalEndState.velocityMPS() < 0.01) {
+    if (!interrupted && goalEndState.velocityMPS() < 0.1) {
       output.accept(new ChassisSpeeds(), DriveFeedforwards.zeros(robotConfig.numModules));
     }
 

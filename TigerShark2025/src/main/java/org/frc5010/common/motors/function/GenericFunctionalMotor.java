@@ -67,6 +67,10 @@ public class GenericFunctionalMotor implements MotorController5010, WpiHelperInt
     return _motor.duplicate(port);
   }
 
+  public MotorController5010 getMotorController() {
+    return _motor;
+  }
+
   /**
    * Sets the current limit for the motor controller.
    *

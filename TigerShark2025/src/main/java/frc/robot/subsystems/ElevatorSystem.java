@@ -20,12 +20,16 @@ import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.motors.PIDController5010.PIDControlType;
 import org.frc5010.common.motors.function.FollowerMotor;
 import org.frc5010.common.motors.function.VerticalPositionControlMotor;
+import org.frc5010.common.motors.hardware.GenericTalonFXMotor;
 import org.frc5010.common.telemetry.DisplayLength;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
@@ -40,7 +44,7 @@ public class ElevatorSystem extends GenericSubsystem {
     protected VerticalPositionControlMotor elevator;
     protected FollowerMotor elevatorFollower;
     protected PIDControlType controlType = PIDControlType.NONE;
-    protected Distance safeDistance = Inches.of(12);
+    protected Distance safeDistance = Inches.of(1);
     public DisplayLength BOTTOM = displayValues.makeConfigLength(Position.BOTTOM.name());
     public DisplayLength LOAD = displayValues.makeConfigLength(Position.LOAD.name());
     public DisplayLength PROCESSOR = displayValues.makeConfigLength(Position.PROCESSOR.name());
@@ -54,7 +58,12 @@ public class ElevatorSystem extends GenericSubsystem {
     public DisplayLength L4Shoot = displayValues.makeConfigLength(Position.L4Shoot.name());
     public DisplayLength L4 = displayValues.makeConfigLength(Position.L4.name());
     public DisplayLength NET = displayValues.makeConfigLength(Position.NET.name());
+    private final Current MAX_ELEVATOR_STATOR_CURRENT_LIMIT = Amps.of(100);
+    private final Current MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT = Amps.of(60);
 
+    private ProfiledPIDController profiledPID;
+    private TrapezoidProfile.Constraints PIDConstraints;
+    
     public static enum Position {
         BOTTOM(Meters.of(0.0)),
         LOAD(Meters.of(0.09)),
@@ -118,22 +127,33 @@ public class ElevatorSystem extends GenericSubsystem {
                 elevator, "elevatorFollower", true);
         elevator.setControlType(controlType);
 
+        
         elevator.setMotorBrake(true);
+        elevator.setCurrentLimit(MAX_ELEVATOR_STATOR_CURRENT_LIMIT);
+        ((GenericTalonFXMotor) elevator.getMotorController()).setSupplyCurrent(MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT);
+        
         elevatorFollower.setMotorBrake(true);
-        elevatorFollower.setCurrentLimit(Amps.of(100));
 
         elevator.setupSimulatedMotor(6, Pounds.of(30), Inches.of(1.1), 
                 LOAD.getLength(), Inches.of(83.475 - 6.725), LOAD.getLength(),
                 Meters.of(0.2), RobotBase.isSimulation() ? 0.75 : 0.263672);
+        elevatorFollower.setCurrentLimit(MAX_ELEVATOR_STATOR_CURRENT_LIMIT);
+        ((GenericTalonFXMotor) elevatorFollower.getMotorController()).setSupplyCurrent(MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT);
+    
         elevator.setVisualizer(mechanismSimulation, new Pose3d(
                 new Translation3d(Inches.of(5.75).in(Meters), Inches.of(4.75).in(Meters), Inches.of(6.725).in(Meters)),
                 new Rotation3d()));
-        elevator.setCurrentLimit(Amps.of(100));
+
         elevator.setMotorFeedFwd(new MotorFeedFwdConstants(0.26329, 0.38506, 0.04261));
-        elevator.setProfiledMaxVelocity(2.0);
-        elevator.setProfiledMaxAcceleration(5);
-        elevator.setValues(new GenericPID(20.0, 0.0, 2.0));
+        elevator.setProfiledMaxVelocity(5.0);
+        elevator.setProfiledMaxAcceleration(30);
+        elevator.setValues(new GenericPID(3.0, 0.0, 0.0));
         elevator.setOutputRange(-1, 1);
+
+        PIDConstraints = new TrapezoidProfile.Constraints(elevator.getProfiledMaxVelocity(), elevator.getProfiledMaxAcceleration());
+        profiledPID = new ProfiledPIDController(elevator.getP(), elevator.getI(), elevator.getD(), PIDConstraints);
+        profiledPID.setTolerance(0.01);
+        
 
         elevator.getMotorEncoder().setPosition(LOAD.getLengthInMeters());
 
@@ -200,14 +220,15 @@ public class ElevatorSystem extends GenericSubsystem {
 
     public Command pidControlCommand(Distance position) {
         return Commands.run(() -> {
-            double currentError = position.in(Meters) - elevator.getPosition();
-            double currentTimestamp = RobotController.getFPGATime() / 10E3;
-            double d = (currentError - lastError) / (currentTimestamp - lastTimestamp);
-            double effort = MathUtil.clamp(elevator.getP() * currentError + elevator.getD() * d, -0.8, 0.8);
-            elevator.set(effort);
-            lastTimestamp = currentTimestamp;
-            lastError = currentError;
-        }, this);
+            double output = profiledPID.calculate(elevator.getPosition());
+            elevator.set(MathUtil.clamp(output, -1, 1));
+
+        }, this).beforeStarting(() -> {
+            profiledPID.setPID(elevator.getP(), elevator.getI(), elevator.getD());
+            profiledPID.reset(elevator.getPosition(), elevator.getVelocity());
+            profiledPID.setGoal(position.in(Meters));
+            elevator.setReference(position.in(Meters));
+        });
     }
 
     public void setElevatorPosition(Distance position) {

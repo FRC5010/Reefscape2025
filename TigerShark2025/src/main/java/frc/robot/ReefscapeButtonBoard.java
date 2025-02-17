@@ -132,14 +132,18 @@ public class ReefscapeButtonBoard {
     public static ScoringAlignment scoringAlignment = ScoringAlignment.REEF_LEFT;
     public static boolean algaeSelected = false;
     public static ScoringLevel scoringLevel = ScoringLevel.INTAKE;
-    public static LoadingStationLocation loadingStationLocation = LoadingStationLocation.STATION_LEFT_INNER;
+    public static LoadingStationLocation loadingStationLocation = LoadingStationLocation.STATION_LEFT_OUTER;
     public boolean fineControl = false;
     public ShuffleboardTab tab = Shuffleboard.getTab("Driver");
+    public final int FIRE_BUTTON_ID = 7;
 
     public ReefscapeButtonBoard(int port1, int port2) {
         controller1 = new ButtonBoard(port1);
+        controller1.createButtons(13);
         controller2 = new ButtonBoard(port2);
+        controller2.createButtons(13);
         initializeElasticDisplay();
+        setupButtonBindings();
         
     }
 
@@ -187,8 +191,12 @@ public class ReefscapeButtonBoard {
         bindStateSettorButtons(ReefscapeButtonBoard::setScoringLocation, ScoringLocation.values());
         bindStateSettorButtons(ReefscapeButtonBoard::setAlignment, ScoringAlignment.values());
         bindStateSettorButtons(ReefscapeButtonBoard::setScoringLevel, ScoringLevel.values());
-        bindStateSettorButtons(ReefscapeButtonBoard::setLoadingStation, LoadingStationLocation.values());
+        //bindStateSettorButtons(ReefscapeButtonBoard::setLoadingStation, LoadingStationLocation.values());
         getButton(ScoringAlignment.ALGAE.getButton()).onTrue(Commands.runOnce(() -> algaeSelected = !algaeSelected));
+    }
+
+    public JoystickButton getFireButton() {
+        return getButton(FIRE_BUTTON_ID);
     }
 
     public void configureOperatorButtonBindings(Controller operator) {

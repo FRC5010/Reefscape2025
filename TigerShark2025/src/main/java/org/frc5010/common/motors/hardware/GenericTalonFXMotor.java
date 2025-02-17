@@ -62,6 +62,8 @@ public class GenericTalonFXMotor implements MotorController5010 {
   private TalonFXConfigurator cfg;
   /** Current motor current limit */
   protected int motorCurrentLimit;
+  /** Current motor supply current limit */
+  protected int supplyCurrentLimit;
   /** Current controller current limit */
   protected int controllerCurrentLimit;
   /** Enable FOC */
@@ -90,6 +92,7 @@ public class GenericTalonFXMotor implements MotorController5010 {
     factoryDefaults();
     clearStickyFaults();
     setCurrentLimit(config.currentLimit);
+    setSupplyCurrent(Amps.of(40));
     setMotorSimulationType(config.getMotorSimulationType());
     setMaxRPM(config.maxRpm);
     this.config = config;
@@ -145,14 +148,25 @@ public class GenericTalonFXMotor implements MotorController5010 {
   @Override
   public MotorController5010 setCurrentLimit(Current limit) {
     motorCurrentLimit = (int) limit.in(Amps);
+    refreshCurrentLimits();
 
+    return this;
+  }
+
+  private void refreshCurrentLimits() {
     cfg.refresh(configuration.CurrentLimits);
     cfg.apply(
         configuration.CurrentLimits
-            .withSupplyCurrentLimit(motorCurrentLimit)
+            .withSupplyCurrentLimit(supplyCurrentLimit)
             .withStatorCurrentLimit(motorCurrentLimit)
-            .withSupplyCurrentLimitEnable(0 != motorCurrentLimit)
+            .withSupplyCurrentLimitEnable(0 != supplyCurrentLimit)
             .withStatorCurrentLimitEnable(0 != motorCurrentLimit));
+  }
+
+
+  public MotorController5010 setSupplyCurrent(Current limit) {
+    supplyCurrentLimit = (int) limit.in(Amps);
+    refreshCurrentLimits();
 
     return this;
   }

@@ -83,19 +83,14 @@ public class Elphaba extends GenericRobot {
             return;
         }
         reefscapeButtonBoard.configureOperatorButtonBindings(operator);
-        driver.createXButton().whileTrue( // Test drive to J Reef Location
-                Commands.deferredProxy(((YAGSLSwerveDrivetrain) drivetrain)
-                        .driveToPosePrecise(() -> AllianceFlip.apply(ReefscapeButtonBoard.getScoringPose()))));
 
-        driver.createYButton().whileTrue( // Test drive to Top Station Position 1
-                Commands.deferredProxy(((YAGSLSwerveDrivetrain) drivetrain)
-                        .driveToPosePrecise(() -> AllianceFlip.apply(ReefscapeButtonBoard.getStationPose()))));
 
-        driver.createAButton().whileTrue(
+
+        driver.createXButton().whileTrue(
         Commands.deferredProxy(() ->
         TargetingSystem.createCoralScoringSequence(AllianceFlip.apply(ReefscapeButtonBoard.getScoringPose()), ReefscapeButtonBoard.getScoringLevel())));
 
-        driver.createBButton().whileTrue(
+        driver.createYButton().whileTrue(
             Commands.deferredProxy( () ->
         TargetingSystem.createLoadingSequence(AllianceFlip.apply(ReefscapeButtonBoard.getStationPose())) 
         ));
@@ -110,13 +105,15 @@ public class Elphaba extends GenericRobot {
         driver.LEFT_BUMPER.and(AlgaeArm.algaeSelected).and(ReefscapeButtonBoard.algaeLevelIsSelected)
             .whileTrue(algaeArm.getDeployCommand());
 
-       // driver.createBButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
+       driver.createBButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
 
        driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
                 .pidControlCommand(
                         elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.ScoringLevel.INTAKE))));
 
         driver.createRightPovButton().onTrue(elevatorSystem.zeroElevator());
+
+        reefscapeButtonBoard.getFireButton().whileTrue(shooter.runMotors(() -> 0.5));
     }
 
     @Override

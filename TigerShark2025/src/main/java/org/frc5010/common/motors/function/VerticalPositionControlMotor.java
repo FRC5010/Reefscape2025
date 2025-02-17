@@ -142,6 +142,10 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
         return isCloseToMax(Meters.of(0.01));
     }
 
+    public MotorController5010 getMotorController() {
+        return _motor;
+    }
+
     public Boolean isAtMin() {
         return isCloseToMin(Meters.of(0.01));
     }
@@ -169,11 +173,13 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
 
     @Override
     public void set(double speed) {
-        double actual = MathUtil.clamp(speed + getFeedForward(0).in(Volts) / RobotController.getBatteryVoltage(), -1.0,
+        
+        double actual = MathUtil.clamp(speed + getFeedForward((int)Math.signum(speed)).in(Volts) / RobotController.getBatteryVoltage(), -1.0,
                 1.0);
         this.speed.setValue(actual);
         _motor.set(actual);
     }
+
 
     public double getPosition() {
         if (RobotBase.isReal()) {
@@ -202,6 +208,21 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
         Voltage ff = Volts.of(
                 elevatorFeedforward.calculate(velocity));
         feedForward.setValue(ff.in(Volts));
+        return ff;
+    }
+
+    public Voltage getFeedForward(int movementDirection) {
+        if (supplyKG.isPresent()) {
+            kG.setValue(supplyKG.get().getAsDouble());
+        }
+        if (null == elevatorFeedforward || supplyKG.isPresent() || GenericRobot.logLevel == LogLevel.CONFIG) {
+            elevatorFeedforward = new ElevatorFeedforward(
+                    kS.getValue(),
+                    kG.getValue(),
+                    kV.getValue(),
+                    kA.getValue());
+        }
+        Voltage ff = Volts.of(elevatorFeedforward.getKs() * Math.signum(movementDirection) + elevatorFeedforward.getKg());
         return ff;
     }
 

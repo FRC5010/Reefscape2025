@@ -211,6 +211,14 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
     controller.setProfiledMaxAcceleration(maxAccel);
   }
 
+  public double getProfiledMaxAcceleration() {
+    return profiledMaxAccel.getValue();
+  }
+
+  public double getProfiledMaxVelocity() {
+    return profiledMaxVel.getValue();
+  }
+
   @Override
   public GenericPID getValues() {
     return controller.getValues();
@@ -277,6 +285,10 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
     MathUtil.clamp(controlEffort, minOutput.getValue(), maxOutput.getValue()); // clamp effort to (min, max, 0)
     effort.setVoltage(controlEffort, Volts);
     return controlEffort;
+  }
+
+  public double getVelocity() {
+    return velocity.getValue();
   }
 
   @Override

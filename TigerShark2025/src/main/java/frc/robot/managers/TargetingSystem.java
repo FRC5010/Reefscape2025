@@ -38,7 +38,7 @@ public class TargetingSystem {
         Distance level = elevator.selectElevatorLevel(() -> scoringLevel);
 
         return drivetrain.driveToPosePrecise(targetPose).get()
-                .andThen(elevator.profiledBangBangCmd(level).until(() -> elevator.isAtLocation(level))
+                .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level))
                         .andThen(shooter.runMotors(() -> 1.0).until(shooter.isEmpty())));
     }
 
@@ -47,8 +47,6 @@ public class TargetingSystem {
 
         return drivetrain.driveToPosePrecise(targetPose).get()
                 .andThen(Commands.runOnce(() -> SmartDashboard.putNumber("Elevator Level:", level.in(Meters))),
-                        elevator.profiledBangBangCmd(level).until(() -> elevator.isAtLocation(level)).andThen(
-                                Commands.runOnce(() -> elevator.elevatorSpeed(0)),
-                                shooter.runMotors(() -> 0.5).until(shooter.isFullyCaptured())));
+                        elevator.pidControlCommand(level));
     }
 }
