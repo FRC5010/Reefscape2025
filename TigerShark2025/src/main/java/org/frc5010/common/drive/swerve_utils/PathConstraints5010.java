@@ -26,6 +26,7 @@ import edu.wpi.first.units.measure.Voltage;
  */
 public record PathConstraints5010(
     double maxVelocityMPS,
+    LinearAcceleration maxPhysicalAcceleration,
     Supplier<LinearAcceleration> maxForwardAccelerationMPSSq,
     Supplier<LinearAcceleration> maxBackwardAccelerationMPSSq,
     Supplier<LinearAcceleration> maxLeftAccelerationMPSSq,
@@ -46,6 +47,7 @@ public record PathConstraints5010(
    */
   public PathConstraints5010(
       LinearVelocity maxVelocity,
+      LinearAcceleration maxPhysicalAcceleration,
       Supplier<LinearAcceleration> maxForwardAcceleration,
       Supplier<LinearAcceleration> maxBackwardAcceleration,
       Supplier<LinearAcceleration> maxLeftAcceleration,
@@ -56,6 +58,7 @@ public record PathConstraints5010(
       boolean unlimited) {
     this(
         maxVelocity.in(MetersPerSecond),
+        maxPhysicalAcceleration,
         maxForwardAcceleration,
         maxBackwardAcceleration,
         maxLeftAcceleration,
@@ -80,6 +83,10 @@ public record PathConstraints5010(
    *
    * @return Max linear acceleration
    */
+  public double maxLinearAcceleration() {
+    return maxPhysicalAcceleration.in(MetersPerSecondPerSecond);
+  }
+
   public double maxForwardAcceleration() {
     return maxForwardAccelerationMPSSq.get().in(MetersPerSecondPerSecond);
   }

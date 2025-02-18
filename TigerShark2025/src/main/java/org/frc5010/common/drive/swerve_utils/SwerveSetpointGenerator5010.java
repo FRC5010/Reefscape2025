@@ -326,9 +326,10 @@ public class SwerveSetpointGenerator5010 {
     double chassisAngularAccel = chassisTorque / config.MOI;
 
     if (constraints != null) {
+      double linearAcceleration = chassisAccelVec.getNorm();
       double horizonatlAccel = chassisAccelVec.getX();
       double verticalAccel = chassisAccelVec.getY();
-      double factor1 = 1.0, factor2 = 1.0;
+      double factor1 = 1.0, factor2 = 1.0, factor3 = 1.0, factor;
       if (verticalAccel > constraints.maxForwardAcceleration()) {
         factor1 = constraints.maxForwardAcceleration() / verticalAccel;
       } else if (verticalAccel < constraints.maxBackwardAcceleration()) {
@@ -339,7 +340,11 @@ public class SwerveSetpointGenerator5010 {
       } else if (horizonatlAccel < constraints.maxLeftAcceleration()) {
         factor2 = constraints.maxLeftAcceleration() / horizonatlAccel;
       }
-      double factor = factor1 < factor2 ? factor1 : factor2;
+      factor = factor1 < factor2 ? factor1 : factor2;
+      if (linearAcceleration > constraints.maxLinearAcceleration()) {
+        factor3 = constraints.maxLinearAcceleration() / linearAcceleration;
+      }
+      factor = factor3 < factor ? factor3 : factor;
       chassisAccelVec = chassisAccelVec.times(factor);
       chassisAngularAccel =
           MathUtil.clamp(
