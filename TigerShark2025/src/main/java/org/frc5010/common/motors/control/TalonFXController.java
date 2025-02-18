@@ -95,6 +95,7 @@ public class TalonFXController extends GenericPIDController {
         throw new IllegalArgumentException("Unsupported TalonFX control type");
     }
     internalMotor.setControl(request);
+    
   }
 
   /**

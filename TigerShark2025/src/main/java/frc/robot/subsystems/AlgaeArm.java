@@ -82,7 +82,7 @@ public class AlgaeArm extends GenericSubsystem {
         motor.getMotorEncoder().setPosition(90);
     }
 
-    public static Trigger algaeSelected = new Trigger(() -> ReefscapeButtonBoard.algaeSelected);
+    public static Trigger algaeSelected = new Trigger(() -> ReefscapeButtonBoard.getCurrentAlignment() == ReefscapeButtonBoard.ScoringAlignment.ALGAE);
 
     public Command getDeployCommand() {
         return driveToAngleCommand(-10.0);
