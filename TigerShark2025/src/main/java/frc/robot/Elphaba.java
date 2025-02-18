@@ -116,6 +116,12 @@ public class Elphaba extends GenericRobot {
                         elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.ScoringLevel.INTAKE))));
 
         driver.createRightPovButton().onTrue(elevatorSystem.zeroElevator());
+        driver.createDownPovButton().whileTrue(elevatorSystem.elevatorPositionZeroSequence());
+        driver.createUpPovButton().whileTrue(Commands.run(()->{
+            shooter.shooterLeftSpeed(1.0);
+            shooter.shooterRightSpeed(0.7);
+        }, shooter));
+
 
         reefscapeButtonBoard.getFireButton().whileTrue(shooter.runMotors(() -> 0.5));
     }

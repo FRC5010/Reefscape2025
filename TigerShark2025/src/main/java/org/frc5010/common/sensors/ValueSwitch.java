@@ -2,6 +2,8 @@ package org.frc5010.common.sensors;
 
 import java.util.function.Supplier;
 
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 public class ValueSwitch {
   Supplier<Double> thresholdSupplier;
   Supplier<Double> valueSupplier;
@@ -23,6 +25,10 @@ public class ValueSwitch {
     this.thresholdSupplier = () -> threshold;
     this.valueSupplier = value;
     this.triggerThreshold = triggerThreshold;
+  }
+
+  public Trigger getTrigger() {
+    return new Trigger(this::get);
   }
 
   public Boolean get() {
