@@ -86,8 +86,7 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
         double persistedConversion = this.conversionRotationsToDistance.getValue();
         this.kG.setValue(0 == this.kG.getValue() ? kG : this.kG.getValue());
         this.conversionRotationsToDistance
-                .setValue(0 == persistedConversion ? (drumRadius.in(Meters) * 2.0 * Math.PI) / gearing
-                        : persistedConversion);
+                .setValue((drumRadius.in(Meters) * 2.0 * Math.PI) / gearing);
         encoder.setPositionConversion(this.conversionRotationsToDistance.getValue());
         encoder.setVelocityConversion(this.conversionRotationsToDistance.getValue() / 60.0);
         encoder.setPosition(startingHeight.in(Meters));

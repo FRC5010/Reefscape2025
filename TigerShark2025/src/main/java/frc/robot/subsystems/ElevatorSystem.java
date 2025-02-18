@@ -25,6 +25,7 @@ import org.frc5010.common.telemetry.DisplayLength;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -32,7 +33,6 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -44,7 +44,7 @@ public class ElevatorSystem extends GenericSubsystem {
     protected VerticalPositionControlMotor elevator;
     protected FollowerMotor elevatorFollower;
     protected PIDControlType controlType = PIDControlType.NONE;
-    protected Distance safeDistance = Inches.of(1);
+    protected Distance safeDistance = Inches.of(7.5);
     public DisplayLength BOTTOM = displayValues.makeConfigLength(Position.BOTTOM.name());
     public DisplayLength LOAD = displayValues.makeConfigLength(Position.LOAD.name());
     public DisplayLength PROCESSOR = displayValues.makeConfigLength(Position.PROCESSOR.name());
@@ -63,7 +63,8 @@ public class ElevatorSystem extends GenericSubsystem {
 
     private ProfiledPIDController profiledPID;
     private TrapezoidProfile.Constraints PIDConstraints;
-    
+    private SlewRateLimiter rateLimiter = new SlewRateLimiter(0.75);
+
     public static enum Position {
         BOTTOM(Meters.of(0.0)),
         LOAD(Meters.of(0.09)),
@@ -134,7 +135,7 @@ public class ElevatorSystem extends GenericSubsystem {
         
         elevatorFollower.setMotorBrake(true);
 
-        elevator.setupSimulatedMotor(6, Pounds.of(30), Inches.of(1.1), 
+        elevator.setupSimulatedMotor(6, Pounds.of(30), Inches.of(1.45/2.0), 
                 LOAD.getLength(), Inches.of(83.475 - 6.725), LOAD.getLength(),
                 Meters.of(0.2), RobotBase.isSimulation() ? 0.75 : 0.263672);
         elevatorFollower.setCurrentLimit(MAX_ELEVATOR_STATOR_CURRENT_LIMIT);
@@ -145,8 +146,8 @@ public class ElevatorSystem extends GenericSubsystem {
                 new Rotation3d()));
 
         elevator.setMotorFeedFwd(new MotorFeedFwdConstants(0.26329, 0.38506, 0.04261));
-        elevator.setProfiledMaxVelocity(5.0);
-        elevator.setProfiledMaxAcceleration(30);
+        elevator.setProfiledMaxVelocity(3.0);
+        elevator.setProfiledMaxAcceleration(3.0 * 0.75);
         elevator.setValues(new GenericPID(3, 0.0, 0.0));
         elevator.setOutputRange(-1, 1);
 
@@ -183,8 +184,18 @@ public class ElevatorSystem extends GenericSubsystem {
         if (!validSpeed(speed)) {
             return 0.0;
         }
+
         if ((speed > 0 && elevator.isCloseToMax(safeDistance)) || (speed < 0 && elevator.isCloseToMin(safeDistance))) {
-            return speed * 0.15;
+            speed = speed * 0.13;
+            rateLimiter.reset(speed);
+        } else {
+            double currentSpeed = elevator.get();
+            if ((Math.signum(speed) > 0 && currentSpeed < speed) ||
+                (Math.signum(speed) < 0 && speed < currentSpeed)) {
+                speed = rateLimiter.calculate(speed);
+            } else {
+                rateLimiter.reset(speed);
+            }
         }
         return speed;
     }
