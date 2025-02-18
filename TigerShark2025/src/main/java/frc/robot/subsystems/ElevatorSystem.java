@@ -60,6 +60,7 @@ public class ElevatorSystem extends GenericSubsystem {
     public DisplayLength NET = displayValues.makeConfigLength(Position.NET.name());
     private final Current MAX_ELEVATOR_STATOR_CURRENT_LIMIT = Amps.of(100);
     private final Current MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT = Amps.of(60);
+    private double cX = 0.0, cY = 1.178, wheelBase = 0.56, g = 9.81;
 
     private ProfiledPIDController profiledPID;
     private TrapezoidProfile.Constraints PIDConstraints;
@@ -269,12 +270,24 @@ public class ElevatorSystem extends GenericSubsystem {
         return Math.abs(position.in(Meters) - elevator.getPosition()) < 0.02;
     }
 
-    public double getDriveFactor() {
-        if (elevator.getPosition() < 0.5) {
-            return 1.0;
-        } else {
-            return (2.0 - elevator.getPosition()) * 0.5; // ratio of position to max height of 2m
-        }
+    public double getCZ() {
+        return 0.0112954816 * Math.pow(elevator.getPosition(), 0.824063) + 7.46779;
+    }
+    
+    public double getMaxForwardAcceleration() {
+        return (((wheelBase / 2) + cY) * g) / getCZ();
+    }
+
+    public double getMaxBackwardAcceleration() {
+        return - (((wheelBase / 2) - cY) * g) / getCZ();
+    }
+
+    public double getMaxRightAcceleration() {
+        return (((wheelBase / 2) + cX) * g) / getCZ();
+    }
+
+    public double getMaxLeftAcceleration() {
+        return - (((wheelBase / 2) - cX) * g) / getCZ();
     }
 
     public Distance selectElevatorLevel(Supplier<ReefscapeButtonBoard.ScoringLevel> level) {

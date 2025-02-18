@@ -1,6 +1,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import java.util.function.Consumer;
 
@@ -41,6 +42,7 @@ public class Elphaba extends GenericRobot {
 
 
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
+
         elevatorSystem = new ElevatorSystem(mechVisual);
         shooter = new ShooterSystem(mechVisual);
         algaeArm = new AlgaeArm(mechVisual);
@@ -48,6 +50,8 @@ public class Elphaba extends GenericRobot {
         TargetingSystem.setupParamaters((YAGSLSwerveDrivetrain) drivetrain, shooter, elevatorSystem, algaeArm);
 
         reefscapeButtonBoard = new ReefscapeButtonBoard(2, 3);
+
+        ((YAGSLSwerveDrivetrain) drivetrain).setAccelerationSuppliers(() -> elevatorSystem.getMaxForwardAcceleration(), () -> elevatorSystem.getMaxBackwardAcceleration(), () -> elevatorSystem.getMaxLeftAcceleration(), () -> elevatorSystem.getMaxRightAcceleration());
     }
 
     @Override
@@ -119,9 +123,7 @@ public class Elphaba extends GenericRobot {
     @Override
     public void setupDefaultCommands(Controller driver, Controller operator) {
         JoystickToSwerve driveCmd = (JoystickToSwerve)drivetrain.createDefaultCommand(driver);
-        driveCmd.setRobotSpeedFactor(() -> {
-            return elevatorSystem.getDriveFactor();
-        });
+
         drivetrain.setDefaultCommand(driveCmd);
 
         shooter.setDefaultCommand(shooter.runMotors(() -> operator.getLeftTrigger()));
