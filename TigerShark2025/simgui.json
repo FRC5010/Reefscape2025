@@ -657,11 +657,6 @@
           "visible": true
         }
       },
-      "/SmartDashboard/Robot Visual": {
-        "window": {
-          "visible": true
-        }
-      },
       "/SmartDashboard/VisionSystemSim-main/Sim Field": {
         "bottom": 1638,
         "builtin": "2025 Reefscape",
@@ -744,6 +739,9 @@
   },
   "NetworkTables Info": {
     "visible": true
+  },
+  "NetworkTables View": {
+    "visible": false
   },
   "Plot": {
     "Plot <0>": {
