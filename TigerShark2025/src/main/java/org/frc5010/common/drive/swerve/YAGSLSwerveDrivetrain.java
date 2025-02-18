@@ -6,6 +6,10 @@ package org.frc5010.common.drive.swerve;
 
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Meter;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -27,11 +31,11 @@ import org.frc5010.common.commands.DriveToPosition;
 import org.frc5010.common.commands.JoystickToSwerve;
 import org.frc5010.common.constants.Constants;
 import org.frc5010.common.constants.GenericDrivetrainConstants;
-import org.frc5010.common.constants.MotorFeedFwdConstants;
 import org.frc5010.common.constants.RobotConstantsDef;
-import org.frc5010.common.constants.SwerveConstants;
 import org.frc5010.common.drive.pose.DrivePoseEstimator;
 import org.frc5010.common.drive.pose.YAGSLSwervePose;
+import org.frc5010.common.drive.swerve_utils.PathConstraints5010;
+import org.frc5010.common.drive.swerve_utils.SwerveSetpointGenerator5010;
 import org.frc5010.common.sensors.Controller;
 import org.frc5010.common.telemetry.DisplayBoolean;
 import org.ironmaple.simulation.SimulatedArena;
@@ -55,7 +59,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -63,6 +66,8 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.LinearAcceleration;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -102,6 +107,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   /** 5010 Code */
   private DoubleSupplier angleSpeedSupplier = null;
   private DisplayBoolean hasIssues;
+  private Supplier<Double> maxForwardAcceleration, maxBackwardAcceleration, maxLeftAcceleration, maxRightAcceleration;
 
   public YAGSLSwerveDrivetrain(
       Mechanism2d mechVisual,
@@ -166,18 +172,21 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
 
     /** 5010 Code */
     // SwerveConstants swerveConstants = (SwerveConstants) constants;
-    // if (swerveConstants.getSwerveModuleConstants().getDriveFeedForward().size() > 0) {
-    //   Map<String, MotorFeedFwdConstants> motorFFMap = swerveConstants.getSwerveModuleConstants().getDriveFeedForward();
-    //   Map<String, SwerveModule> swerveModuleMap = swerveDrive.getModuleMap();
-    //   motorFFMap.keySet().stream()
-    //       .forEach(
-    //           module -> {
-    //             MotorFeedFwdConstants ff = motorFFMap.get(module);
-    //             double kS = ff.getkS();
-    //             double kV = ff.getkV();
-    //             double kA = ff.getkA();
-    //             swerveModuleMap.get(module).setFeedforward(new SimpleMotorFeedforward(kS, kV, kA));
-    //           });
+    // if (swerveConstants.getSwerveModuleConstants().getDriveFeedForward().size() >
+    // 0) {
+    // Map<String, MotorFeedFwdConstants> motorFFMap =
+    // swerveConstants.getSwerveModuleConstants().getDriveFeedForward();
+    // Map<String, SwerveModule> swerveModuleMap = swerveDrive.getModuleMap();
+    // motorFFMap.keySet().stream()
+    // .forEach(
+    // module -> {
+    // MotorFeedFwdConstants ff = motorFFMap.get(module);
+    // double kS = ff.getkS();
+    // double kV = ff.getkV();
+    // double kA = ff.getkA();
+    // swerveModuleMap.get(module).setFeedforward(new SimpleMotorFeedforward(kS, kV,
+    // kA));
+    // });
     // }
 
     setDrivetrainPoseEstimator(new DrivePoseEstimator(new YAGSLSwervePose(this)));
@@ -193,14 +202,16 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
       int count = 0;
       for (Pose3d gpa : SimulatedArena.getInstance().getGamePiecesByType(Constants.Simulation.gamePieceA)) {
         getField2d().getObject("CARPET" + count).setPose(new Pose2d(gpa.getX(), gpa.getY(), new Rotation2d()));
-        getField2d().getObject("GPA" + count).setPose(new Pose2d(gpa.getX(), gpa.getY(), gpa.getRotation().toRotation2d()));
+        getField2d().getObject("GPA" + count)
+            .setPose(new Pose2d(gpa.getX(), gpa.getY(), gpa.getRotation().toRotation2d()));
         count++;
-      }  
+      }
       count = 0;
       for (Pose3d gpb : SimulatedArena.getInstance().getGamePiecesByType(Constants.Simulation.gamePieceB)) {
-        getField2d().getObject("GPB" + count).setPose(new Pose2d(gpb.getX(), gpb.getY(), gpb.getRotation().toRotation2d()));
+        getField2d().getObject("GPB" + count)
+            .setPose(new Pose2d(gpb.getX(), gpb.getY(), gpb.getRotation().toRotation2d()));
         count++;
-      }  
+      }
     }
   }
 
@@ -277,10 +288,11 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
 
   public Supplier<Command> driveToPosePrecise(Supplier<Pose2d> pose) {
     Supplier<Pose3d> pose3D = () -> new Pose3d(pose.get());
-    Supplier<DriveToPosition> finishDriving = () -> new DriveToPosition((SwerveDrivetrain) this, this::getPose, pose3D, new Transform2d()).withInitialVelocity(() -> getFieldVelocity());
+    Supplier<DriveToPosition> finishDriving = () -> new DriveToPosition((SwerveDrivetrain) this, this::getPose, pose3D,
+        new Transform2d()).withInitialVelocity(() -> getFieldVelocity());
     // Create the constraints to use while pathfinding
-    PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond()*1.0,
-        getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond()*0.7,
+    PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond() * 1.0,
+        getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond() * 0.7,
         getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond(),
         getSwerveConstants().getkTeleDriveMaxAngularAccelerationUnitsPerSecond());
     // PathConstraints constraints = new PathConstraints(
@@ -288,57 +300,72 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     // swerveDrive.getMaximumChassisAngularVelocity(), Units.degreesToRadians(720));
     // Since AutoBuilder is configured, we can use it to build pathfinding commands
     return () -> new PathfindingCommand5010(
-      pose.get(),
-      constraints,
-      0.0,
-      this::getPose,
-      this::getChassisSpeeds,
-      this::setChassisSpeedsWithAngleSupplier,
-      new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic
+        pose.get(),
+        constraints,
+        0.0,
+        this::getPose,
+        this::getChassisSpeeds,
+        this::setChassisSpeedsWithAngleSupplier,
+        new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic
                                         // drive trains
             new PIDConstants(2.0, 0, 0.0), // Translation PID constants
             new PIDConstants(1.0, 0, 0.0) // Rotation PID constants
         ),
-      config,
-      this).beforeStarting(() -> poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose")).until(() -> poseEstimator.getCurrentPose().getTranslation().getDistance(pose.get().getTranslation()) < 0.5).andThen(finishDriving.get());
-}
+        config,
+        this).beforeStarting(() -> poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose"))
+        .until(() -> poseEstimator.getCurrentPose().getTranslation().getDistance(pose.get().getTranslation()) < 0.5)
+        .andThen(finishDriving.get());
+  }
 
-public Supplier<Command> driveToPosePrecise(Pose2d pose) {
-  return driveToPosePrecise(() -> pose);
-}
+  public Supplier<Command> driveToPosePrecise(Pose2d pose) {
+    return driveToPosePrecise(() -> pose);
+  }
 
- /**
-   * Drive with {@link SwerveSetpointGenerator} from 254, implemented by PathPlanner.
+  /**
+   * Drive with {@link SwerveSetpointGenerator} from 254, implemented by
+   * PathPlanner.
    *
-   * @param robotRelativeChassisSpeed Robot relative {@link ChassisSpeeds} to achieve.
+   * @param robotRelativeChassisSpeed Robot relative {@link ChassisSpeeds} to
+   *                                  achieve.
    * @return {@link Command} to run.
    * @throws IOException    If the PathPlanner GUI settings is invalid
    * @throws ParseException If PathPlanner GUI settings is nonexistent.
    */
   private Command driveWithSetpointGenerator(Supplier<ChassisSpeeds> robotRelativeChassisSpeed)
-  throws IOException, ParseException
-  {
-    SwerveSetpointGenerator setpointGenerator = new SwerveSetpointGenerator(RobotConfig.fromGUISettings(),
-                                                                            swerveDrive.getMaximumChassisAngularVelocity());
-    AtomicReference<SwerveSetpoint> prevSetpoint
-        = new AtomicReference<>(new SwerveSetpoint(swerveDrive.getRobotVelocity(),
-                                                   swerveDrive.getStates(),
-                                                   DriveFeedforwards.zeros(swerveDrive.getModules().length)));
+      throws IOException, ParseException {
+    SwerveSetpointGenerator5010 setpointGenerator = new SwerveSetpointGenerator5010(RobotConfig.fromGUISettings(),
+        swerveDrive.getMaximumChassisAngularVelocity());
+
+    AtomicReference<SwerveSetpoint> prevSetpoint = new AtomicReference<>(
+        new SwerveSetpoint(swerveDrive.getRobotVelocity(),
+            swerveDrive.getStates(),
+            DriveFeedforwards.zeros(swerveDrive.getModules().length)));
+
     AtomicReference<Double> previousTime = new AtomicReference<>();
 
-    return startRun(() -> previousTime.set(Timer.getFPGATimestamp()),
-                    () -> {
-                      double newTime = Timer.getFPGATimestamp();
-                      SwerveSetpoint newSetpoint = setpointGenerator.generateSetpoint(prevSetpoint.get(),
-                                                                                      robotRelativeChassisSpeed.get(),
-                                                                                      newTime - previousTime.get());
-                      swerveDrive.drive(newSetpoint.robotRelativeSpeeds(),
-                                        newSetpoint.moduleStates(),
-                                        newSetpoint.feedforwards().linearForces());
-                      prevSetpoint.set(newSetpoint);
-                      previousTime.set(newTime);
+    PathConstraints5010 constraints = new PathConstraints5010(MetersPerSecond.of(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond()), (Supplier<LinearAcceleration>) () -> MetersPerSecondPerSecond.of(maxForwardAcceleration.get()), (Supplier<LinearAcceleration>) () -> MetersPerSecondPerSecond.of(maxBackwardAcceleration.get()), (Supplier<LinearAcceleration>) () -> MetersPerSecondPerSecond.of(maxRightAcceleration.get()), (Supplier<LinearAcceleration>) () -> MetersPerSecondPerSecond.of(maxLeftAcceleration.get()), RadiansPerSecond.of(getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond()), RadiansPerSecondPerSecond.of(getSwerveConstants().getkTeleDriveMaxAngularAccelerationUnitsPerSecond()), Volts.of(12), false);
 
-                    });
+    return startRun(() -> previousTime.set(Timer.getFPGATimestamp()),
+        () -> {
+          double newTime = Timer.getFPGATimestamp();
+          SwerveSetpoint newSetpoint = setpointGenerator.generateSetpoint(prevSetpoint.get(),
+              robotRelativeChassisSpeed.get(),
+              constraints,
+              newTime - previousTime.get());
+          swerveDrive.drive(newSetpoint.robotRelativeSpeeds(),
+              newSetpoint.moduleStates(),
+              newSetpoint.feedforwards().linearForces());
+          prevSetpoint.set(newSetpoint);
+          previousTime.set(newTime);
+
+        });
+  }
+
+  public void setAccelerationSuppliers(Supplier<Double> maxForwardAcceleration, Supplier<Double> maxBackwardAcceleration, Supplier<Double> maxLeftAcceleration, Supplier<Double> maxRightAcceleration) {
+    this.maxForwardAcceleration = maxForwardAcceleration;
+    this.maxBackwardAcceleration = maxBackwardAcceleration;
+    this.maxLeftAcceleration = maxLeftAcceleration;
+    this.maxRightAcceleration = maxRightAcceleration;
   }
 
   /**
@@ -347,16 +374,13 @@ public Supplier<Command> driveToPosePrecise(Pose2d pose) {
    * @param fieldRelativeSpeeds Field-Relative {@link ChassisSpeeds}
    * @return Command to drive the robot using the setpoint generator.
    */
-  public Command driveWithSetpointGeneratorFieldRelative(Supplier<ChassisSpeeds> fieldRelativeSpeeds)
-  {
-    try
-    {
+  public Command driveWithSetpointGeneratorFieldRelative(Supplier<ChassisSpeeds> fieldRelativeSpeeds) {
+    try {
       return driveWithSetpointGenerator(() -> {
         return ChassisSpeeds.fromFieldRelativeSpeeds(fieldRelativeSpeeds.get(), getHeading());
 
       });
-    } catch (Exception e)
-    {
+    } catch (Exception e) {
       DriverStation.reportError(e.toString(), true);
     }
     return Commands.none();
@@ -799,16 +823,15 @@ public Supplier<Command> driveToPosePrecise(Pose2d pose) {
     List<Pose3d> gpas = SimulatedArena.getInstance().getGamePiecesByType(Constants.Simulation.gamePieceA);
     for (Pose3d gpa : gpas) {
       getField2d().getObject("GPA" + count++).setPose(
-        new Pose2d(gpa.getX(), gpa.getY(), gpa.getRotation().toRotation2d()));
+          new Pose2d(gpa.getX(), gpa.getY(), gpa.getRotation().toRotation2d()));
     }
     count = 0;
     List<Pose3d> gpbs = SimulatedArena.getInstance().getGamePiecesByType(Constants.Simulation.gamePieceB);
     for (Pose3d gpb : gpbs) {
       getField2d().getObject("GPB" + count++).setPose(
-        new Pose2d(gpb.getX(), gpb.getY(), gpb.getRotation().toRotation2d()));
+          new Pose2d(gpb.getX(), gpb.getY(), gpb.getRotation().toRotation2d()));
     }
   }
-
 
   public void setAngleSupplier(DoubleSupplier angDoubleSupplier) {
     angleSpeedSupplier = angDoubleSupplier;
@@ -845,12 +868,12 @@ public Supplier<Command> driveToPosePrecise(Pose2d pose) {
      * by angular velocity.
      */
     // SwerveInputStream driveAngularVelocity = SwerveInputStream.of(swerveDrive,
-    //     leftY,
-    //     leftX)
-    //     .withControllerRotationAxis(rightX)
-    //     .deadband(0.07)
-    //     .scaleTranslation(0.8)
-    //     .allianceRelativeControl(true);
+    // leftY,
+    // leftX)
+    // .withControllerRotationAxis(rightX)
+    // .deadband(0.07)
+    // .scaleTranslation(0.8)
+    // .allianceRelativeControl(true);
 
     // return driveFieldOriented(driveAngularVelocity);
     return new JoystickToSwerve(
@@ -895,7 +918,7 @@ public Supplier<Command> driveToPosePrecise(Pose2d pose) {
   public static SwerveDrive getSwerveDrive() {
     return swerveDrive;
   }
-  
+
   @Override
   public SwerveModulePosition[] getModulePositions() {
     return swerveDrive.getModulePositions();
