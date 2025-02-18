@@ -569,7 +569,7 @@ public class Controller {
    * @return the current value
    */
   public double getRightXAxis() {
-    return axisMap.get(AxisNums.RIGHT_Y.ordinal()).get();
+    return axisMap.get(AxisNums.RIGHT_X.ordinal()).get();
   }
 
   /**
