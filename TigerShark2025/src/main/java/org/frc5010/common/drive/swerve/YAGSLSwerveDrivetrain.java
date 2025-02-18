@@ -69,6 +69,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
@@ -321,6 +322,42 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     return driveToPosePrecise(() -> pose);
   }
 
+  public ChassisSpeeds getFieldVelocitiesFromJoystick(DoubleSupplier xSpdFunction, DoubleSupplier ySpdFunction,
+      DoubleSupplier turnSpdFunction) {
+    double xInput = (xSpdFunction.getAsDouble());
+    double yInput = (ySpdFunction.getAsDouble());
+
+    Translation2d inputTranslation = new Translation2d(xInput, yInput);
+    double magnitude = inputTranslation.getNorm();
+    Rotation2d angle = 0 != xInput || 0 != yInput ? inputTranslation.getAngle() : new Rotation2d();
+
+    double curvedMagnitude = Math.pow(magnitude, 3);
+
+    double turnSpeed = (turnSpdFunction.getAsDouble());
+
+    // limit power
+    double xSpeed = curvedMagnitude
+        * angle.getCos()
+        * getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond();
+    double ySpeed = curvedMagnitude
+        * angle.getSin()
+        * getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond();
+    turnSpeed = turnSpeed * getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond();
+
+    // convert to chassis speed class
+    ChassisSpeeds chassisSpeeds;
+    //
+    // System.out.println(swerveDrive.getGyroRate());
+    double gyroRate = Units.degreesToRadians(getGyroRate()) * 0.01;
+    Rotation2d correctedRotation = getHeading().minus(new Rotation2d(gyroRate));
+
+    chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+        DriverStation.getAlliance().get() == Alliance.Red ? -xSpeed : xSpeed,
+        DriverStation.getAlliance().get() == Alliance.Red ? -ySpeed : ySpeed,
+        turnSpeed, correctedRotation);
+    return chassisSpeeds;
+  }
+
   /**
    * Drive with {@link SwerveSetpointGenerator} from 254, implemented by
    * PathPlanner.
@@ -343,7 +380,16 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
 
     AtomicReference<Double> previousTime = new AtomicReference<>();
 
-    PathConstraints5010 constraints = new PathConstraints5010(MetersPerSecond.of(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond()), (Supplier<LinearAcceleration>) () -> MetersPerSecondPerSecond.of(maxForwardAcceleration.get()), (Supplier<LinearAcceleration>) () -> MetersPerSecondPerSecond.of(maxBackwardAcceleration.get()), (Supplier<LinearAcceleration>) () -> MetersPerSecondPerSecond.of(maxRightAcceleration.get()), (Supplier<LinearAcceleration>) () -> MetersPerSecondPerSecond.of(maxLeftAcceleration.get()), RadiansPerSecond.of(getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond()), RadiansPerSecondPerSecond.of(getSwerveConstants().getkTeleDriveMaxAngularAccelerationUnitsPerSecond()), Volts.of(12), false);
+    PathConstraints5010 constraints = new PathConstraints5010(
+        MetersPerSecond.of(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond()),
+        MetersPerSecondPerSecond.of(getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond()),
+        (Supplier<LinearAcceleration>) () -> MetersPerSecondPerSecond.of(maxForwardAcceleration.get()),
+        (Supplier<LinearAcceleration>) () -> MetersPerSecondPerSecond.of(maxBackwardAcceleration.get()),
+        (Supplier<LinearAcceleration>) () -> MetersPerSecondPerSecond.of(maxRightAcceleration.get()),
+        (Supplier<LinearAcceleration>) () -> MetersPerSecondPerSecond.of(maxLeftAcceleration.get()),
+        RadiansPerSecond.of(getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond()),
+        RadiansPerSecondPerSecond.of(getSwerveConstants().getkTeleDriveMaxAngularAccelerationUnitsPerSecond()),
+        Volts.of(12), false);
 
     return startRun(() -> previousTime.set(Timer.getFPGATimestamp()),
         () -> {
@@ -361,7 +407,9 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         });
   }
 
-  public void setAccelerationSuppliers(Supplier<Double> maxForwardAcceleration, Supplier<Double> maxBackwardAcceleration, Supplier<Double> maxLeftAcceleration, Supplier<Double> maxRightAcceleration) {
+  public void setAccelerationSuppliers(Supplier<Double> maxForwardAcceleration,
+      Supplier<Double> maxBackwardAcceleration, Supplier<Double> maxLeftAcceleration,
+      Supplier<Double> maxRightAcceleration) {
     this.maxForwardAcceleration = maxForwardAcceleration;
     this.maxBackwardAcceleration = maxBackwardAcceleration;
     this.maxLeftAcceleration = maxLeftAcceleration;

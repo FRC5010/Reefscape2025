@@ -24,6 +24,7 @@ import org.frc5010.common.motors.hardware.GenericTalonFXMotor;
 import org.frc5010.common.sensors.ValueSwitch;
 import org.frc5010.common.telemetry.DisplayLength;
 
+import edu.wpi.first.hal.simulation.RoboRioDataJNI;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -34,6 +35,8 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -63,7 +66,8 @@ public class ElevatorSystem extends GenericSubsystem {
     //public DisplayLength HowTo = new DisplayLength(Meters.of(0.06), "HowTo", "MyTable");
     private final Current MAX_ELEVATOR_STATOR_CURRENT_LIMIT = Amps.of(100);
     private final Current MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT = Amps.of(60);
-    private double cX = 0.0, cY = 1.178, wheelBase = 0.56, g = 9.81;
+    private double cX = 0.0, cY = 1.178, wheelBase = 0.56, g = 9.81, a = 0.0112954816, b = 0.824063, c = 7.46779;
+    private double currentX = 0.0, lastX = 0.0, lastTime = 0.0, timeChange = 0.0, currentVelocity = 0.0, lastVelocity = 0.0, currentAcceleration = 0.0;
 
 
 
@@ -303,23 +307,33 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double getCZ() {
-        return 0.0112954816 * Math.pow(elevator.getPosition(), 0.824063) + 7.46779;
+        return a * Math.pow(elevator.getPosition(), b) + c;
     }
     
     public double getMaxForwardAcceleration() {
-        return (((wheelBase / 2) + cY) * g) / getCZ();
+        return (((wheelBase / 2) + cY) * (g + getCOMAcceleration(elevator.getPosition()))) / getCZ();
     }
 
     public double getMaxBackwardAcceleration() {
-        return - (((wheelBase / 2) - cY) * g) / getCZ();
+        return - (((wheelBase / 2) - cY) * (g + getCOMAcceleration(elevator.getPosition()))) / getCZ();
     }
 
     public double getMaxRightAcceleration() {
-        return (((wheelBase / 2) + cX) * g) / getCZ();
+        return (((wheelBase / 2) + cX) * (g + getCOMAcceleration(elevator.getPosition()))) / getCZ();
     }
 
     public double getMaxLeftAcceleration() {
-        return - (((wheelBase / 2) - cX) * g) / getCZ();
+        return - (((wheelBase / 2) - cX) * (g + getCOMAcceleration(elevator.getPosition()))) / getCZ();
+    }
+
+    public double getCOMAcceleration(double x) {
+        timeChange = (RobotController.getFPGATime() - lastTime) * Math.pow(10, 6);
+        lastTime = RobotController.getFPGATime();
+        currentVelocity = x - lastX;
+        lastX = x;
+        currentAcceleration = currentVelocity - lastVelocity;
+        lastVelocity = currentVelocity;
+        return (a * b * (b - 1) * Math.pow(x, b - 2) * Math.pow(currentVelocity, 2)) + (Math.pow(a, 2) * b * Math.pow(x, b - 1));
     }
 
     public Distance selectElevatorLevel(Supplier<ReefscapeButtonBoard.ScoringLevel> level) {
