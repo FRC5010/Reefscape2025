@@ -322,8 +322,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     return driveToPosePrecise(() -> pose);
   }
 
-  public ChassisSpeeds getFieldVelocitiesFromJoystick(DoubleSupplier xSpdFunction, DoubleSupplier ySpdFunction,
-      DoubleSupplier turnSpdFunction) {
+  public ChassisSpeeds getFieldVelocitiesFromJoystick(DoubleSupplier xSpdFunction, DoubleSupplier ySpdFunction, DoubleSupplier turnSpdFunction) {
     double xInput = (xSpdFunction.getAsDouble());
     double yInput = (ySpdFunction.getAsDouble());
 
@@ -346,16 +345,11 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
 
     // convert to chassis speed class
     ChassisSpeeds chassisSpeeds;
-    //
-    // System.out.println(swerveDrive.getGyroRate());
-    double gyroRate = Units.degreesToRadians(getGyroRate()) * 0.01;
-    Rotation2d correctedRotation = getHeading().minus(new Rotation2d(gyroRate));
 
-    chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+    chassisSpeeds = new ChassisSpeeds(
         DriverStation.getAlliance().get() == Alliance.Red ? -xSpeed : xSpeed,
-        DriverStation.getAlliance().get() == Alliance.Red ? -ySpeed : ySpeed,
-        turnSpeed, correctedRotation);
-
+        DriverStation.getAlliance().get() == Alliance.Red ? ySpeed : -ySpeed,
+        turnSpeed);
     return chassisSpeeds;
   }
 
@@ -404,7 +398,6 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
               newSetpoint.feedforwards().linearForces());
           prevSetpoint.set(newSetpoint);
           previousTime.set(newTime);
-
         });
   }
 

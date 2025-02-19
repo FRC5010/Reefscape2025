@@ -1,8 +1,5 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Degrees;
-
-import java.lang.reflect.Proxy;
 import java.util.function.Consumer;
 
 import org.frc5010.common.arch.GenericRobot;
@@ -11,16 +8,10 @@ import org.frc5010.common.auto.RelayPIDAutoTuner;
 import org.frc5010.common.config.ConfigConstants;
 import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
-import org.frc5010.common.sensors.ButtonBoard;
 import org.frc5010.common.sensors.Controller;
 import org.frc5010.common.utils.AllianceFlip;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.auto_routines.Right4Coral;
@@ -36,7 +27,8 @@ public class Pancake extends GenericRobot {
 
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
         buttonBoard = new ReefscapeButtonBoard(2, 3);
-        
+
+        ((YAGSLSwerveDrivetrain) drivetrain).setAccelerationSuppliers(() -> 9.0, () -> 9.0, () -> 9.0, () -> 9.0);
     }
 
     @Override
@@ -86,7 +78,9 @@ public class Pancake extends GenericRobot {
 
     @Override
     public void setupDefaultCommands(Controller driver, Controller operator) {
-        drivetrain.setDefaultCommand(drivetrain.createDefaultCommand(driver));
+        Command driveCmd = ((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorFieldRelative(() -> ((YAGSLSwerveDrivetrain) drivetrain).getFieldVelocitiesFromJoystick(driver::getLeftXAxis, driver::getLeftYAxis, driver::getRightXAxis));
+
+        drivetrain.setDefaultCommand(driveCmd);
         // drivetrain.setDefaultCommand(((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorFieldRelative(() ->
         // {
         //     double xInput = driver.getAxisValue(XboxController.Axis.kLeftX.value)+0.001;
