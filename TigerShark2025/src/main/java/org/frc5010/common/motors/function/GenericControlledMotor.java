@@ -187,8 +187,8 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
     feedForward.setValue(feedforward);
     this.controlType.setValue(controlType.name());
     if (GenericRobot.LogLevel.CONFIG == GenericRobot.getLoggingLevel()) {
-      controller.setValues(new GenericPID(kP.getValue(), kI.getValue(), kD.getValue()));
-      controller.setMotorFeedFwd(new MotorFeedFwdConstants(kS.getValue(), kV.getValue(), kA.getValue()));
+      // controller.setValues(new GenericPID(kP.getValue(), kI.getValue(), kD.getValue()));
+      // controller.setMotorFeedFwd(new MotorFeedFwdConstants(kS.getValue(), kV.getValue(), kA.getValue()));
     }
     controller.setReference(reference, controlType, feedforward);
   }

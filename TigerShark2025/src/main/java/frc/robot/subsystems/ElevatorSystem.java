@@ -21,6 +21,7 @@ import org.frc5010.common.motors.PIDController5010.PIDControlType;
 import org.frc5010.common.motors.function.FollowerMotor;
 import org.frc5010.common.motors.function.VerticalPositionControlMotor;
 import org.frc5010.common.motors.hardware.GenericTalonFXMotor;
+import org.frc5010.common.sensors.ValueSwitch;
 import org.frc5010.common.telemetry.DisplayLength;
 
 import edu.wpi.first.hal.simulation.RoboRioDataJNI;
@@ -44,10 +45,11 @@ import frc.robot.ReefscapeButtonBoard;
 
 /** Add your docs here. */
 public class ElevatorSystem extends GenericSubsystem {
+    protected ValueSwitch hasHighCurrentLoad;
     protected VerticalPositionControlMotor elevator;
     protected FollowerMotor elevatorFollower;
     protected PIDControlType controlType = PIDControlType.NONE;
-    protected Distance safeDistance = Inches.of(7.5);
+    protected Distance safeDistance = Inches.of(0.5);
     public DisplayLength BOTTOM = displayValues.makeConfigLength(Position.BOTTOM.name());
     public DisplayLength LOAD = displayValues.makeConfigLength(Position.LOAD.name());
     public DisplayLength PROCESSOR = displayValues.makeConfigLength(Position.PROCESSOR.name());
@@ -61,14 +63,17 @@ public class ElevatorSystem extends GenericSubsystem {
     public DisplayLength L4Shoot = displayValues.makeConfigLength(Position.L4Shoot.name());
     public DisplayLength L4 = displayValues.makeConfigLength(Position.L4.name());
     public DisplayLength NET = displayValues.makeConfigLength(Position.NET.name());
+    //public DisplayLength HowTo = new DisplayLength(Meters.of(0.06), "HowTo", "MyTable");
     private final Current MAX_ELEVATOR_STATOR_CURRENT_LIMIT = Amps.of(100);
     private final Current MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT = Amps.of(60);
     private double cX = 0.0, cY = 1.178, wheelBase = 0.56, g = 9.81, a = 0.0112954816, b = 0.824063, c = 7.46779;
     private double currentX = 0.0, lastX = 0.0, lastTime = 0.0, timeChange = 0.0, currentVelocity = 0.0, lastVelocity = 0.0, currentAcceleration = 0.0;
 
+
+
     private ProfiledPIDController profiledPID;
     private TrapezoidProfile.Constraints PIDConstraints;
-    private SlewRateLimiter rateLimiter = new SlewRateLimiter(0.75);
+    private SlewRateLimiter rateLimiter = new SlewRateLimiter(0.5);
 
     public static enum Position {
         BOTTOM(Meters.of(0.0)),
@@ -98,6 +103,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
     private double lastError;
     private double lastTimestamp = 0;
+    private final double ELEVATOR_ZERO_CURRENT = 40;
 
     public ElevatorSystem(Mechanism2d mechanismSimulation) {
         if (0 == BOTTOM.getLength().in(Meters))
@@ -127,6 +133,8 @@ public class ElevatorSystem extends GenericSubsystem {
         if (0 == NET.getLength().in(Meters))
             NET.setLength(Position.NET.position());
 
+
+
         elevator = new VerticalPositionControlMotor(MotorFactory.TalonFX(9, Motor.KrakenX60), "elevator",
                 displayValues);
         elevatorFollower = new FollowerMotor(MotorFactory.TalonFX(10, Motor.KrakenX60),
@@ -138,9 +146,10 @@ public class ElevatorSystem extends GenericSubsystem {
         elevator.setCurrentLimit(MAX_ELEVATOR_STATOR_CURRENT_LIMIT);
         ((GenericTalonFXMotor) elevator.getMotorController()).setSupplyCurrent(MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT);
         
+        
         elevatorFollower.setMotorBrake(true);
 
-        elevator.setupSimulatedMotor(6, Pounds.of(30), Inches.of(1.45/2.0), 
+        elevator.setupSimulatedMotor(6, Pounds.of(30), Inches.of(1.1), 
                 LOAD.getLength(), Inches.of(83.475 - 6.725), LOAD.getLength(),
                 Meters.of(0.2), RobotBase.isSimulation() ? 0.75 : 0.263672);
         elevatorFollower.setCurrentLimit(MAX_ELEVATOR_STATOR_CURRENT_LIMIT);
@@ -152,7 +161,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
         elevator.setMotorFeedFwd(new MotorFeedFwdConstants(0.26329, 0.38506, 0.04261));
         elevator.setProfiledMaxVelocity(3.0);
-        elevator.setProfiledMaxAcceleration(3.0 * 0.75);
+        elevator.setProfiledMaxAcceleration(3.0 / 0.3);
         elevator.setValues(new GenericPID(3, 0.0, 0.0));
         elevator.setOutputRange(-1, 1);
 
@@ -172,6 +181,8 @@ public class ElevatorSystem extends GenericSubsystem {
         }
 
         elevator.burnFlash();
+
+        hasHighCurrentLoad = new ValueSwitch(ELEVATOR_ZERO_CURRENT, () -> Math.abs(elevator.getOutputCurrent()), 1);
     }
 
     public Boolean validSpeed(double speed) {
@@ -215,6 +226,11 @@ public class ElevatorSystem extends GenericSubsystem {
         }
     }
 
+    public Command elevatorPositionZeroSequence() {
+        double zeroSpeed = -0.1;
+        return Commands.run(() -> elevator.set(zeroSpeed), this).until(hasHighCurrentLoad.getTrigger()).andThen(zeroElevator());
+    }
+
     public Command profiledBangBangCmd(Distance position) {
         return Commands.run(() -> {
 
@@ -244,6 +260,9 @@ public class ElevatorSystem extends GenericSubsystem {
             profiledPID.reset(elevator.getPosition(), elevator.getVelocity());
             profiledPID.setGoal(position.in(Meters));
             elevator.setReference(position.in(Meters));
+            elevator.setControlType(PIDControlType.NONE);
+        }).finallyDo(() -> {
+            elevator.setControlType(controlType);
         });
     }
 
@@ -263,7 +282,20 @@ public class ElevatorSystem extends GenericSubsystem {
     public Command basicSuppliersMovement(DoubleSupplier speed) {
         return Commands.run(
                 () -> elevatorSpeed(speed.getAsDouble()), this);
+    }
 
+    public Command joystickPositionControl(Supplier<Distance> positionalChange) {
+        return Commands.run(() -> {
+            setElevatorPosition(Meters.of(elevator.getPosition()).plus(positionalChange.get()));
+        }, this).beforeStarting(setControlType(PIDControlType.PROFILED_POSITION)).finallyDo(this::resetControlType);
+    }
+
+    private Command setControlType(PIDControlType type) {
+        return Commands.runOnce(() -> elevator.setControlType(type));
+    }
+
+    private void resetControlType() {
+        elevator.setControlType(controlType);
     }
 
     public Trigger isAtTarget() {

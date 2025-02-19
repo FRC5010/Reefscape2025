@@ -8,6 +8,7 @@ import org.frc5010.common.auto.AutoSequence;
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 
 import frc.robot.ReefscapeButtonBoard;
+import frc.robot.ReefscapeButtonBoard.LoadingStationLocation;
 import frc.robot.ReefscapeButtonBoard.ScoringAlignment;
 import frc.robot.ReefscapeButtonBoard.ScoringLevel;
 import frc.robot.ReefscapeButtonBoard.ScoringLocation;
@@ -16,13 +17,16 @@ import frc.robot.subsystems.ElevatorSystem;
 import frc.robot.subsystems.ShooterSystem;
 
 /** Add your docs here. */
-public class Right1Coral extends AutoSequence {
-    public Right1Coral(YAGSLSwerveDrivetrain yagsl, ShooterSystem shooter, ElevatorSystem elevator) {
+public class Coral2 extends AutoSequence {
+    public Coral2(YAGSLSwerveDrivetrain yagsl, ShooterSystem shooter, ElevatorSystem elevator) {
 
 
         // Command Sequence
         addCommands(
-        TargetingSystem.createCoralScoringSequence(ReefscapeButtonBoard.getScoringPose(ScoringLocation.BACK_RIGHT_EF, ScoringAlignment.REEF_LEFT), ScoringLevel.L4)
+        TargetingSystem.createAutoCoralScoringSequence(ReefscapeButtonBoard.getScoringPose(ScoringLocation.BACK_RIGHT_EF, ScoringAlignment.REEF_RIGHT), ScoringLevel.L4),
+        TargetingSystem.createAutoLoadingSequence(ReefscapeButtonBoard.getLoadingPose(LoadingStationLocation.STATION_RIGHT_OUTER)),
+        TargetingSystem.createAutoCoralScoringSequence(ReefscapeButtonBoard.getScoringPose(ScoringLocation.FRONT_RIGHT_CD, ScoringAlignment.REEF_RIGHT), ScoringLevel.L4)
+
         );
   }
 }

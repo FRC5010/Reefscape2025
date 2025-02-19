@@ -187,8 +187,7 @@ public class TalonFXController extends GenericPIDController {
 
   @Override
   public void setReference(double reference) {
-    this.reference = reference;
-    sendControlRequest(reference, 0.0);
+    setReference(reference, controlType, 0.0);
   }
 
   /**
@@ -390,21 +389,21 @@ public class TalonFXController extends GenericPIDController {
   public void configureAbsoluteControl(double offset, boolean inverted, double min, double max) {
     setControlType(PIDControlType.POSITION);
     cfg.refresh(configuration.ClosedLoopGeneral);
-    configuration.ClosedLoopGeneral.ContinuousWrap = true;
+    configuration.ClosedLoopGeneral.ContinuousWrap = false;
     cfg.apply(configuration.ClosedLoopGeneral);
   }
 
   @Override
   public void setProfiledMaxVelocity(double maxVelocity) {
     cfg.refresh(configuration.MotionMagic);
-    configuration.MotionMagic.MotionMagicCruiseVelocity = ((TalonFXEncoder) motor.getMotorEncoder()).velocityToRotationsPerMin(maxVelocity) / 60.0;
+    configuration.MotionMagic.MotionMagicCruiseVelocity = maxVelocity;
     cfg.apply(configuration.MotionMagic);
   }
 
   @Override
   public void setProfiledMaxAcceleration(double maxAcceleration) {
     cfg.refresh(configuration.MotionMagic);
-    configuration.MotionMagic.MotionMagicAcceleration =  ((TalonFXEncoder) motor.getMotorEncoder()).velocityToRotationsPerMin(maxAcceleration) / 60.0;
+    configuration.MotionMagic.MotionMagicAcceleration = maxAcceleration;
     //configuration.MotionMagic.MotionMagicJerk = ((TalonFXEncoder) motor.getMotorEncoder()).velocityToRotationsPerMin(maxAcceleration) / 3600.0;
     cfg.apply(configuration.MotionMagic);
   }
@@ -413,8 +412,8 @@ public class TalonFXController extends GenericPIDController {
   public void setMotorFeedFwd(MotorFeedFwdConstants motorConstants) {
     cfg.refresh(configuration.Slot0);
     configuration.Slot0.kS = motorConstants.getkS();
-    configuration.Slot0.kV = motorConstants.getkV() * ((TalonFXEncoder) motor.getMotorEncoder()).getPositionConversion() * 12;
-    configuration.Slot0.kA = motorConstants.getkA() * ((TalonFXEncoder) motor.getMotorEncoder()).getPositionConversion() * 12;
+    configuration.Slot0.kV = motorConstants.getkV();
+    configuration.Slot0.kA = motorConstants.getkA();
     cfg.apply(configuration.Slot0);
   }
 

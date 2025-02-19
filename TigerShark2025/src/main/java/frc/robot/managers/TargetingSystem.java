@@ -38,15 +38,35 @@ public class TargetingSystem {
         Distance level = elevator.selectElevatorLevel(() -> scoringLevel);
 
         return drivetrain.driveToPosePrecise(targetPose).get()
-                .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)));
-                        //.andThen(shooter.runMotors(() -> 1.0).until(shooter.isEmpty()))).andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)));
+                .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level))
+                        .andThen(shooter.runMotors(() -> 1.0).until(shooter.isEmpty())));
+    }
+
+    public static Command createAutoCoralScoringSequence(Pose2d targetPose, ScoringLevel scoringLevel) {
+        Distance level = elevator.selectElevatorLevel(() -> scoringLevel);
+        Distance intakeLevel = elevator.selectElevatorLevel(() -> ScoringLevel.INTAKE);
+        return drivetrain.driveToPosePrecise(targetPose).get()
+                .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level))
+                        .andThen(shooter.runMotors(() -> 1.0).until(shooter.isEmpty()))).andThen(elevator.pidControlCommand(intakeLevel).until(() -> elevator.isAtLocation(intakeLevel)));
     }
 
     public static Command createLoadingSequence(Pose2d targetPose) {
         Distance level = elevator.selectElevatorLevel(() -> ScoringLevel.INTAKE);
 
         return drivetrain.driveToPosePrecise(targetPose).get()
-                .andThen(Commands.runOnce(() -> SmartDashboard.putNumber("Elevator Level:", level.in(Meters))),
+                .alongWith(Commands.runOnce(() -> SmartDashboard.putNumber("Elevator Level:", level.in(Meters))),
                         elevator.pidControlCommand(level));
+    }
+
+    public static Command createAutoLoadingSequence(Pose2d targetPose) {
+        Distance level = elevator.selectElevatorLevel(() -> ScoringLevel.INTAKE);
+
+        // return drivetrain.driveToPosePrecise(targetPose).get()
+        //         .alongWith(Commands.runOnce(() -> SmartDashboard.putNumber("Elevator Level:", level.in(Meters))),
+        //                 elevator.pidControlCommand(level));
+        return elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)).andThen(drivetrain.driveToPosePrecise(targetPose).get().alongWith(shooter.runMotors(() -> 1.0).until(shooter.isFullyCaptured()).andThen(Commands.runOnce(() -> {
+            shooter.shooterLeftSpeed(0);
+            shooter.shooterRightSpeed(0);
+        }, shooter))));
     }
 }
