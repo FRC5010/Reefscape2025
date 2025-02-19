@@ -13,6 +13,7 @@ import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 import org.frc5010.common.sensors.Controller;
 import org.frc5010.common.sensors.camera.QuestNav;
+import org.frc5010.common.sensors.gyro.GenericGyro;
 import org.frc5010.common.utils.AllianceFlip;
 
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -22,6 +23,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.auto_routines.Coral2;
 import frc.robot.auto_routines.Right1Coral;
 import frc.robot.auto_routines.Right4Coral;
 import frc.robot.managers.TargetingSystem;
@@ -34,6 +37,7 @@ public class Elphaba extends GenericRobot {
     ElevatorSystem elevatorSystem;
     ShooterSystem shooter;
     AlgaeArm algaeArm;
+    GenericGyro gyro;
     ReefscapeButtonBoard reefscapeButtonBoard;
 
     public Elphaba(String directory) {
@@ -42,6 +46,7 @@ public class Elphaba extends GenericRobot {
 
 
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
+        gyro = (GenericGyro) subsystems.get(ConfigConstants.GYRO);
 
         elevatorSystem = new ElevatorSystem(mechVisual);
         shooter = new ShooterSystem(mechVisual);
@@ -128,8 +133,8 @@ public class Elphaba extends GenericRobot {
 
     @Override
     public void setupDefaultCommands(Controller driver, Controller operator) {
-        // JoystickToSwerve driveCmd = (JoystickToSwerve)drivetrain.createDefaultCommand(driver);
-        Command driveCmd = ((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorFieldRelative(() -> ((YAGSLSwerveDrivetrain) drivetrain).getFieldVelocitiesFromJoystick(driver::getLeftXAxis, driver::getLeftYAxis, driver::getRightXAxis));
+        JoystickToSwerve driveCmd = (JoystickToSwerve)drivetrain.createDefaultCommand(driver);
+        //Command driveCmd = ((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorFieldRelative(() -> ((YAGSLSwerveDrivetrain) drivetrain).getFieldVelocitiesFromJoystick(driver::getLeftXAxis, driver::getLeftYAxis, driver::getRightXAxis));
 
         drivetrain.setDefaultCommand(driveCmd);
 
@@ -137,6 +142,7 @@ public class Elphaba extends GenericRobot {
 
         elevatorSystem.setDefaultCommand(elevatorSystem.basicSuppliersMovement(operator::getLeftYAxis));
         algaeArm.setDefaultCommand(algaeArm.getInitialCommand(operator::getRightTrigger));
+
 
     }
 
@@ -160,6 +166,7 @@ public class Elphaba extends GenericRobot {
         super.buildAutoCommands();
         addAutoToChooser("Right 4 Coral", new Right4Coral());
         addAutoToChooser("Right 1 Coral", new Right1Coral(((YAGSLSwerveDrivetrain)drivetrain), shooter, elevatorSystem));
+        addAutoToChooser("2 Piece Coral", new Coral2(((YAGSLSwerveDrivetrain)drivetrain), shooter, elevatorSystem));
         // addAutoToChooser("Auto New", new ExampleAuto());
     }
 }

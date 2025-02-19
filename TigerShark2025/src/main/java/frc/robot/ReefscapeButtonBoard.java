@@ -35,7 +35,7 @@ public class ReefscapeButtonBoard {
         public int getButton();
     }
 
-    private static Transform2d robotOffset = new Transform2d(Inches.of(18.5), Meters.zero(), Rotation2d.fromDegrees(180)); // Move to more appropriate, common, location
+    private static Transform2d robotOffset = new Transform2d(Inches.of(18), Meters.zero(), Rotation2d.fromDegrees(180)); // Move to more appropriate, common, location
     private static Transform2d robotStationOffset = new Transform2d(Inches.of(17), Meters.zero(), Rotation2d.fromDegrees(0));
 
     public enum ScoringLocation implements ButtonStateSetting{
@@ -296,6 +296,10 @@ public class ReefscapeButtonBoard {
 
     public static LoadingStationLocation getLoadingStation() {
         return loadingStationLocation;
+    }
+
+    public static Pose2d getLoadingPose(LoadingStationLocation loadingStationLocation) {
+        return loadingStationLocation.getPose();
     }
 
     public static Pose2d getStationPose() {

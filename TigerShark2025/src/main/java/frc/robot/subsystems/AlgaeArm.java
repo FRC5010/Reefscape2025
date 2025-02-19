@@ -68,14 +68,16 @@ public class AlgaeArm extends GenericSubsystem {
 
         motor = new AngularControlMotor(MotorFactory.TalonFX(14, Motor.KrakenX60), "Algae Arm", displayValues);
         motor.setupSimulatedMotor(6, Pounds.of(0.25).in(Kilograms), Inches.of(18), Degrees.of(-45), Degrees.of(90),
-                true, 0.147800, Degrees.of(90), false, 360);
+                true, -0.147800, Degrees.of(90), false, 360);
         motor.setVisualizer(mechanismSimulation, new Pose3d(
                 new Translation3d(Inches.of(8).in(Meters), Inches.of(2.875).in(Meters), Inches.of(16.25).in(Meters)),
                 new Rotation3d()));
-        motor.setValues(new GenericPID(0.1, 0.0, 0.0));
-        motor.setMotorFeedFwd(new MotorFeedFwdConstants(0.12, 0.12, 0));
+        motor.setValues(new GenericPID(2, 0.0, 0.0));
+        motor.setMotorFeedFwd(new MotorFeedFwdConstants(0.02728, 0.11622, 0.00094272));
         motor.setCurrentLimit(Amps.of(80));
-        motor.setControlType(PIDControlType.NONE);
+        motor.setControlType(controlType);
+        motor.setProfiledMaxVelocity(83.333);
+        motor.setProfiledMaxAcceleration(16.66);
         motor.invert(true);
 
         // Ensure this angle works
@@ -115,6 +117,7 @@ public class AlgaeArm extends GenericSubsystem {
         return Commands.run(()->{
             double armPosition = 90 - inputSpeeDoubleSupplier.getAsDouble() * 120;
             driveToAngle(armPosition);
+            //motor.setReference(armPosition/60);
         }, this);
     }
 

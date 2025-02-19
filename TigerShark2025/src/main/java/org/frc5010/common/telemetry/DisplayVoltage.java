@@ -109,7 +109,7 @@ public class DisplayVoltage {
 
   protected void init(LogLevel logLevel) {
     if (LogLevel.CONFIG == logLevel) {
-      topic_.setPersistent(true);
+      if (isDisplayed_) topic_.setPersistent(true);
       if (DisplayValuesHelper.robotIsAtLogLevel(LogLevel.CONFIG)) {
         subscriber_ = topic_.subscribe(voltage_.in(unit_));
         listenerHandle_ = NetworkTableInstance.getDefault()

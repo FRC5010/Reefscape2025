@@ -61,7 +61,7 @@ public class DisplayFloat {
       publisher_.setDefault(value_);
     }
     if (LogLevel.CONFIG == logLevel) {
-      topic_.setPersistent(true);
+      if (isDisplayed_) topic_.setPersistent(true);
       if (DisplayValuesHelper.robotIsAtLogLevel(LogLevel.CONFIG)) {
         subscriber_ = topic_.subscribe(value_);
         listenerHandle_ = NetworkTableInstance.getDefault()
