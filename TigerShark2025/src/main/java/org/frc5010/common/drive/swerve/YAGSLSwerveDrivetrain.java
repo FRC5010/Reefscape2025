@@ -366,7 +366,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   private Command driveWithSetpointGenerator(Supplier<ChassisSpeeds> robotRelativeChassisSpeed)
       throws IOException, ParseException {
     SwerveSetpointGenerator5010 setpointGenerator = new SwerveSetpointGenerator5010(RobotConfig.fromGUISettings(),
-        swerveDrive.getMaximumChassisAngularVelocity());
+        swerveDrive.getMaximumModuleAngleVelocity().in(RadiansPerSecond));
 
     AtomicReference<SwerveSetpoint> prevSetpoint = new AtomicReference<>(
         new SwerveSetpoint(swerveDrive.getRobotVelocity(),
