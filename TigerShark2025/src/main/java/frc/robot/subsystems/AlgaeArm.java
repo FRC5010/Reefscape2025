@@ -21,6 +21,9 @@ import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.motors.PIDController5010.PIDControlType;
 import org.frc5010.common.motors.function.AngularControlMotor;
+import org.frc5010.common.motors.hardware.GenericTalonFXMotor;
+
+import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -74,7 +77,8 @@ public class AlgaeArm extends GenericSubsystem {
                 new Rotation3d()));
         motor.setValues(new GenericPID(2, 0.0, 0.0));
         motor.setMotorFeedFwd(new MotorFeedFwdConstants(0.02728, 0.11622, 0.00094272));
-        motor.setCurrentLimit(Amps.of(80));
+        motor.setCurrentLimit(Amps.of(120));
+        ((GenericTalonFXMotor) motor.getMotorController()).setSupplyCurrent(Amps.of(50));
         motor.setControlType(controlType);
         motor.setProfiledMaxVelocity(83.333);
         motor.setProfiledMaxAcceleration(16.66);

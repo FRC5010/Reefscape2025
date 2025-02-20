@@ -55,6 +55,8 @@ public class QuestNav implements PoseProvider {
     private Pose3d previousPose;
     private double previousTime;
 
+    private long previousFrameCount;
+
     private Translation2d _calculatedOffsetToRobotCenter = new Translation2d();
     private int _calculatedOffsetToRobotCenterCount = 0;
 
@@ -150,9 +152,10 @@ public class QuestNav implements PoseProvider {
     }
 
     public boolean isActive() {
-        if (timestamp.get() == 0.0 || RobotBase.isSimulation() || DriverStation.isDisabled()) {
+        if (timestamp.get() == 0.0 || RobotBase.isSimulation() || DriverStation.isDisabled() || frameCount.get() == previousFrameCount) {
         return false;
         }
+        previousFrameCount = frameCount.get();
         return initializedPosition;
     }
 
@@ -172,6 +175,11 @@ public class QuestNav implements PoseProvider {
         initializedPosition = true;
         initPose = pose;
         resetQuestPose();
+    }
+
+    @Override
+    public boolean isTagReader() {
+        return false;
     }
 
     public void resetPose() {

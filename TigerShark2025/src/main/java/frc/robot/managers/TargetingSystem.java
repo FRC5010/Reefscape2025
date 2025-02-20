@@ -26,6 +26,7 @@ public class TargetingSystem {
     public static ElevatorSystem elevator;
     public static AlgaeArm arm;
 
+
     public static void setupParamaters(YAGSLSwerveDrivetrain drivetrain, ShooterSystem shooter, ElevatorSystem elevator,
             AlgaeArm arm) {
         TargetingSystem.drivetrain = drivetrain;
@@ -38,8 +39,7 @@ public class TargetingSystem {
         Distance level = elevator.selectElevatorLevel(() -> scoringLevel);
 
         return drivetrain.driveToPosePrecise(targetPose).get()
-                .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level))
-                        .andThen(shooter.runMotors(() -> 1.0).until(shooter.isEmpty())));
+                .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)));
     }
 
     public static Command createAutoCoralScoringSequence(Pose2d targetPose, ScoringLevel scoringLevel) {

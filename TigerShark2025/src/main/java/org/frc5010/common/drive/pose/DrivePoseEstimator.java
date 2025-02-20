@@ -7,6 +7,7 @@ package org.frc5010.common.drive.pose;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.frc5010.common.arch.GenericSubsystem;
 import org.frc5010.common.subsystems.AprilTagPoseSystem;
@@ -38,6 +39,10 @@ public class DrivePoseEstimator extends GenericSubsystem {
     private boolean disableVisionUpdateCommand = false;
   /** List of PoseProviders */
   private List<PoseProvider> poseProviders = new ArrayList<>();
+  private boolean aprilTagVisible = false;
+  private boolean updatingPoseAcceptor = false;
+
+  private static double CONFIDENCE_RESET_THRESHOLD = 0.02;
 
   /**
    * Build a DrivePoseEstimator
@@ -59,6 +64,14 @@ public class DrivePoseEstimator extends GenericSubsystem {
     tab.addNumber("Pose Degrees", () -> (getCurrentPose().getRotation().getDegrees()))
         .withPosition(11, 2);
     tab.add("Pose Field", field2d).withPosition(0, 0).withSize(11, 5);
+    tab.addBooleanArray("Providers Active", () -> {
+
+      boolean[] providerActive = new boolean[poseProviders.size()];
+      for (int i = 0; i<poseProviders.size(); i++) {
+        providerActive[i] = poseProviders.get(i).isActive();
+      }
+      return providerActive;
+    }).withPosition(5, 0);
 
     for (AprilTag at : vision.getFieldLayout().getTags()) {
       if (at.pose.getX() != 0 && at.pose.getY() != 0 && at.pose.getZ() != 0) {
@@ -81,11 +94,21 @@ public class DrivePoseEstimator extends GenericSubsystem {
 
     ShuffleboardTab tab = Shuffleboard.getTab("Pose");
     tab.addString("Pose (X,Y)", this::getFormattedPose).withPosition(11, 0);
-    tab.addDoubleArray("Robot Pose3d", () -> getCurrentPose3dArray()).withPosition(11, 1);
+    tab.addDoubleArray("Robot Pose3d", () -> getCurrentPose3dArray()).withPosition(11, 2).withSize(4, 2);
 
     tab.addNumber("Pose Degrees", () -> (getCurrentPose().getRotation().getDegrees()))
-        .withPosition(11, 2);
+        .withPosition(11, 4);
     tab.add("Pose Field", field2d).withPosition(0, 0).withSize(11, 5);
+
+    tab.addStringArray("Providers Active", () -> {
+      String[] providerActive = new String[poseProviders.size()];
+      for (int i = 0; i<poseProviders.size(); i++) {
+        providerActive[i] = poseProviders.get(i).getClass().getSimpleName() + ": " + poseProviders.get(i).isActive();
+      }
+      return providerActive;
+    }).withSize(6, 2).withPosition(0, 5);
+    tab.addBoolean("April Tag Visible", () -> aprilTagVisible).withPosition(6, 5);
+    tab.addBoolean("Acceptor Updating", () -> updatingPoseAcceptor).withPosition(8, 5);
 
     for (AprilTag at : AprilTags.aprilTagFieldLayout.getTags()) {
       if (at.pose.getX() != 0 && at.pose.getY() != 0 && at.pose.getZ() != 0) {
@@ -224,6 +247,7 @@ public class DrivePoseEstimator extends GenericSubsystem {
   protected void updatePoseFromProviders() {
       poseTracker.updateLocalMeasurements();
       boolean visionUpdated = false;
+      boolean accepterUpdating = false;
       if (!disableVisionUpdateCommand) {
         for (PoseProvider provider: poseProviders) {
           if (provider.isActive()) {
@@ -231,15 +255,21 @@ public class DrivePoseEstimator extends GenericSubsystem {
             if (robotPose.isPresent()) {
               double confidence = provider.getConfidence();
               visionUpdated |= provider.fiducialId() != 0;
-              poseTracker.updateVisionMeasurements(
+              
+              if (confidence < CONFIDENCE_RESET_THRESHOLD && provider.isTagReader()) {
+                for (PoseProvider provider2 : poseProviders) {
+                  provider2.resetPose(robotPose.get());
+                }
+                accepterUpdating = true;
+                poseTracker.updateVisionMeasurements(
                 robotPose.get().toPose2d(), provider.getCaptureTime(), vision.getStdConfidenceVector(confidence));
+              }
             }
-          } else {
-            provider.resetPose(getCurrentPose3d());
-          }
+          } 
         }
       }  
-      SmartDashboard.putBoolean("April Tag Pose Updating", visionUpdated);
+      aprilTagVisible = visionUpdated;
+      updatingPoseAcceptor = accepterUpdating;
   }
 
 

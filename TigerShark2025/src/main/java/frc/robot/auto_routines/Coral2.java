@@ -26,6 +26,7 @@ public class Coral2 extends AutoSequence {
         TargetingSystem.createAutoCoralScoringSequence(ReefscapeButtonBoard.getScoringPose(ScoringLocation.BACK_RIGHT_EF, ScoringAlignment.REEF_RIGHT), ScoringLevel.L4),
         TargetingSystem.createAutoLoadingSequence(ReefscapeButtonBoard.getLoadingPose(LoadingStationLocation.STATION_RIGHT_OUTER)),
         TargetingSystem.createAutoCoralScoringSequence(ReefscapeButtonBoard.getScoringPose(ScoringLocation.FRONT_RIGHT_CD, ScoringAlignment.REEF_RIGHT), ScoringLevel.L4)
+        
 
         );
   }

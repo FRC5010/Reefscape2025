@@ -10,12 +10,15 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import org.frc5010.common.sensors.gyro.GenericGyro;
 import org.frc5010.common.vision.LimelightHelpers;
 import org.frc5010.common.vision.LimelightHelpers.PoseEstimate;
+import org.frc5010.common.vision.LimelightHelpers.RawFiducial;
 
 /** Limelight Camera */
 public class LimeLightCamera extends GenericCamera {
@@ -232,12 +235,19 @@ public class LimeLightCamera extends GenericCamera {
   
   @Override
   public double getConfidence() {
-    return 0.1;
+    double ambiguity = Arrays.stream(LimelightHelpers.getRawFiducials(name)).sorted((raw1, raw2) -> raw1.ambiguity == raw2.ambiguity ? 0 : (raw1.ambiguity > raw2.ambiguity ? 1 : -1)).findFirst().map(fiducial -> fiducial.ambiguity).orElse(100.0);
+    SmartDashboard.putNumber("Limelight Ambiguity", ambiguity);
+    return ambiguity;
   }
 
   @Override
   public boolean isActive() {
     return hasValidTarget();
+  }
+
+  @Override
+  public boolean isTagReader() {
+    return true;
   }
 
   @Override

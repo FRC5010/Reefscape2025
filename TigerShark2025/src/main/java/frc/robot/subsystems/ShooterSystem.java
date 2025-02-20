@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 
@@ -20,6 +21,7 @@ import org.frc5010.common.telemetry.DisplayBoolean;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -38,6 +40,7 @@ public class ShooterSystem extends GenericSubsystem {
   private Trigger isEmpty, isEntryActive, isCoralFullyCaptured, isAligned;
   private CoralState coralState;
   private DisplayBoolean entryBeamBreakDisplay, alignmentBeamBreakDisplay;
+  private final Current INTAKE_CURRENT_THRESHOLD = Amps.of(3);
 
   public enum CoralState{
     EMPTY,
@@ -52,6 +55,7 @@ public class ShooterSystem extends GenericSubsystem {
     
     alignmentBeambreak = new Beambreak(1);
     entryBeambreak = new Beambreak(0);
+    
 
     entryBeamBreakDisplay = displayValues.makeDisplayBoolean("Entry Beam Break");
     alignmentBeamBreakDisplay = displayValues.makeDisplayBoolean("Alignment Beam Break");
@@ -69,9 +73,12 @@ public class ShooterSystem extends GenericSubsystem {
     isCoralFullyCaptured = new Trigger(() -> coralState == CoralState.FULLY_CAPTURED);
     isAligned = new Trigger(() -> coralState == CoralState.ALIGNED);
 
-    setupStateMachine();
+    
     setupMotors(mechanismSimulation);
-   
+
+    currentSwitch = new ValueSwitch(INTAKE_CURRENT_THRESHOLD.in(Amps), shooterLeft::getOutputCurrent, 1);
+    
+    setupStateMachine();
     // isEntryActive.whileTrue(captureCoral());
     // isCoralFullyCaptured.whileTrue(alignCoral());
    
@@ -101,7 +108,7 @@ public class ShooterSystem extends GenericSubsystem {
     // Empty
     entryBroken.and(isEmpty).onTrue(setCoralState(CoralState.ENTRY));
     // Entry
-    alignmentBroken.and(isEntryActive).onTrue(setCoralState(CoralState.FULLY_CAPTURED)); // Entry -> Fully Captured
+    alignmentBroken.and(currentSwitch.getTrigger()).onTrue(setCoralState(CoralState.FULLY_CAPTURED)); // Entry -> Fully Captured
     coralOutOfShooter.and(isEntryActive).onTrue(setCoralState(CoralState.EMPTY)); // Entry -> Empty
     // Fully Captured
     alignmentBroken.and(isCoralFullyCaptured).onFalse(setCoralState(CoralState.ALIGNED)); // Fully Captured -> Aligned
@@ -158,6 +165,7 @@ public class ShooterSystem extends GenericSubsystem {
       alignmentBeamBreakDisplay.setValue(alignmentBroken.getAsBoolean());
 
       SmartDashboard.putString("Coral State", coralState.name());
+      SmartDashboard.putNumber("Shooter Left Current", shooterLeft.getOutputCurrent());
   }
 
   @Override

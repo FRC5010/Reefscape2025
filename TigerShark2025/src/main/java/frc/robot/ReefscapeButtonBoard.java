@@ -144,10 +144,7 @@ public class ReefscapeButtonBoard {
         controller2.createButtons(13);
         initializeElasticDisplay();
         setupButtonBindings();
-        
     }
-
-    
 
     private void initializeElasticDisplay() {
         tab.addBoolean(ScoringLocation.FRONT_AB.name(), () -> ScoringLocation.FRONT_AB == scoringLocation).withPosition(2, 8);

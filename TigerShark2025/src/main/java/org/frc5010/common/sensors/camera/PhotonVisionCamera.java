@@ -100,6 +100,11 @@ public class PhotonVisionCamera extends GenericCamera {
     return camResult.getTimestampSeconds();
   }
 
+  @Override
+  public boolean isTagReader() {
+    return true;
+  }
+
   /**
    * Get the target pose estimate relative to the robot.
    *
