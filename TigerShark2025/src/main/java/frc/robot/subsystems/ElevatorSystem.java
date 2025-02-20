@@ -24,7 +24,6 @@ import org.frc5010.common.motors.hardware.GenericTalonFXMotor;
 import org.frc5010.common.sensors.ValueSwitch;
 import org.frc5010.common.telemetry.DisplayLength;
 
-import edu.wpi.first.hal.simulation.RoboRioDataJNI;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -36,8 +35,8 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -66,7 +65,8 @@ public class ElevatorSystem extends GenericSubsystem {
     //public DisplayLength HowTo = new DisplayLength(Meters.of(0.06), "HowTo", "MyTable");
     private final Current MAX_ELEVATOR_STATOR_CURRENT_LIMIT = Amps.of(100);
     private final Current MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT = Amps.of(60);
-    private double cX = 0.0, cY = 1.178, wheelBase = 0.56, g = 9.81, a = 0.0112954816, b = 0.824063, c = 7.46779;
+    private Distance centerOfMassX = Meters.zero(), centerOfMassY = Inches.of(1.178), wheelBase = Meters.of(0.56);
+    private double g = 9.81, growFactor = 0.233035, exponent = 0.824063, initialValue = 0.189682;
     private double currentX = 0.0, lastX = 0.0, lastTime = 0.0, timeChange = 0.0, currentVelocity = 0.0, lastVelocity = 0.0, currentAcceleration = 0.0;
 
 
@@ -306,34 +306,39 @@ public class ElevatorSystem extends GenericSubsystem {
         return Math.abs(position.in(Meters) - elevator.getPosition()) < 0.02;
     }
 
-    public double getCZ() {
-        return a * Math.pow(elevator.getPosition(), b) + c;
+    public double getCenterOfMassZ() {
+        return growFactor * Math.pow(elevator.getPosition(), exponent) + initialValue;
+    }
+
+    // Function that decreases acceleration to counteract elevator flex
+    public double getAccelerationDampener() {
+        return elevator.getPosition();
     }
     
     public double getMaxForwardAcceleration() {
-        return (((wheelBase / 2) + cY) * (g + getCOMAcceleration(elevator.getPosition()))) / getCZ();
+        return ((((wheelBase.in(Meters) / 2) + centerOfMassY.in(Meters)) * (g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) - getAccelerationDampener();
     }
 
     public double getMaxBackwardAcceleration() {
-        return - (((wheelBase / 2) - cY) * (g + getCOMAcceleration(elevator.getPosition()))) / getCZ();
+        return - ((((wheelBase.in(Meters) / 2) - centerOfMassY.in(Meters)) * (g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) - getAccelerationDampener();
     }
 
     public double getMaxRightAcceleration() {
-        return (((wheelBase / 2) + cX) * (g + getCOMAcceleration(elevator.getPosition()))) / getCZ();
+        return ((((wheelBase.in(Meters) / 2) + centerOfMassX.in(Meters)) * (g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) - getAccelerationDampener();
     }
 
     public double getMaxLeftAcceleration() {
-        return - (((wheelBase / 2) - cX) * (g + getCOMAcceleration(elevator.getPosition()))) / getCZ();
+        return - ((((wheelBase.in(Meters) / 2) - centerOfMassX.in(Meters)) * (g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) - getAccelerationDampener();
     }
 
     public double getCOMAcceleration(double x) {
         timeChange = (RobotController.getFPGATime() - lastTime) * Math.pow(10, 6);
         lastTime = RobotController.getFPGATime();
-        currentVelocity = x - lastX;
+        currentVelocity = (x - lastX) / timeChange;
         lastX = x;
-        currentAcceleration = currentVelocity - lastVelocity;
+        currentAcceleration = (currentVelocity - lastVelocity) / timeChange;
         lastVelocity = currentVelocity;
-        return (a * b * (b - 1) * Math.pow(x, b - 2) * Math.pow(currentVelocity, 2)) + (Math.pow(a, 2) * b * Math.pow(x, b - 1));
+        return (growFactor * exponent * (exponent - 1) * Math.pow(x, exponent - 2) * Math.pow(currentVelocity, 2)) + (growFactor * exponent * Math.pow(x, exponent - 1) * currentAcceleration);
     }
 
     public Distance selectElevatorLevel(Supplier<ReefscapeButtonBoard.ScoringLevel> level) {
@@ -354,6 +359,11 @@ public class ElevatorSystem extends GenericSubsystem {
     @Override
     public void periodic() {
         elevator.draw();
+        SmartDashboard.putNumber("forward acceleration", getMaxForwardAcceleration());
+        SmartDashboard.putNumber("backward acceleration", getMaxBackwardAcceleration());
+        SmartDashboard.putNumber("left acceleration", getMaxLeftAcceleration());
+        SmartDashboard.putNumber("right acceleration", getMaxRightAcceleration());
+        SmartDashboard.putNumber("Center of Mass Z", getCenterOfMassZ());
     }
 
     @Override
