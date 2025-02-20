@@ -348,7 +348,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
 
     chassisSpeeds = new ChassisSpeeds(
         DriverStation.getAlliance().get() == Alliance.Red ? -xSpeed : xSpeed,
-        DriverStation.getAlliance().get() == Alliance.Red ? ySpeed : -ySpeed,
+        DriverStation.getAlliance().get() == Alliance.Red ? -ySpeed : ySpeed,
         turnSpeed);
     return chassisSpeeds;
   }
@@ -366,7 +366,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   private Command driveWithSetpointGenerator(Supplier<ChassisSpeeds> robotRelativeChassisSpeed)
       throws IOException, ParseException {
     SwerveSetpointGenerator5010 setpointGenerator = new SwerveSetpointGenerator5010(RobotConfig.fromGUISettings(),
-        swerveDrive.getMaximumChassisAngularVelocity());
+        swerveDrive.getMaximumModuleAngleVelocity().in(RadiansPerSecond));
 
     AtomicReference<SwerveSetpoint> prevSetpoint = new AtomicReference<>(
         new SwerveSetpoint(swerveDrive.getRobotVelocity(),

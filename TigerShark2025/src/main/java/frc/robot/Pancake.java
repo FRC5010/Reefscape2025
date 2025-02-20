@@ -27,8 +27,6 @@ public class Pancake extends GenericRobot {
 
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
         buttonBoard = new ReefscapeButtonBoard(2, 3);
-
-        ((YAGSLSwerveDrivetrain) drivetrain).setAccelerationSuppliers(() -> 9.0, () -> 9.0, () -> 9.0, () -> 9.0);
     }
 
     @Override
@@ -78,7 +76,9 @@ public class Pancake extends GenericRobot {
 
     @Override
     public void setupDefaultCommands(Controller driver, Controller operator) {
-        Command driveCmd = ((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorFieldRelative(() -> ((YAGSLSwerveDrivetrain) drivetrain).getFieldVelocitiesFromJoystick(driver::getLeftXAxis, driver::getLeftYAxis, driver::getRightXAxis));
+        ((YAGSLSwerveDrivetrain) drivetrain).setAccelerationSuppliers(() -> driver.getRightTrigger() * 5, () -> driver.getRightTrigger() * 5, () -> driver.getRightTrigger() * 5, () -> driver.getRightTrigger() * 5);
+
+        Command driveCmd = ((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorFieldRelative(() -> ((YAGSLSwerveDrivetrain) drivetrain).getFieldVelocitiesFromJoystick(driver::getLeftYAxis, driver::getLeftXAxis, driver::getRightXAxis));
 
         drivetrain.setDefaultCommand(driveCmd);
         // drivetrain.setDefaultCommand(((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorFieldRelative(() ->

@@ -152,6 +152,7 @@ public class SwerveSetpointGenerator5010 {
         }
       }
     }
+    // This conditional stops the robot
     if (all_modules_should_flip
         && !epsilonEquals(prevSetpoint.robotRelativeSpeeds(), new ChassisSpeeds())
         && !epsilonEquals(desiredStateRobotRelative, new ChassisSpeeds())) {
