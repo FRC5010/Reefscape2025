@@ -16,6 +16,7 @@ import org.frc5010.common.sensors.camera.QuestNav;
 import org.frc5010.common.sensors.gyro.GenericGyro;
 import org.frc5010.common.utils.AllianceFlip;
 
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -44,7 +45,8 @@ public class Elphaba extends GenericRobot {
         super(directory);
         AllianceFlip.configure(FieldConstants.fieldDimensions);
 
-
+        CameraServer.startAutomaticCapture();
+        
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
         gyro = (GenericGyro) subsystems.get(ConfigConstants.GYRO);
 

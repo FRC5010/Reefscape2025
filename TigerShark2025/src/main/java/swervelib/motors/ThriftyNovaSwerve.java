@@ -437,7 +437,6 @@ public class ThriftyNovaSwerve extends SwerveMotor
         System.out.println(this.getClass().getSimpleName() + ": " + message + error.toString());
       }
     }
-
   }
 
   @Override

@@ -6,6 +6,7 @@ package org.frc5010.common.motors.hardware;
 
 import static edu.wpi.first.units.Units.Amps;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.frc5010.common.motors.MotorConstants.Motor;
@@ -23,6 +24,7 @@ import com.thethriftybot.ThriftyNova.CurrentType;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
@@ -68,32 +70,40 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
     @Override
     public void set(double speed) {
         motor.set(speed);
+        checkErrors("Setting motor percent failed: ");
     }
 
     @Override
     public double get() {
-        return motor.get();
+        double output = motor.get();
+        checkErrors("Getting motor percent failed: ");
+        return output;
     }
 
     @Override
     public void setInverted(boolean isInverted) {
         motor.setInverted(isInverted);
+        checkErrors("Setting motor inversion failed: ");
         simEncoder.setInverted(isInverted);
     }
 
     @Override
     public boolean getInverted() {
-        return motor.getInverted();
+        boolean inverted = motor.getInverted();
+        checkErrors("Getting motor inversion failed: ");
+        return inverted;
     }
 
     @Override
     public void disable() {
         motor.disable();
+        checkErrors("Setting motor disable failed: ");
     }
 
     @Override
     public void stopMotor() {
         motor.set(0);
+        checkErrors("Stopping motor failed: ");
     }
 
     @Override
@@ -104,13 +114,16 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
     @Override
     public MotorController5010 setSlewRate(double rate) {
         motor.setRampUp(rate);
+        checkErrors("Setting motor ramp up failed: ");
         motor.setRampDown(rate);
+        checkErrors("Setting motor ramp down failed: ");
         return this;
     }
 
     @Override
     public MotorController5010 setFollow(MotorController5010 motor) {
         this.motor.follow(((ThriftyNova) motor.getMotor()).getID());
+        checkErrors("Setting motor follow failed: ");
         return this;
     }
 
@@ -118,6 +131,7 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
     public MotorController5010 setFollow(MotorController5010 motor, boolean inverted) {
         this.motor.follow(((ThriftyNova) motor.getMotor()).getID());
         this.motor.setInverted(inverted);
+        checkErrors("Setting motor inversion failed: ");
         return this;
     }
 
@@ -125,6 +139,7 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
     public MotorController5010 invert(boolean inverted) {
         motor.setInverted(inverted);
         simEncoder.setInverted(inverted);
+        checkErrors("Setting motor inversion failed: ");
         return this;
     }
 
@@ -132,6 +147,7 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
     public MotorController5010 setCurrentLimit(Current limit) {
         this.currentLimit = limit;
         motor.setMaxCurrent(CurrentType.STATOR, limit.in(Amps));
+        checkErrors("Setting current limit failed: ");
         return this;
     }
 
@@ -182,17 +198,20 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
     @Override
     public MotorController5010 setVoltageCompensation(double nominalVoltage) {
         motor.setVoltageCompensation(nominalVoltage);
+        checkErrors("Setting voltage compensation failed: ");
         return this;
     }
 
     @Override
     public void clearStickyFaults() {
         motor.clearErrors();
+        checkErrors("Clearing sticky faults failed: ");
     }
 
     @Override
     public MotorController5010 setMotorBrake(boolean isBrakeMode) {
         motor.setBrakeMode(isBrakeMode);
+        checkErrors("Setting motor brake mode failed: ");
         return this;
     }
 
@@ -202,7 +221,9 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
 
     @Override
     public double getVoltage() {
-        return motor.getVoltage();
+        double voltage = motor.getVoltage();
+        checkErrors("Getting voltage output failed: ");
+        return voltage;
     }
 
     @Override
@@ -212,7 +233,9 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
 
     @Override
     public double getOutputCurrent() {
-        return motor.getStatorCurrent();
+        double current = motor.getStatorCurrent();
+        checkErrors("Getting output current failed: ");
+        return current;
     }
 
     @Override
@@ -230,4 +253,22 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
     public void setMaxRPM(AngularVelocity rpm) {
         maxRPM = rpm;
     }
+
+      /**
+   * Checks for errors in the motor and logs them if any are found.
+   *
+   * @param message the message to prepend to the log and print statement
+   */
+  private void checkErrors(String message)
+  {
+    List<ThriftyNova.Error> errors = motor.getErrors();
+    if (errors.size() > 0)
+    {
+      for (ThriftyNova.Error error : errors)
+      {
+        DataLogManager.log(this.getClass().getSimpleName() + ": " + message + error.toString());
+        System.out.println(this.getClass().getSimpleName() + ": " + message + error.toString());
+      }
+    }
+  }
 }
