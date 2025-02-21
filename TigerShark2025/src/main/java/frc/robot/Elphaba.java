@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.auto_routines.AutoChoosers;
 import frc.robot.auto_routines.Coral2;
 import frc.robot.auto_routines.Right1Coral;
 import frc.robot.auto_routines.Right4Coral;
@@ -40,6 +41,7 @@ public class Elphaba extends GenericRobot {
     AlgaeArm algaeArm;
     GenericGyro gyro;
     ReefscapeButtonBoard reefscapeButtonBoard;
+    AutoChoosers autoChoosers;
 
     public Elphaba(String directory) {
         super(directory);
@@ -57,6 +59,7 @@ public class Elphaba extends GenericRobot {
         TargetingSystem.setupParamaters((YAGSLSwerveDrivetrain) drivetrain, shooter, elevatorSystem, algaeArm);
 
         reefscapeButtonBoard = new ReefscapeButtonBoard(2, 3);
+        autoChoosers = new AutoChoosers(shuffleTab);
 
         ((YAGSLSwerveDrivetrain) drivetrain).setAccelerationSuppliers(() -> elevatorSystem.getMaxForwardAcceleration(), () -> elevatorSystem.getMaxBackwardAcceleration(), () -> elevatorSystem.getMaxLeftAcceleration(), () -> elevatorSystem.getMaxRightAcceleration());
     }
