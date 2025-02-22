@@ -110,9 +110,6 @@ public class LimeLightCamera extends GenericCamera {
   protected Optional<PoseEstimate> getRobotPoseEstimateM2() {
     Optional<PoseEstimate> poseEstimate = validatePoseEstimate(
         Optional.ofNullable(LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(name)));
-    if (poseEstimate.isPresent() && poseEstimate.get().avgTagDist < 3) {
-      getRobotPoseEstimateM1();
-    }
     return poseEstimate;
   }
 
@@ -160,6 +157,11 @@ public class LimeLightCamera extends GenericCamera {
   /** Update the camera */
   @Override
   public void updateCameraInfo() {
+    if (null != gyroSupplier.get()) {
+      GenericGyro gyro =  gyroSupplier.get();
+      LimelightHelpers.SetRobotOrientation(name,gyro.getAngle(), gyro.getRate(), 0.0, 0.0, 0.0, 0.0);
+    }
+    
     LimelightHelpers.getLatestResults(name);
     if (hasValidTarget()) {
       poseEstimate = megatagChooser.getAsBoolean() ? getRobotPoseEstimateM1() : getRobotPoseEstimateM2();

@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.FieldConstants.Reef;
 
 /** A class to handle estimating the pose of the robot */
 public class DrivePoseEstimator extends GenericSubsystem {
@@ -43,7 +44,7 @@ public class DrivePoseEstimator extends GenericSubsystem {
   private boolean aprilTagVisible = false;
   private boolean updatingPoseAcceptor = false;
 
-  private static double CONFIDENCE_RESET_THRESHOLD = 0.02;
+  private static double CONFIDENCE_RESET_THRESHOLD = 0.025;
 
   /**
    * Build a DrivePoseEstimator
@@ -110,6 +111,8 @@ public class DrivePoseEstimator extends GenericSubsystem {
     }).withSize(6, 2).withPosition(0, 5);
     tab.addBoolean("April Tag Visible", () -> aprilTagVisible).withPosition(6, 5);
     tab.addBoolean("Acceptor Updating", () -> updatingPoseAcceptor).withPosition(8, 5);
+    tab.addNumber("Distance X to AB Reef", () -> Reef.Side.AB.getCenterFace().getX() - getCurrentPose().getX());
+    tab.addNumber("Distance Y to AB Reef", () -> Reef.Side.AB.getCenterFace().getY() - getCurrentPose().getY());
 
     for (AprilTag at : AprilTags.aprilTagFieldLayout.getTags()) {
       if (at.pose.getX() != 0 && at.pose.getY() != 0 && at.pose.getZ() != 0) {
@@ -256,8 +259,9 @@ public class DrivePoseEstimator extends GenericSubsystem {
             if (robotPose.isPresent()) {
               double confidence = provider.getConfidence();
               visionUpdated |= provider.fiducialId() != 0;
+              
               poseTracker.updateVisionMeasurements(
-                robotPose.get().toPose2d(), provider.getCaptureTime(), vision.getStdConfidenceVector(confidence));
+                  robotPose.get().toPose2d(), provider.getCaptureTime(), vision.getStdConfidenceVector(confidence));
               if (confidence < CONFIDENCE_RESET_THRESHOLD && provider.getType() == ProviderType.FIELD_BASED) {
                 for (PoseProvider provider2 : poseProviders) {
                   provider2.resetPose(robotPose.get());
@@ -265,8 +269,13 @@ public class DrivePoseEstimator extends GenericSubsystem {
                 accepterUpdating = true;
                 
               }
+    
+                
+              
             }
-          } 
+          } else {
+            provider.resetPose(getCurrentPose3d());
+          }
         }
       }  
       SmartDashboard.putBoolean("April Tag Pose Updating", visionUpdated);

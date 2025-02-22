@@ -40,6 +40,8 @@ public class QuestNav implements PoseProvider {
     private NetworkTable networkTable;
     private Transform3d robotToQuest;
     private Pose3d initPose = new Pose3d();
+    private Transform3d softResetTransform = new Transform3d();
+    private Pose3d softResetPose = new Pose3d();
 
     private IntegerEntry miso;
     private IntegerPublisher mosi;
@@ -124,19 +126,31 @@ public class QuestNav implements PoseProvider {
         }
     }
 
-    public Translation3d getPosition() {
-        return rotateAxes(correctWorldAxis(getRawPosition())
+    public Translation3d getProcessedPosition() {
+        Translation3d hardResetTransformation = rotateAxes(correctWorldAxis(getRawPosition())
                 .plus(robotToQuest.getTranslation())
                 .plus(robotToQuest.getTranslation().times(-1).rotateBy(getRawRotation())),
                 initPose.getRotation())
-
                 .plus(initPose.getTranslation());
+        return hardResetTransformation;
+        
+    }
+
+    public Translation3d getPosition() {
+        Translation3d hardResetTransform = getProcessedPosition();
+        Translation3d softResetTransformation = rotateAxes(hardResetTransform.minus(softResetPose.getTranslation()), softResetTransform.getRotation()).plus(softResetPose.getTranslation()).plus(softResetTransform.getTranslation());
+        return softResetTransformation;
+    }
+
+
+    public Rotation3d getProcessedRotation() {
+        return getRawRotation().plus(initPose.getRotation());
     }
 
     public Rotation3d getRotation() {
         // TODO: To support weird rotations/mountings of quest, implement world axis
         // rotation
-        return getRawRotation().plus(initPose.getRotation());
+       return getProcessedRotation().plus(softResetTransform.getRotation());
     }
 
     public double getConfidence() {
@@ -171,10 +185,19 @@ public class QuestNav implements PoseProvider {
         processQuestCommand(QuestCommand.RESET);
     }
 
-    public void resetPose(Pose3d pose) {
-        initializedPosition = true;
+    public void softReset(Pose3d pose) {
+        softResetTransform = new Transform3d(pose.getTranslation().minus(getProcessedPosition()), pose.getRotation().minus(getProcessedRotation()));
+        softResetPose = new Pose3d(getProcessedPosition(), getProcessedRotation());
+    }
+
+    public void hardReset(Pose3d pose) {
         initPose = pose;
         resetQuestPose();
+    }
+
+    public void resetPose(Pose3d pose) {
+        initializedPosition = true;
+        softReset(pose);
     }
 
     @Override
