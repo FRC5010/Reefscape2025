@@ -87,9 +87,26 @@ public class SwerveSetpointGenerator5010 {
               desiredStateRobotRelative.vxMetersPerSecond,
               desiredStateRobotRelative.vyMetersPerSecond);
       double linearVel = vel.getNorm();
-      if (linearVel > constraints.maxVelocityMPS()) {
-        vel = vel.times(constraints.maxVelocityMPS() / linearVel);
+      double xVel = vel.getX();
+      double yVel = vel.getY();
+      double factor1 = 1.0, factor2 = 1.0, factor3 = 1.0, factor = 1.0;
+      if (xVel > constraints.getMaxRightVelocity()) {
+        factor1 = constraints.getMaxRightVelocity() / xVel;
+      } else if(xVel < constraints.getMaxLeftVelocity()) {
+        factor1 = constraints.getMaxLeftVelocity() / xVel;
       }
+      if (yVel > constraints.getMaxForwardVelocity()) {
+        factor2 = constraints.getMaxForwardVelocity() / yVel;
+      } else if (yVel < constraints.getMaxBackwardVelocity()) {
+        factor2 = constraints.getMaxBackwardVelocity();
+      }
+      factor = factor1 < factor2 ? factor1 : factor2;
+      if (linearVel > constraints.maxVelocityMPS()) {
+        factor3 = constraints.maxVelocityMPS() / linearVel;
+      }
+      factor = factor3 < factor ? factor3 : factor;
+      vel = vel.times(factor);
+
       desiredStateRobotRelative =
           new ChassisSpeeds(
               vel.getX(),

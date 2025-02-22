@@ -109,6 +109,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   private DoubleSupplier angleSpeedSupplier = null;
   private DisplayBoolean hasIssues;
   private Supplier<Double> maxForwardAcceleration, maxBackwardAcceleration, maxLeftAcceleration, maxRightAcceleration;
+  private Supplier<Double> maxForwardVelocity, maxBackwardVelocity, maxLeftVelocity, maxRightVelocity;
 
   public YAGSLSwerveDrivetrain(
       Mechanism2d mechVisual,
@@ -382,6 +383,10 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         (Supplier<LinearAcceleration>) () -> MetersPerSecondPerSecond.of(maxBackwardAcceleration.get()),
         (Supplier<LinearAcceleration>) () -> MetersPerSecondPerSecond.of(maxRightAcceleration.get()),
         (Supplier<LinearAcceleration>) () -> MetersPerSecondPerSecond.of(maxLeftAcceleration.get()),
+        (Supplier<LinearVelocity>) () -> MetersPerSecond.of(maxForwardVelocity.get()),
+        (Supplier<LinearVelocity>) () -> MetersPerSecond.of(maxBackwardVelocity.get()),
+        (Supplier<LinearVelocity>) () -> MetersPerSecond.of(maxLeftVelocity.get()),
+        (Supplier<LinearVelocity>) () -> MetersPerSecond.of(maxRightVelocity.get()),
         RadiansPerSecond.of(getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond()),
         RadiansPerSecondPerSecond.of(getSwerveConstants().getkTeleDriveMaxAngularAccelerationUnitsPerSecond()),
         Volts.of(12), false);
@@ -408,6 +413,13 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     this.maxBackwardAcceleration = maxBackwardAcceleration;
     this.maxLeftAcceleration = maxLeftAcceleration;
     this.maxRightAcceleration = maxRightAcceleration;
+  }
+
+  public void setVelocitySuppliers(Supplier<Double> maxForwardVelocity, Supplier<Double> maxBackwardVelocity, Supplier<Double> maxRightVelocity, Supplier<Double> maxLeftVelocity) {
+    this.maxForwardVelocity = maxForwardVelocity;
+    this.maxBackwardVelocity = maxBackwardVelocity;
+    this.maxRightVelocity = maxRightVelocity;
+    this.maxLeftVelocity = maxLeftVelocity;
   }
 
   /**
