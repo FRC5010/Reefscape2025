@@ -53,8 +53,8 @@ public class ShooterSystem extends GenericSubsystem {
   public ShooterSystem(Mechanism2d mechanismSimulation) {
     
     
-    alignmentBeambreak = new Beambreak(1);
-    entryBeambreak = new Beambreak(0);
+    alignmentBeambreak = new Beambreak(8);
+    entryBeambreak = new Beambreak(7);
     
 
     entryBeamBreakDisplay = displayValues.makeDisplayBoolean("Entry Beam Break");
@@ -130,6 +130,13 @@ public class ShooterSystem extends GenericSubsystem {
     return Commands.run(() -> {
       shooterLeftSpeed(speed.getAsDouble() * 0.5);
       shooterRightSpeed(speed.getAsDouble() * 0.5);
+    }, this);
+  }
+
+  public Command runMotors(DoubleSupplier speedLeft, DoubleSupplier speedRight) {
+    return Commands.run(() -> {
+      shooterLeftSpeed(speedLeft.getAsDouble() * 1.0);
+      shooterRightSpeed(speedRight.getAsDouble() * 1.0);
     }, this);
   }
 

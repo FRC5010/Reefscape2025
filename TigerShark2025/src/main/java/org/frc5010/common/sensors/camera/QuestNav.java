@@ -152,7 +152,7 @@ public class QuestNav implements PoseProvider {
     }
 
     public boolean isActive() {
-        if (timestamp.get() == 0.0 || RobotBase.isSimulation() || DriverStation.isDisabled() || frameCount.get() == previousFrameCount) {
+        if (timestamp.get() == 0.0 || RobotBase.isSimulation() || DriverStation.isDisabled()) {
         return false;
         }
         previousFrameCount = frameCount.get();
@@ -178,8 +178,8 @@ public class QuestNav implements PoseProvider {
     }
 
     @Override
-    public boolean isTagReader() {
-        return false;
+    public ProviderType getType() {
+        return ProviderType.ENVIRONMENT_BASED;
     }
 
     public void resetPose() {

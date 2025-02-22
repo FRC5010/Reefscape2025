@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.frc5010.common.arch.GenericSubsystem;
+import org.frc5010.common.drive.pose.PoseProvider.ProviderType;
 import org.frc5010.common.subsystems.AprilTagPoseSystem;
 import org.frc5010.common.vision.AprilTags;
 
@@ -255,14 +256,14 @@ public class DrivePoseEstimator extends GenericSubsystem {
             if (robotPose.isPresent()) {
               double confidence = provider.getConfidence();
               visionUpdated |= provider.fiducialId() != 0;
-              
-              if (confidence < CONFIDENCE_RESET_THRESHOLD && provider.isTagReader()) {
+              poseTracker.updateVisionMeasurements(
+                robotPose.get().toPose2d(), provider.getCaptureTime(), vision.getStdConfidenceVector(confidence));
+              if (confidence < CONFIDENCE_RESET_THRESHOLD && provider.getType() == ProviderType.FIELD_BASED) {
                 for (PoseProvider provider2 : poseProviders) {
                   provider2.resetPose(robotPose.get());
                 }
                 accepterUpdating = true;
-                poseTracker.updateVisionMeasurements(
-                robotPose.get().toPose2d(), provider.getCaptureTime(), vision.getStdConfidenceVector(confidence));
+                
               }
             }
           } 

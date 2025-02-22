@@ -4,37 +4,55 @@
 
 package frc.robot.auto_routines;
 
+import java.util.function.Supplier;
+
 import org.frc5010.common.auto.AutoSequence;
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.ReefscapeButtonBoard;
+import frc.robot.ReefscapeButtonBoard.LoadingStationLocation;
 import frc.robot.ReefscapeButtonBoard.ScoringAlignment;
 import frc.robot.ReefscapeButtonBoard.ScoringLevel;
+import frc.robot.ReefscapeButtonBoard.ScoringLocation;
+import frc.robot.auto_routines.AutoChoosers.ScoringLocations;
 import frc.robot.managers.TargetingSystem;
 import frc.robot.subsystems.ElevatorSystem;
 import frc.robot.subsystems.ShooterSystem;
 
 /** Add your docs here. */
 public class CustomAuto extends AutoSequence {
+  private Command scoreCoral(Supplier<ScoringLocation> location, Supplier<ScoringAlignment> alignment, Supplier<ScoringLevel> level) {
+    return Commands.deferredProxy(() ->TargetingSystem.createAutoCoralScoringSequence(
+          ReefscapeButtonBoard.getScoringPose(location.get(), alignment.get()), level.get()));
+  }
+
+  private Command scoreCoral(SendableChooser<ScoringLocations> chooser, ScoringLevel level) {
+    return scoreCoral(() -> chooser.getSelected().location, () -> chooser.getSelected().align, () -> level);
+  }
+
+  private Command loadCoral(Supplier<LoadingStationLocation> location) {
+    return Commands.deferredProxy(() -> TargetingSystem.createAutoLoadingSequence(
+      ReefscapeButtonBoard.getLoadingPose(location.get())));
+  }
+
+  private Command loadCoral(SendableChooser<LoadingStationLocation> chooser) {
+    return loadCoral(() -> chooser.getSelected());
+  }
+  
+
   public CustomAuto(YAGSLSwerveDrivetrain yagsl, ShooterSystem shooter, ElevatorSystem elevator) {
-        // Command Sequence
         addCommands(
-        TargetingSystem.createAutoCoralScoringSequence(
-          ReefscapeButtonBoard.getScoringPose(AutoChoosers.reef1.getSelected().location, AutoChoosers.reef1.getSelected().align), AutoChoosers.level.getSelected()),
-        TargetingSystem.createAutoLoadingSequence(
-          ReefscapeButtonBoard.getLoadingPose(AutoChoosers.station.getSelected())),
-        TargetingSystem.createAutoCoralScoringSequence(
-          ReefscapeButtonBoard.getScoringPose(AutoChoosers.reef2.getSelected().location, AutoChoosers.reef2.getSelected().align), ScoringLevel.L4)
-        ,
-        TargetingSystem.createAutoLoadingSequence(
-          ReefscapeButtonBoard.getLoadingPose(AutoChoosers.station.getSelected())),
-        TargetingSystem.createAutoCoralScoringSequence(
-          ReefscapeButtonBoard.getScoringPose(AutoChoosers.reef3.getSelected().location, AutoChoosers.reef3.getSelected().align), ScoringLevel.L4)
-        ,
-        TargetingSystem.createAutoLoadingSequence(
-          ReefscapeButtonBoard.getLoadingPose(AutoChoosers.station.getSelected())),
-        TargetingSystem.createAutoCoralScoringSequence(
-          ReefscapeButtonBoard.getScoringPose(AutoChoosers.reef4.getSelected().location, AutoChoosers.reef4.getSelected().align), ScoringLevel.L4)
+          scoreCoral(AutoChoosers.reef1, ScoringLevel.L4),
+          loadCoral(AutoChoosers.station),
+          scoreCoral(AutoChoosers.reef2, ScoringLevel.L4),
+          loadCoral(AutoChoosers.station),
+          scoreCoral(AutoChoosers.reef3, ScoringLevel.L4),
+          loadCoral(AutoChoosers.station),
+          scoreCoral(AutoChoosers.reef4, ScoringLevel.L4),
+          loadCoral(AutoChoosers.station)
         );
   }
 }

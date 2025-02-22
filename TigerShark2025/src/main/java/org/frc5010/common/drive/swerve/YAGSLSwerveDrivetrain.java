@@ -313,9 +313,9 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
             new PIDConstants(1.0, 0, 0.0) // Rotation PID constants
         ),
         config,
-        this).beforeStarting(() -> poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose"))
+        this).beforeStarting(() -> {poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose"); SmartDashboard.putBoolean("Running AutoDrive", true);})
         .until(() -> poseEstimator.getCurrentPose().getTranslation().getDistance(pose.get().getTranslation()) < 0.5)
-        .andThen(finishDriving.get());
+        .andThen(finishDriving.get()).finallyDo(() -> SmartDashboard.putBoolean("Running AutoDrive", false));
   }
 
   public Supplier<Command> driveToPosePrecise(Pose2d pose) {

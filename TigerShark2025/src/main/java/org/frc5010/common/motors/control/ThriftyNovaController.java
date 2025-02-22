@@ -43,7 +43,7 @@ public class ThriftyNovaController extends GenericPIDController {
     public void setValues(GenericPID pid) {
         PIDController pidc = new PIDController(pid.getkP(), pid.getkI(), pid.getkD());
         pidfConfig = new GenericPID(pid.getkP(), pid.getkI(), pid.getkD());
-        controller.pid0.setPID(pidc);
+   //     controller.pid0.setPID(pidc);
     }
 
     @Override

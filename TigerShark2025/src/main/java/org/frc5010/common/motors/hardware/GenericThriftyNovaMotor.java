@@ -261,14 +261,15 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
    */
   private void checkErrors(String message)
   {
-    List<ThriftyNova.Error> errors = motor.getErrors();
-    if (errors.size() > 0)
-    {
-      for (ThriftyNova.Error error : errors)
-      {
-        DataLogManager.log(this.getClass().getSimpleName() + ": " + message + error.toString());
-        System.out.println(this.getClass().getSimpleName() + ": " + message + error.toString());
-      }
-    }
+    
+    // List<ThriftyNova.Error> errors = motor.getErrors();
+    // if (errors.size() > 0)
+    // {
+    //   for (ThriftyNova.Error error : errors)
+    //   {
+    //     DataLogManager.log(this.getClass().getSimpleName() + ": " + message + error.toString());
+    //     System.out.println(this.getClass().getSimpleName() + ": " + message + error.toString());
+    //   }
+    // }
   }
 }

@@ -179,6 +179,13 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
         _motor.set(actual);
     }
 
+    public void set(double speed, double ffVelocity) {
+        double actual = MathUtil.clamp(speed + getFeedForward(ffVelocity).in(Volts) / RobotController.getBatteryVoltage(), -1.0,
+                1.0);
+        this.speed.setValue(actual);
+        _motor.set(actual);
+    }
+
 
     public double getPosition() {
         if (RobotBase.isReal()) {

@@ -63,6 +63,8 @@ public abstract class GenericRobot extends GenericMechanism implements GenericDe
   /** Values that can be displayed on the dashboard */
   protected DisplayValuesHelper displayValues;
 
+  public static boolean everEnabled = false;
+
   /** The log level enums */
   public enum LogLevel {
     /** The debug log level */
@@ -237,6 +239,7 @@ public abstract class GenericRobot extends GenericMechanism implements GenericDe
    * @return the selected auto command
    */
   public Command getAutonomousCommand() {
+    everEnabled = true;
     return generateAutoCommand(selectableCommand.getSelected());
   }
 

@@ -63,7 +63,7 @@ public class ElevatorSystem extends GenericSubsystem {
     public DisplayLength L4 = displayValues.makeConfigLength(Position.L4.name());
     public DisplayLength NET = displayValues.makeConfigLength(Position.NET.name());
     //public DisplayLength HowTo = new DisplayLength(Meters.of(0.06), "HowTo", "MyTable");
-    private final Current MAX_ELEVATOR_STATOR_CURRENT_LIMIT = Amps.of(100);
+    private final Current MAX_ELEVATOR_STATOR_CURRENT_LIMIT = Amps.of(120);
     private final Current MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT = Amps.of(60);
     private Distance centerOfMassX = Meters.zero(), centerOfMassY = Inches.of(1.178), wheelBase = Meters.of(0.56);
     private double g = 9.81, growFactor = 0.233035, exponent = 0.824063, initialValue = 0.189682;
@@ -160,8 +160,8 @@ public class ElevatorSystem extends GenericSubsystem {
                 new Rotation3d()));
 
         elevator.setMotorFeedFwd(new MotorFeedFwdConstants(0.26329, 0.38506, 0.04261));
-        elevator.setProfiledMaxVelocity(3.0);
-        elevator.setProfiledMaxAcceleration(3.0 / 0.3);
+        elevator.setProfiledMaxVelocity(2.5);
+        elevator.setProfiledMaxAcceleration(2.5 / 0.25);
         elevator.setValues(new GenericPID(3, 0.0, 0.0));
         elevator.setOutputRange(-1, 1);
 
@@ -183,6 +183,8 @@ public class ElevatorSystem extends GenericSubsystem {
         elevator.burnFlash();
 
         hasHighCurrentLoad = new ValueSwitch(ELEVATOR_ZERO_CURRENT, () -> Math.abs(elevator.getOutputCurrent()), 1);
+
+        hasHighCurrentLoad.getTrigger().and(() -> elevator.getPosition() < 0.25).and(() -> elevator.get() < -0.1).onTrue(zeroElevator());
     }
 
     public Boolean validSpeed(double speed) {
@@ -253,7 +255,7 @@ public class ElevatorSystem extends GenericSubsystem {
     public Command pidControlCommand(Distance position) {
         return Commands.run(() -> {
             double output = profiledPID.calculate(elevator.getPosition());
-            elevator.set(MathUtil.clamp(output, -1, 1));
+            elevator.set(MathUtil.clamp(output, -1, 1), profiledPID.getSetpoint().velocity);
 
         }, this).beforeStarting(() -> {
             profiledPID.setPID(elevator.getP(), elevator.getI(), elevator.getD());
@@ -312,7 +314,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
     // Function that decreases acceleration to counteract elevator flex
     public double getAccelerationDampener() {
-        return elevator.getPosition();
+        return Math.pow(elevator.getPosition(), 2) + 1;
     }
     
     public double getMaxForwardAcceleration() {
@@ -320,7 +322,7 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double getMaxBackwardAcceleration() {
-        return - ((((wheelBase.in(Meters) / 2) - centerOfMassY.in(Meters)) * (g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) - getAccelerationDampener();
+        return - ((((wheelBase.in(Meters) / 2) - centerOfMassY.in(Meters)) * (g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) + getAccelerationDampener();
     }
 
     public double getMaxRightAcceleration() {
@@ -328,7 +330,7 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double getMaxLeftAcceleration() {
-        return - ((((wheelBase.in(Meters) / 2) - centerOfMassX.in(Meters)) * (g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) - getAccelerationDampener();
+        return - ((((wheelBase.in(Meters) / 2) - centerOfMassX.in(Meters)) * (g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) + getAccelerationDampener();
     }
 
     public double getCOMAcceleration(double x) {

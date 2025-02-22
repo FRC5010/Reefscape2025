@@ -32,6 +32,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotState;
 
 /** Add your docs here. */
 public class CameraConfigurationJson {
@@ -93,7 +94,9 @@ public class CameraConfigurationJson {
         case "limelight": {
           camera = new LimeLightCamera(name, column, robotToCamera);
           ((LimeLightCamera) camera)
-              .setGyroSupplier(() -> (GenericGyro) robot.getDevice(ConfigConstants.GYRO));
+              .setGyroSupplier(() -> (GenericGyro) robot.getDevice(ConfigConstants.GYRO))
+              .setPoseEstimationChooser(() -> false);
+          ((LimeLightCamera) camera).setIMUMode(3);
           break;
         }
         case "photonvision": {

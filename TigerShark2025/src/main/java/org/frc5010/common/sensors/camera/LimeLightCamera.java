@@ -15,6 +15,8 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
+
 import org.frc5010.common.sensors.gyro.GenericGyro;
 import org.frc5010.common.vision.LimelightHelpers;
 import org.frc5010.common.vision.LimelightHelpers.PoseEstimate;
@@ -235,9 +237,13 @@ public class LimeLightCamera extends GenericCamera {
   
   @Override
   public double getConfidence() {
-    double ambiguity = Arrays.stream(LimelightHelpers.getRawFiducials(name)).sorted((raw1, raw2) -> raw1.ambiguity == raw2.ambiguity ? 0 : (raw1.ambiguity > raw2.ambiguity ? 1 : -1)).findFirst().map(fiducial -> fiducial.ambiguity).orElse(100.0);
-    SmartDashboard.putNumber("Limelight Ambiguity", ambiguity);
-    return ambiguity;
+    PoseEstimate estimate = poseEstimate.get();
+    
+    Stream<RawFiducial> fiducialStream = Arrays.stream(LimelightHelpers.getRawFiducials(name)).sorted((raw1, raw2) -> raw1.ambiguity == raw2.ambiguity ? 0 : (raw1.ambiguity > raw2.ambiguity ? 1 : -1));
+    double min_ambiguity = fiducialStream.findFirst().map(fiducial -> fiducial.ambiguity).orElse(100.0);
+    double confidence = estimate.avgTagDist > 2 ? 1.0 : min_ambiguity;
+    SmartDashboard.putNumber("Limelight Confidence", min_ambiguity);
+    return confidence;
   }
 
   @Override
@@ -246,8 +252,8 @@ public class LimeLightCamera extends GenericCamera {
   }
 
   @Override
-  public boolean isTagReader() {
-    return true;
+  public ProviderType getType() {
+    return ProviderType.FIELD_BASED;
   }
 
   @Override

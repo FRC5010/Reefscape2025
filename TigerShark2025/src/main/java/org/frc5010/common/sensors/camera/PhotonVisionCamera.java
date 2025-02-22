@@ -101,8 +101,8 @@ public class PhotonVisionCamera extends GenericCamera {
   }
 
   @Override
-  public boolean isTagReader() {
-    return true;
+  public ProviderType getType() {
+    return ProviderType.FIELD_BASED;
   }
 
   /**

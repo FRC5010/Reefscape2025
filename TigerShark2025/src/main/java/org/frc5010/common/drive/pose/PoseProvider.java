@@ -12,6 +12,12 @@ import edu.wpi.first.math.geometry.Translation3d;
 
 /** Add your docs here. */
 public interface PoseProvider {
+
+    public enum ProviderType {
+        FIELD_BASED,
+        ENVIRONMENT_BASED,
+        RELATIVE
+    }
     
     /*
      * Returns the current pose of the robot.
@@ -58,5 +64,5 @@ public interface PoseProvider {
 
     public int fiducialId();
 
-    public boolean isTagReader();
+    public ProviderType getType();
 }
