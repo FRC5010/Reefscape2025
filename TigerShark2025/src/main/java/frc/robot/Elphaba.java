@@ -54,7 +54,7 @@ public class Elphaba extends GenericRobot {
         shooter = new ShooterSystem(mechVisual, new ShooterSystem.Config());
         algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config());
 
-        TargetingSystem.setupParamaters((YAGSLSwerveDrivetrain) drivetrain, shooter, elevatorSystem, algaeArm);
+        TargetingSystem.setupParameters((YAGSLSwerveDrivetrain) drivetrain, shooter, elevatorSystem, algaeArm);
 
         reefscapeButtonBoard = new ReefscapeButtonBoard(2, 3);
         autoChoosers = new AutoChoosers(shuffleTab);

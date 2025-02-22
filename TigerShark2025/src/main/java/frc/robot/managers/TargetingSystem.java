@@ -27,7 +27,7 @@ public class TargetingSystem {
     public static AlgaeArm arm;
 
 
-    public static void setupParamaters(YAGSLSwerveDrivetrain drivetrain, ShooterSystem shooter, ElevatorSystem elevator,
+    public static void setupParameters(YAGSLSwerveDrivetrain drivetrain, ShooterSystem shooter, ElevatorSystem elevator,
             AlgaeArm arm) {
         TargetingSystem.drivetrain = drivetrain;
         TargetingSystem.shooter = shooter;
