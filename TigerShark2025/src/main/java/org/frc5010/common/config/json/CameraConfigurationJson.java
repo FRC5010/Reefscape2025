@@ -86,7 +86,7 @@ public class CameraConfigurationJson {
     if (atSystem == null) {
       atSystem = new AprilTagPoseSystem(AprilTags.aprilTagFieldLayout);
       robot.addSubsystem(APRIL_TAG, atSystem);
-      drivetrain.getPoseEstimator().addAprilTagPoseSystem(atSystem);
+      drivetrain.getPoseEstimator().addAprilTagPoseSystem(atSystem);// 158
     }
 
     if (RobotBase.isReal()) {
@@ -95,8 +95,8 @@ public class CameraConfigurationJson {
           camera = new LimeLightCamera(name, column, robotToCamera);
           ((LimeLightCamera) camera)
               .setGyroSupplier(() -> (GenericGyro) robot.getDevice(ConfigConstants.GYRO))
-              .setPoseEstimationChooser(() -> false);
-          ((LimeLightCamera) camera).setIMUMode(3);
+              .setPoseEstimationChooser(() -> RobotState.isDisabled());
+          ((LimeLightCamera) camera).setIMUMode(0);
           break;
         }
         case "photonvision": {
