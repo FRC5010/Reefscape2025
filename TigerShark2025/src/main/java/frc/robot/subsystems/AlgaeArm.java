@@ -66,26 +66,50 @@ public class AlgaeArm extends GenericSubsystem {
         }
     }
 
-    public AlgaeArm(Mechanism2d mechanismSimulation) {
-        super(mechanismSimulation);
+    public static class Config {
+        public int canId = 14;
+        public int gearing = 6;
+        public double mass = 0.25;
+        public double length = 18.0;
+        public double maxAngle = -45.0;
+        public double startAngle = 90;
+        public double minAngle = 90;
+        public double kG = -0.147800;
+        public double conversion = 360;
+        public double xPos = 8.0;
+        public double yPos = 2.875;
+        public double zPos = 16.25;
+        public GenericPID pid = new GenericPID(2, 0.0, 0.0);
+        public MotorFeedFwdConstants feedFwd = new MotorFeedFwdConstants(0.02728, 0.11622, 0.00094272);
+        public double statorCurrentLimit = 120.0;
+        public double supplyCurrentLimit = 50.0;
+        public double maxVelocity = 83.333;
+        public double maxAcceleration = 16.66;
+        public boolean invert = true;
+    }
+    private Config config = new Config();
 
-        motor = new AngularControlMotor(MotorFactory.TalonFX(14, Motor.KrakenX60), "Algae Arm", displayValues);
-        motor.setupSimulatedMotor(6, Pounds.of(0.25).in(Kilograms), Inches.of(18), Degrees.of(-45), Degrees.of(90),
-                true, -0.147800, Degrees.of(90), false, 360);
+    public AlgaeArm(Mechanism2d mechanismSimulation, Config config) {
+        super(mechanismSimulation);
+        if (config != null) this.config = config;
+
+        motor = new AngularControlMotor(MotorFactory.TalonFX(config.canId, Motor.KrakenX60), "Algae Arm", displayValues);
+        motor.setupSimulatedMotor(config.gearing, Pounds.of(config.mass).in(Kilograms), Inches.of(config.length), Degrees.of(config.maxAngle), Degrees.of(config.minAngle),
+                true, config.kG, Degrees.of(config.startAngle), false, config.conversion);
         motor.setVisualizer(mechanismSimulation, new Pose3d(
-                new Translation3d(Inches.of(8).in(Meters), Inches.of(2.875).in(Meters), Inches.of(16.25).in(Meters)),
+                new Translation3d(Inches.of(config.xPos).in(Meters), Inches.of(config.yPos).in(Meters), Inches.of(config.zPos).in(Meters)),
                 new Rotation3d()));
-        motor.setValues(new GenericPID(2, 0.0, 0.0));
-        motor.setMotorFeedFwd(new MotorFeedFwdConstants(0.02728, 0.11622, 0.00094272));
-        motor.setCurrentLimit(Amps.of(120));
-        ((GenericTalonFXMotor) motor.getMotorController()).setSupplyCurrent(Amps.of(50));
+        motor.setValues(config.pid);
+        motor.setMotorFeedFwd(config.feedFwd);
+        motor.setCurrentLimit(Amps.of(config.statorCurrentLimit));
+        ((GenericTalonFXMotor) motor.getMotorController()).setSupplyCurrent(Amps.of(config.supplyCurrentLimit));
         motor.setControlType(controlType);
-        motor.setProfiledMaxVelocity(83.333);
-        motor.setProfiledMaxAcceleration(16.66);
-        motor.invert(true);
+        motor.setProfiledMaxVelocity(config.maxVelocity);
+        motor.setProfiledMaxAcceleration(config.maxAcceleration);
+        motor.invert(config.invert);
 
         // Ensure this angle works
-        motor.getMotorEncoder().setPosition(90);
+        motor.getMotorEncoder().setPosition(config.startAngle);
     }
 
     public static Trigger algaeSelected = new Trigger(() -> ReefscapeButtonBoard.getCurrentAlignment() == ReefscapeButtonBoard.ScoringAlignment.ALGAE);

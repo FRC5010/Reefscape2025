@@ -62,18 +62,13 @@ public class ElevatorSystem extends GenericSubsystem {
     public DisplayLength L4Shoot = displayValues.makeConfigLength(Position.L4Shoot.name());
     public DisplayLength L4 = displayValues.makeConfigLength(Position.L4.name());
     public DisplayLength NET = displayValues.makeConfigLength(Position.NET.name());
-    //public DisplayLength HowTo = new DisplayLength(Meters.of(0.06), "HowTo", "MyTable");
-    private final Current MAX_ELEVATOR_STATOR_CURRENT_LIMIT = Amps.of(120);
-    private final Current MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT = Amps.of(60);
-    private Distance centerOfMassX = Meters.zero(), centerOfMassY = Inches.of(1.178), wheelBase = Meters.of(0.56);
-    private double g = 9.81, growFactor = 0.233035, exponent = 0.824063, initialValue = 0.189682;
-    private double currentX = 0.0, lastX = 0.0, lastTime = 0.0, timeChange = 0.0, currentVelocity = 0.0, lastVelocity = 0.0, currentAcceleration = 0.0;
-
-
+    // public DisplayLength HowTo = new DisplayLength(Meters.of(0.06), "HowTo",
+    // "MyTable");
+    private double currentX = 0.0, lastX = 0.0, lastTime = 0.0, timeChange = 0.0, currentVelocity = 0.0,
+            lastVelocity = 0.0, currentAcceleration = 0.0;
 
     private ProfiledPIDController profiledPID;
     private TrapezoidProfile.Constraints PIDConstraints;
-    private SlewRateLimiter rateLimiter = new SlewRateLimiter(0.5);
 
     public static enum Position {
         BOTTOM(Meters.of(0.0)),
@@ -103,9 +98,21 @@ public class ElevatorSystem extends GenericSubsystem {
 
     private double lastError;
     private double lastTimestamp = 0;
-    private final double ELEVATOR_ZERO_CURRENT = 40;
 
-    public ElevatorSystem(Mechanism2d mechanismSimulation) {
+    public static class Config {
+        private final Current MAX_ELEVATOR_STATOR_CURRENT_LIMIT = Amps.of(120);
+        private final Current MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT = Amps.of(60);
+        private Distance centerOfMassX = Meters.zero(), centerOfMassY = Inches.of(1.178), wheelBase = Meters.of(0.56);
+        private double g = 9.81, growFactor = 0.233035, exponent = 0.824063, initialValue = 0.189682;
+        private final double ELEVATOR_ZERO_CURRENT = 40;
+        private SlewRateLimiter rateLimiter = new SlewRateLimiter(0.5);
+    }
+
+    private Config config = new Config();
+
+    public ElevatorSystem(Mechanism2d mechanismSimulation, Config config) {
+        if (config != null) this.config = config;
+
         if (0 == BOTTOM.getLength().in(Meters))
             BOTTOM.setLength(Position.BOTTOM.position());
         if (0 == LOAD.getLength().in(Meters))
@@ -133,28 +140,25 @@ public class ElevatorSystem extends GenericSubsystem {
         if (0 == NET.getLength().in(Meters))
             NET.setLength(Position.NET.position());
 
-
-
         elevator = new VerticalPositionControlMotor(MotorFactory.TalonFX(9, Motor.KrakenX60), "elevator",
                 displayValues);
         elevatorFollower = new FollowerMotor(MotorFactory.TalonFX(10, Motor.KrakenX60),
                 elevator, "elevatorFollower", true);
         elevator.setControlType(controlType);
 
-        
         elevator.setMotorBrake(true);
-        elevator.setCurrentLimit(MAX_ELEVATOR_STATOR_CURRENT_LIMIT);
-        ((GenericTalonFXMotor) elevator.getMotorController()).setSupplyCurrent(MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT);
-        
-        
+        elevator.setCurrentLimit(config.MAX_ELEVATOR_STATOR_CURRENT_LIMIT);
+        ((GenericTalonFXMotor) elevator.getMotorController()).setSupplyCurrent(config.MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT);
+
         elevatorFollower.setMotorBrake(true);
 
-        elevator.setupSimulatedMotor(6, Pounds.of(30), Inches.of(1.1), 
+        elevator.setupSimulatedMotor(6, Pounds.of(30), Inches.of(1.1),
                 LOAD.getLength(), Inches.of(83.475 - 6.725), LOAD.getLength(),
                 Meters.of(0.2), RobotBase.isSimulation() ? 0.75 : 0.263672);
-        elevatorFollower.setCurrentLimit(MAX_ELEVATOR_STATOR_CURRENT_LIMIT);
-        ((GenericTalonFXMotor) elevatorFollower.getMotorController()).setSupplyCurrent(MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT);
-    
+        elevatorFollower.setCurrentLimit(config.MAX_ELEVATOR_STATOR_CURRENT_LIMIT);
+        ((GenericTalonFXMotor) elevatorFollower.getMotorController())
+                .setSupplyCurrent(config.MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT);
+
         elevator.setVisualizer(mechanismSimulation, new Pose3d(
                 new Translation3d(Inches.of(5.75).in(Meters), Inches.of(4.75).in(Meters), Inches.of(6.725).in(Meters)),
                 new Rotation3d()));
@@ -165,10 +169,10 @@ public class ElevatorSystem extends GenericSubsystem {
         elevator.setValues(new GenericPID(3, 0.0, 0.0));
         elevator.setOutputRange(-1, 1);
 
-        PIDConstraints = new TrapezoidProfile.Constraints(elevator.getProfiledMaxVelocity(), elevator.getProfiledMaxAcceleration());
+        PIDConstraints = new TrapezoidProfile.Constraints(elevator.getProfiledMaxVelocity(),
+                elevator.getProfiledMaxAcceleration());
         profiledPID = new ProfiledPIDController(elevator.getP(), elevator.getI(), elevator.getD(), PIDConstraints);
         profiledPID.setTolerance(0.01);
-        
 
         elevator.getMotorEncoder().setPosition(LOAD.getLengthInMeters());
 
@@ -182,9 +186,10 @@ public class ElevatorSystem extends GenericSubsystem {
 
         elevator.burnFlash();
 
-        hasHighCurrentLoad = new ValueSwitch(ELEVATOR_ZERO_CURRENT, () -> Math.abs(elevator.getOutputCurrent()), 1);
+        hasHighCurrentLoad = new ValueSwitch(config.ELEVATOR_ZERO_CURRENT, () -> Math.abs(elevator.getOutputCurrent()), 1);
 
-        hasHighCurrentLoad.getTrigger().and(() -> elevator.getPosition() < 0.25).and(() -> elevator.get() < -0.1).onTrue(zeroElevator());
+        hasHighCurrentLoad.getTrigger().and(() -> elevator.getPosition() < 0.25).and(() -> elevator.get() < -0.1)
+                .onTrue(zeroElevator());
     }
 
     public Boolean validSpeed(double speed) {
@@ -205,14 +210,14 @@ public class ElevatorSystem extends GenericSubsystem {
 
         if ((speed > 0 && elevator.isCloseToMax(safeDistance)) || (speed < 0 && elevator.isCloseToMin(safeDistance))) {
             speed = speed * 0.13;
-            rateLimiter.reset(speed);
+            config.rateLimiter.reset(speed);
         } else {
             double currentSpeed = elevator.get();
             if ((Math.signum(speed) > 0 && currentSpeed < speed) ||
-                (Math.signum(speed) < 0 && speed < currentSpeed)) {
-                speed = rateLimiter.calculate(speed);
+                    (Math.signum(speed) < 0 && speed < currentSpeed)) {
+                speed = config.rateLimiter.calculate(speed);
             } else {
-                rateLimiter.reset(speed);
+                config.rateLimiter.reset(speed);
             }
         }
         return speed;
@@ -230,7 +235,8 @@ public class ElevatorSystem extends GenericSubsystem {
 
     public Command elevatorPositionZeroSequence() {
         double zeroSpeed = -0.1;
-        return Commands.run(() -> elevator.set(zeroSpeed), this).until(hasHighCurrentLoad.getTrigger()).andThen(zeroElevator());
+        return Commands.run(() -> elevator.set(zeroSpeed), this).until(hasHighCurrentLoad.getTrigger())
+                .andThen(zeroElevator());
     }
 
     public Command profiledBangBangCmd(Distance position) {
@@ -309,28 +315,32 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double getCenterOfMassZ() {
-        return growFactor * Math.pow(elevator.getPosition(), exponent) + initialValue;
+        return config.growFactor * Math.pow(elevator.getPosition(), config.exponent) + config.initialValue;
     }
 
     // Function that decreases acceleration to counteract elevator flex
     public double getAccelerationDampener() {
         return Math.pow(elevator.getPosition(), 2) + 1;
     }
-    
+
     public double getMaxForwardAcceleration() {
-        return ((((wheelBase.in(Meters) / 2) + centerOfMassY.in(Meters)) * (g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) - getAccelerationDampener();
+        return ((((config.wheelBase.in(Meters) / 2) + config.centerOfMassY.in(Meters))
+                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) - getAccelerationDampener();
     }
 
     public double getMaxBackwardAcceleration() {
-        return - ((((wheelBase.in(Meters) / 2) - centerOfMassY.in(Meters)) * (g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) + getAccelerationDampener();
+        return -((((config.wheelBase.in(Meters) / 2) - config.centerOfMassY.in(Meters))
+                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) + getAccelerationDampener();
     }
 
     public double getMaxRightAcceleration() {
-        return ((((wheelBase.in(Meters) / 2) + centerOfMassX.in(Meters)) * (g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) - getAccelerationDampener();
+        return ((((config.wheelBase.in(Meters) / 2) + config.centerOfMassX.in(Meters))
+                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) - getAccelerationDampener();
     }
 
     public double getMaxLeftAcceleration() {
-        return - ((((wheelBase.in(Meters) / 2) - centerOfMassX.in(Meters)) * (g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) + getAccelerationDampener();
+        return -((((config.wheelBase.in(Meters) / 2) - config.centerOfMassX.in(Meters))
+                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) + getAccelerationDampener();
     }
 
     public double getCOMAcceleration(double x) {
@@ -340,7 +350,8 @@ public class ElevatorSystem extends GenericSubsystem {
         lastX = x;
         currentAcceleration = (currentVelocity - lastVelocity) / timeChange;
         lastVelocity = currentVelocity;
-        return (growFactor * exponent * (exponent - 1) * Math.pow(x, exponent - 2) * Math.pow(currentVelocity, 2)) + (growFactor * exponent * Math.pow(x, exponent - 1) * currentAcceleration);
+        return (config.growFactor * config.exponent * (config.exponent - 1) * Math.pow(x, config.exponent - 2) * Math.pow(currentVelocity, 2))
+                + (config.growFactor * config.exponent * Math.pow(x, config.exponent - 1) * currentAcceleration);
     }
 
     public Distance selectElevatorLevel(Supplier<ReefscapeButtonBoard.ScoringLevel> level) {
