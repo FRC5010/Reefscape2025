@@ -46,17 +46,23 @@ public class AutoChoosers {
             reef3.addOption(location.name(), location);
             reef4.addOption(location.name(), location);
         }
+        reef1.setDefaultOption(ScoringLocations.F.name(), ScoringLocations.F);
+        reef2.setDefaultOption(ScoringLocations.E.name(), ScoringLocations.E);
+        reef3.setDefaultOption(ScoringLocations.D.name(), ScoringLocations.D);
+        reef4.setDefaultOption(ScoringLocations.C.name(), ScoringLocations.C);
         for (ReefscapeButtonBoard.LoadingStationLocation location : ReefscapeButtonBoard.LoadingStationLocation.values()) {
             station.addOption(location.name(), location);
         }
+        station.setDefaultOption(ReefscapeButtonBoard.LoadingStationLocation.STATION_RIGHT_OUTER.name(), ReefscapeButtonBoard.LoadingStationLocation.STATION_RIGHT_OUTER);
         for (ReefscapeButtonBoard.ScoringLevel score : ReefscapeButtonBoard.ScoringLevel.values()) {
             level.addOption(score.name(), score);
         }
-        tab.add("Reef 1", reef1);
-        tab.add("Reef 2", reef2);
-        tab.add("Reef 3", reef3);
-        tab.add("Reef 4", reef4);
-        tab.add("Loading Station", station);
-        tab.add("Level", level);
+        level.setDefaultOption(ReefscapeButtonBoard.ScoringLevel.L4.name(), ReefscapeButtonBoard.ScoringLevel.L4);
+        tab.add("Reef 1", reef1).withPosition(8, 0);
+        tab.add("Reef 2", reef2).withPosition(8, 2);
+        tab.add("Reef 3", reef3).withPosition(8, 4);
+        tab.add("Reef 4", reef4).withPosition(8, 6);
+        tab.add("Loading Station", station).withPosition(10, 0);
+        tab.add("Level", level).withPosition(10, 2);
     }
 }
