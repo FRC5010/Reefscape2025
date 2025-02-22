@@ -22,6 +22,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -40,7 +41,6 @@ public class ShooterSystem extends GenericSubsystem {
   private Trigger isEmpty, isEntryActive, isCoralFullyCaptured, isAligned;
   private CoralState coralState;
   private DisplayBoolean entryBeamBreakDisplay, alignmentBeamBreakDisplay;
-  private final Current INTAKE_CURRENT_THRESHOLD = Amps.of(3);
 
   public enum CoralState{
     EMPTY,
@@ -49,19 +49,44 @@ public class ShooterSystem extends GenericSubsystem {
     ALIGNED
   }
 
+  public static class Config {
+    private final Current INTAKE_CURRENT_THRESHOLD = Amps.of(3);
+    int alignmentBeambreakCanID = 8;
+    int entryBeambreakCanID = 7;
+    int shooterLeftCanID = 11;
+    int shooterRightCanID = 12;
+    boolean entryBeambreakDisplay = false;
+    boolean alignmentBeambreakDisplay = false;
+    double currentSwitchTriggerThreshold = 1.0;
+    boolean shooterLeftInverted = false;
+    boolean shooterRightInverted = true;
+    double shooterLeftGearing = 1.0;
+    double shooterRightGearing = 1.0;
+    double shooterLeftJKGMetersSquared = 10.0;
+    double shooterRightJKGMetersSquared = 10.0;
+    Distance shooterLeftX = Inches.of(7.15);
+    Distance shooterLeftY = Inches.of(2.875);
+    Distance shooterLeftZ = Inches.of(16.25);
+    Distance shooterRightX = Inches.of(7.15);
+    Distance shooterRightY = Inches.of(2.875);
+    Distance shooterRightZ = Inches.of(16.25);
+    double runMotorsSpeedMultiplier = 0.5;
+  }
+
+  private Config config = new Config();
+
   /** Creates a new Shooter. */
-  public ShooterSystem(Mechanism2d mechanismSimulation) {
+  public ShooterSystem(Mechanism2d mechanismSimulation, Config config) {
+    if (config != null) this.config = config;
     
-    
-    alignmentBeambreak = new Beambreak(8);
-    entryBeambreak = new Beambreak(7);
-    
+    alignmentBeambreak = new Beambreak(config.alignmentBeambreakCanID);
+    entryBeambreak = new Beambreak(config.entryBeambreakCanID);
 
     entryBeamBreakDisplay = displayValues.makeDisplayBoolean("Entry Beam Break");
     alignmentBeamBreakDisplay = displayValues.makeDisplayBoolean("Alignment Beam Break");
     
-    entryBeamBreakDisplay.setValue(false);
-    alignmentBeamBreakDisplay.setValue(false);
+    entryBeamBreakDisplay.setValue(config.entryBeambreakDisplay);
+    alignmentBeamBreakDisplay.setValue(config.alignmentBeambreakDisplay);
 
     entryBroken = new Trigger(entryBeambreak.isBrokenSupplier());
     alignmentBroken = new Trigger(alignmentBeambreak.isBrokenSupplier());
@@ -76,7 +101,7 @@ public class ShooterSystem extends GenericSubsystem {
     
     setupMotors(mechanismSimulation);
 
-    currentSwitch = new ValueSwitch(INTAKE_CURRENT_THRESHOLD.in(Amps), shooterLeft::getOutputCurrent, 1);
+    currentSwitch = new ValueSwitch(config.INTAKE_CURRENT_THRESHOLD.in(Amps), shooterLeft::getOutputCurrent, config.currentSwitchTriggerThreshold);
     
     setupStateMachine();
     // isEntryActive.whileTrue(captureCoral());
@@ -85,21 +110,21 @@ public class ShooterSystem extends GenericSubsystem {
   }
 
   private void setupMotors(Mechanism2d mechanismSimulation) {
-    shooterLeft = new VelocityControlMotor(MotorFactory.Thrifty(11, Motor.Neo), "shooterLeft", displayValues);
-    shooterRight = new VelocityControlMotor(MotorFactory.Thrifty(12, Motor.Neo), "shooterRight",
+    shooterLeft = new VelocityControlMotor(MotorFactory.Thrifty(config.shooterLeftCanID, Motor.Neo), "shooterLeft", displayValues);
+    shooterRight = new VelocityControlMotor(MotorFactory.Thrifty(config.shooterRightCanID, Motor.Neo), "shooterRight",
             displayValues);
-    shooterLeft.invert(false);
-    shooterRight.invert(true);
+    shooterLeft.invert(config.shooterLeftInverted);
+    shooterRight.invert(config.shooterRightInverted);
 
 
-    shooterLeft.setupSimulatedMotor(1, 10);
-    shooterRight.setupSimulatedMotor(1, 10);
+    shooterLeft.setupSimulatedMotor(config.shooterLeftGearing, config.shooterLeftJKGMetersSquared);
+    shooterRight.setupSimulatedMotor(config.shooterRightGearing, config.shooterRightJKGMetersSquared);
     shooterLeft.setVisualizer(mechanismSimulation, new Pose3d(
-            new Translation3d(Inches.of(7.15).in(Meters), Inches.of(2.875).in(Meters), Inches.of(16.25).in(Meters)),
+            new Translation3d(config.shooterLeftX.in(Meters), config.shooterLeftY.in(Meters), config.shooterLeftZ.in(Meters)),
             new Rotation3d()));
     shooterRight.setVisualizer(mechanismSimulation,
-            new Pose3d(new Translation3d(Inches.of(7.15).in(Meters), Inches.of(2.875).in(Meters),
-                  Inches.of(6.25).in(Meters)), new Rotation3d()));
+            new Pose3d(new Translation3d(config.shooterRightX.in(Meters), config.shooterRightY.in(Meters),
+                  config.shooterRightZ.in(Meters)), new Rotation3d()));
   }
 
   private void setupStateMachine() {
@@ -128,15 +153,15 @@ public class ShooterSystem extends GenericSubsystem {
 
   public Command runMotors(DoubleSupplier speed) {
     return Commands.run(() -> {
-      shooterLeftSpeed(speed.getAsDouble() * 0.5);
-      shooterRightSpeed(speed.getAsDouble() * 0.5);
+      shooterLeftSpeed(speed.getAsDouble() * config.runMotorsSpeedMultiplier);
+      shooterRightSpeed(speed.getAsDouble() * config.runMotorsSpeedMultiplier);
     }, this);
   }
 
   public Command runMotors(DoubleSupplier speedLeft, DoubleSupplier speedRight) {
     return Commands.run(() -> {
-      shooterLeftSpeed(speedLeft.getAsDouble() * 1.0);
-      shooterRightSpeed(speedRight.getAsDouble() * 1.0);
+      shooterLeftSpeed(speedLeft.getAsDouble());
+      shooterRightSpeed(speedRight.getAsDouble());
     }, this);
   }
 

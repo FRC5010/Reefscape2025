@@ -1,13 +1,11 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import java.util.function.Consumer;
 
 import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.auto.RelayPIDAutoTuner;
-import org.frc5010.common.commands.JoystickToSwerve;
 import org.frc5010.common.config.ConfigConstants;
 import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
@@ -24,7 +22,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.auto_routines.AutoChoosers;
 import frc.robot.auto_routines.Coral2;
 import frc.robot.auto_routines.CustomAuto;
@@ -53,8 +50,8 @@ public class Elphaba extends GenericRobot {
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
         gyro = (GenericGyro) subsystems.get(ConfigConstants.GYRO);
 
-        elevatorSystem = new ElevatorSystem(mechVisual);
-        shooter = new ShooterSystem(mechVisual);
+        elevatorSystem = new ElevatorSystem(mechVisual, new ElevatorSystem.Config());
+        shooter = new ShooterSystem(mechVisual, new ShooterSystem.Config());
         algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config());
 
         TargetingSystem.setupParamaters((YAGSLSwerveDrivetrain) drivetrain, shooter, elevatorSystem, algaeArm);
