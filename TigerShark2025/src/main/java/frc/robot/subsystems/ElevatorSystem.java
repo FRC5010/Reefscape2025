@@ -319,28 +319,32 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     // Function that decreases acceleration to counteract elevator flex
-    public double getAccelerationDampener() {
-        return Math.pow(elevator.getPosition(), 2) + 1;
+    public double getGeneralAccelerationDampener() {
+        return Math.pow(elevator.getPosition(), 2) + 3 * (2 - elevator.getPosition());
+    }
+
+    public double getBackwardAccelerationDampener() {
+        return Math.pow(elevator.getPosition(), 2) + 3 * (1.95 - elevator.getPosition());
     }
 
     public double getMaxForwardAcceleration() {
         return ((((config.wheelBase.in(Meters) / 2) + config.centerOfMassY.in(Meters))
-                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) - getAccelerationDampener();
+                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) - getGeneralAccelerationDampener();
     }
 
     public double getMaxBackwardAcceleration() {
         return -((((config.wheelBase.in(Meters) / 2) - config.centerOfMassY.in(Meters))
-                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) + getAccelerationDampener();
+                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) + getBackwardAccelerationDampener();
     }
 
     public double getMaxRightAcceleration() {
         return ((((config.wheelBase.in(Meters) / 2) + config.centerOfMassX.in(Meters))
-                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) - getAccelerationDampener();
+                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) - getGeneralAccelerationDampener();
     }
 
     public double getMaxLeftAcceleration() {
         return -((((config.wheelBase.in(Meters) / 2) - config.centerOfMassX.in(Meters))
-                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) + getAccelerationDampener();
+                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) + getGeneralAccelerationDampener();
     }
 
     public double getCOMAcceleration(double x) {

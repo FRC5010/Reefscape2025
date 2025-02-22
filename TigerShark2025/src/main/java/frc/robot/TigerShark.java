@@ -26,8 +26,8 @@ public class TigerShark extends GenericRobot {
         AllianceFlip.configure(FieldConstants.fieldDimensions);
 
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
-        elevatorSystem = new ElevatorSystem(mechVisual);
-        shooterSystem = new ShooterSystem(mechVisual);
+        elevatorSystem = new ElevatorSystem(mechVisual, new ElevatorSystem.Config());
+        shooterSystem = new ShooterSystem(mechVisual, new ShooterSystem.Config());
         algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config());
         reefscapeButtonBoard = new ReefscapeButtonBoard(2, 3);
     }
