@@ -55,7 +55,7 @@ public class Elphaba extends GenericRobot {
 
         elevatorSystem = new ElevatorSystem(mechVisual);
         shooter = new ShooterSystem(mechVisual);
-        algaeArm = new AlgaeArm(mechVisual);
+        algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config());
 
         TargetingSystem.setupParamaters((YAGSLSwerveDrivetrain) drivetrain, shooter, elevatorSystem, algaeArm);
 
@@ -174,6 +174,6 @@ public class Elphaba extends GenericRobot {
         addAutoToChooser("Right 4 Coral", new Right4Coral());
         addAutoToChooser("Right 1 Coral", new Right1Coral(((YAGSLSwerveDrivetrain)drivetrain), shooter, elevatorSystem));
         addAutoToChooser("2 Piece Coral", new Coral2(((YAGSLSwerveDrivetrain)drivetrain), shooter, elevatorSystem));
-        addAutoToChooser("Custom Auto", Commands.deferredProxy(() -> new CustomAuto(((YAGSLSwerveDrivetrain)drivetrain), shooter, elevatorSystem)));
+        addAutoToChooser("Custom Auto", Commands.deferredProxy(() -> new CustomAuto()));
     }
 }

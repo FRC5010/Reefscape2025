@@ -7,7 +7,6 @@ package frc.robot.auto_routines;
 import java.util.function.Supplier;
 
 import org.frc5010.common.auto.AutoSequence;
-import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -19,8 +18,6 @@ import frc.robot.ReefscapeButtonBoard.ScoringLevel;
 import frc.robot.ReefscapeButtonBoard.ScoringLocation;
 import frc.robot.auto_routines.AutoChoosers.ScoringLocations;
 import frc.robot.managers.TargetingSystem;
-import frc.robot.subsystems.ElevatorSystem;
-import frc.robot.subsystems.ShooterSystem;
 
 /** Add your docs here. */
 public class CustomAuto extends AutoSequence {
@@ -29,8 +26,8 @@ public class CustomAuto extends AutoSequence {
           ReefscapeButtonBoard.getScoringPose(location.get(), alignment.get()), level.get()));
   }
 
-  private Command scoreCoral(SendableChooser<ScoringLocations> chooser, ScoringLevel level) {
-    return scoreCoral(() -> chooser.getSelected().location, () -> chooser.getSelected().align, () -> level);
+  private Command scoreCoral(SendableChooser<ScoringLocations> chooser, SendableChooser<ScoringLevel> level) {
+    return scoreCoral(() -> chooser.getSelected().location, () -> chooser.getSelected().align, () -> level.getSelected());
   }
 
   private Command loadCoral(Supplier<LoadingStationLocation> location) {
@@ -43,15 +40,15 @@ public class CustomAuto extends AutoSequence {
   }
   
 
-  public CustomAuto(YAGSLSwerveDrivetrain yagsl, ShooterSystem shooter, ElevatorSystem elevator) {
+  public CustomAuto() {
         addCommands(
-          scoreCoral(AutoChoosers.reef1, ScoringLevel.L4),
+          scoreCoral(AutoChoosers.reef1, AutoChoosers.level),
           loadCoral(AutoChoosers.station),
-          scoreCoral(AutoChoosers.reef2, ScoringLevel.L4),
+          scoreCoral(AutoChoosers.reef2, AutoChoosers.level),
           loadCoral(AutoChoosers.station),
-          scoreCoral(AutoChoosers.reef3, ScoringLevel.L4),
+          scoreCoral(AutoChoosers.reef3, AutoChoosers.level),
           loadCoral(AutoChoosers.station),
-          scoreCoral(AutoChoosers.reef4, ScoringLevel.L4),
+          scoreCoral(AutoChoosers.reef4, AutoChoosers.level),
           loadCoral(AutoChoosers.station)
         );
   }

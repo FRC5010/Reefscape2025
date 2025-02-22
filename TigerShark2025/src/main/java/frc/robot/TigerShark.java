@@ -28,7 +28,7 @@ public class TigerShark extends GenericRobot {
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
         elevatorSystem = new ElevatorSystem(mechVisual);
         shooterSystem = new ShooterSystem(mechVisual);
-        algaeArm = new AlgaeArm(mechVisual);
+        algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config());
         reefscapeButtonBoard = new ReefscapeButtonBoard(2, 3);
     }
 
