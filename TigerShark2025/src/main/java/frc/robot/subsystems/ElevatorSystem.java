@@ -107,6 +107,7 @@ public class ElevatorSystem extends GenericSubsystem {
         private double g = 9.81, growFactor = 0.233035, exponent = 0.824063, initialValue = 0.189682;
         private final double ELEVATOR_ZERO_CURRENT = 40;
         private SlewRateLimiter rateLimiter = new SlewRateLimiter(0.5);
+        Distance stoppingDistance = Meters.of(1.0);
     }
 
     private Config config = new Config();
@@ -356,9 +357,17 @@ public class ElevatorSystem extends GenericSubsystem {
                 * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) - getGeneralAccelerationDampener();
     }
 
+    public double getMaxForwardVelocity() {
+        return Math.sqrt(2 * (-getMaxBackwardAcceleration()) * config.stoppingDistance.in(Meters));
+    }
+
     public double getMaxBackwardAcceleration() {
         return -((((config.wheelBase.in(Meters) / 2) - config.centerOfMassY.in(Meters))
                 * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) + getBackwardAccelerationDampener();
+    }
+
+    public double getMaxBackwardVelocity() {
+        return Math.sqrt(2 * (-getMaxForwardAcceleration()) * config.stoppingDistance.in(Meters));
     }
 
     public double getMaxRightAcceleration() {
@@ -366,9 +375,17 @@ public class ElevatorSystem extends GenericSubsystem {
                 * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) - getGeneralAccelerationDampener();
     }
 
+    public double getMaxRightVelocity() {
+        return Math.sqrt(2 * (-getMaxLeftAcceleration()) * config.stoppingDistance.in(Meters));
+    }
+
     public double getMaxLeftAcceleration() {
         return -((((config.wheelBase.in(Meters) / 2) - config.centerOfMassX.in(Meters))
                 * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) + getGeneralAccelerationDampener();
+    }
+
+    public double getMaxLeftVelocity() {
+        return Math.sqrt(2 * (-getMaxRightAcceleration()) * config.stoppingDistance.in(Meters));
     }
 
     public double getCOMAcceleration(double x) {

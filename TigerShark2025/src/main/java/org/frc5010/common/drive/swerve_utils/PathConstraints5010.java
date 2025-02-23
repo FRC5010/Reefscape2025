@@ -17,12 +17,12 @@ import edu.wpi.first.units.measure.Voltage;
 /**
  * Kinematic path following constraints
  *
- * @param maxVelocityMPS Max linear velocity (M/S)
- * @param maxAccelerationMPSSq Max linear acceleration (M/S^2)
- * @param maxAngularVelocityRadPerSec Max angular velocity (Rad/S)
+ * @param maxVelocityMPS                    Max linear velocity (M/S)
+ * @param maxAccelerationMPSSq              Max linear acceleration (M/S^2)
+ * @param maxAngularVelocityRadPerSec       Max angular velocity (Rad/S)
  * @param maxAngularAccelerationRadPerSecSq Max angular acceleration (Rad/S^2)
- * @param nominalVoltageVolts The nominal battery voltage (Volts)
- * @param unlimited Should the constraints be unlimited
+ * @param nominalVoltageVolts               The nominal battery voltage (Volts)
+ * @param unlimited                         Should the constraints be unlimited
  */
 public record PathConstraints5010(
     double maxVelocityMPS,
@@ -31,6 +31,10 @@ public record PathConstraints5010(
     Supplier<LinearAcceleration> maxBackwardAccelerationMPSSq,
     Supplier<LinearAcceleration> maxLeftAccelerationMPSSq,
     Supplier<LinearAcceleration> maxRightAccelerationMPSSq,
+    Supplier<LinearVelocity> maxForwardVelocity,
+    Supplier<LinearVelocity> maxBackwardVelocity,
+    Supplier<LinearVelocity> maxLeftVelocity,
+    Supplier<LinearVelocity> maxRightVelocity,
     double maxAngularVelocityRadPerSec,
     double maxAngularAccelerationRadPerSecSq,
     double nominalVoltageVolts,
@@ -38,12 +42,12 @@ public record PathConstraints5010(
   /**
    * Kinematic path following constraints
    *
-   * @param maxVelocity Max linear velocity
-   * @param maxAcceleration Max linear acceleration
-   * @param maxAngularVelocity Max angular velocity
+   * @param maxVelocity            Max linear velocity
+   * @param maxAcceleration        Max linear acceleration
+   * @param maxAngularVelocity     Max angular velocity
    * @param maxAngularAcceleration Max angular acceleration
-   * @param nominalVoltage The nominal battery voltage
-   * @param unlimited Should the constraints be unlimited
+   * @param nominalVoltage         The nominal battery voltage
+   * @param unlimited              Should the constraints be unlimited
    */
   public PathConstraints5010(
       LinearVelocity maxVelocity,
@@ -52,6 +56,10 @@ public record PathConstraints5010(
       Supplier<LinearAcceleration> maxBackwardAcceleration,
       Supplier<LinearAcceleration> maxLeftAcceleration,
       Supplier<LinearAcceleration> maxRightAcceleration,
+      Supplier<LinearVelocity> maxForwardVelocity,
+      Supplier<LinearVelocity> maxBackwardVelocity,
+      Supplier<LinearVelocity> maxLeftVelocity,
+      Supplier<LinearVelocity> maxRightVelocity,
       AngularVelocity maxAngularVelocity,
       AngularAcceleration maxAngularAcceleration,
       Voltage nominalVoltage,
@@ -63,6 +71,10 @@ public record PathConstraints5010(
         maxBackwardAcceleration,
         maxLeftAcceleration,
         maxRightAcceleration,
+        maxForwardVelocity,
+        maxBackwardVelocity,
+        maxLeftVelocity,
+        maxRightVelocity,
         maxAngularVelocity.in(RadiansPerSecond),
         maxAngularAcceleration.in(RadiansPerSecondPerSecond),
         nominalVoltage.in(Volts),
@@ -101,6 +113,22 @@ public record PathConstraints5010(
 
   public double maxLeftAcceleration() {
     return maxLeftAccelerationMPSSq.get().in(MetersPerSecondPerSecond);
+  }
+
+  public double getMaxForwardVelocity() {
+    return maxForwardVelocity.get().in(MetersPerSecond);
+  }
+
+  public double getMaxBackwardVelocity() {
+    return maxBackwardVelocity.get().in(MetersPerSecond);
+  }
+
+  public double getMaxRightVelocity() {
+    return maxRightVelocity.get().in(MetersPerSecond);
+  }
+
+  public double getMaxLeftVelocity() {
+    return maxLeftVelocity.get().in(MetersPerSecond);
   }
 
   /**
