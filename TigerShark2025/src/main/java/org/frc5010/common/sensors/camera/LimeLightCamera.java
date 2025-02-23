@@ -165,6 +165,14 @@ public class LimeLightCamera extends GenericCamera {
     LimelightHelpers.getLatestResults(name);
     if (hasValidTarget()) {
       poseEstimate = megatagChooser.getAsBoolean() ? getRobotPoseEstimateM1() : getRobotPoseEstimateM2();
+      if (poseEstimate.isPresent()) {
+        Pose2d currPose = poseEstimate.get().pose;
+        if (null != currPose) {
+        SmartDashboard.putNumberArray("Limelight POSE", new double[] {
+          currPose.getX(), currPose.getY(), currPose.getRotation().getDegrees()
+      });
+    }
+  }
       targetPose = Optional.of(LimelightHelpers.getTargetPose3d_RobotSpace(name));
     }
   }
@@ -243,7 +251,7 @@ public class LimeLightCamera extends GenericCamera {
     
     Stream<RawFiducial> fiducialStream = Arrays.stream(LimelightHelpers.getRawFiducials(name)).sorted((raw1, raw2) -> raw1.ambiguity == raw2.ambiguity ? 0 : (raw1.ambiguity > raw2.ambiguity ? 1 : -1));
     double min_ambiguity = fiducialStream.findFirst().map(fiducial -> fiducial.ambiguity).orElse(100.0);
-    double confidence = estimate.avgTagDist > 2 ? 1.0 : min_ambiguity;
+    double confidence = estimate.avgTagDist > 2 ? 1.0 : min_ambiguity * Math.max(estimate.avgTagDist/2, 0.5);
     SmartDashboard.putNumber("Limelight Confidence", min_ambiguity);
     return confidence;
   }
@@ -269,6 +277,7 @@ public class LimeLightCamera extends GenericCamera {
   }
 
   public double getCaptureTime() {
+    SmartDashboard.putNumber("Limelight Timestamp", getLatency());
     return getLatency();
   }
 

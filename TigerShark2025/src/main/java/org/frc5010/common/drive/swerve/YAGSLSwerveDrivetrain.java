@@ -314,7 +314,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         ),
         config,
         this).beforeStarting(() -> {poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose"); SmartDashboard.putBoolean("Running AutoDrive", true);})
-        .until(() -> poseEstimator.getCurrentPose().getTranslation().getDistance(pose.get().getTranslation()) < 0.5)
+        .until(() -> poseEstimator.getCurrentPose().getTranslation().getDistance(pose.get().getTranslation()) < 2.0)
         .andThen(finishDriving.get()).finallyDo(() -> SmartDashboard.putBoolean("Running AutoDrive", false));
   }
 

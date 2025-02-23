@@ -6,6 +6,8 @@ package frc.robot.managers;
 
 import static edu.wpi.first.units.Units.Meters;
 
+import java.util.function.Supplier;
+
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -26,6 +28,8 @@ public class TargetingSystem {
     public static ElevatorSystem elevator;
     public static AlgaeArm arm;
 
+    public static Supplier<Distance> maxHeight; 
+
 
     public static void setupParamaters(YAGSLSwerveDrivetrain drivetrain, ShooterSystem shooter, ElevatorSystem elevator,
             AlgaeArm arm) {
@@ -33,6 +37,9 @@ public class TargetingSystem {
         TargetingSystem.shooter = shooter;
         TargetingSystem.elevator = elevator;
         TargetingSystem.arm = arm;
+
+        
+
     }
 
     public static Command createCoralScoringSequence(Pose2d targetPose, ScoringLevel scoringLevel) {

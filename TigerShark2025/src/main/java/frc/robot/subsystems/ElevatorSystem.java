@@ -23,6 +23,7 @@ import org.frc5010.common.motors.function.VerticalPositionControlMotor;
 import org.frc5010.common.motors.hardware.GenericTalonFXMotor;
 import org.frc5010.common.sensors.ValueSwitch;
 import org.frc5010.common.telemetry.DisplayLength;
+import org.opencv.core.Mat;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -165,7 +166,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
         elevator.setMotorFeedFwd(new MotorFeedFwdConstants(0.26329, 0.38506, 0.04261));
         elevator.setProfiledMaxVelocity(2.5);
-        elevator.setProfiledMaxAcceleration(2.5);
+        elevator.setProfiledMaxAcceleration(4);
         elevator.setValues(new GenericPID(3, 0.0, 0.0));
         elevator.setOutputRange(-1, 1);
 
@@ -273,6 +274,29 @@ public class ElevatorSystem extends GenericSubsystem {
             elevator.setControlType(controlType);
         });
     }
+
+    private void setElevatorPIDGoal(double goal) {
+        profiledPID.setGoal(goal);
+        elevator.setReference(goal);
+    }
+
+    public Command pidControlCommand(Distance position, Supplier<Distance> maxHeight) {
+        return Commands.run(() -> {
+            if (profiledPID.getGoal().position != position.in(Meters)) {
+                setElevatorPIDGoal(Math.min(maxHeight.get().in(Meters), position.in(Meters)));
+            }
+            double output = profiledPID.calculate(elevator.getPosition());
+            elevator.set(MathUtil.clamp(output, -1, 1), profiledPID.getSetpoint().velocity);
+
+        }, this).beforeStarting(() -> {
+            profiledPID.setPID(elevator.getP(), elevator.getI(), elevator.getD());
+            profiledPID.reset(elevator.getPosition(), elevator.getVelocity());
+            elevator.setControlType(PIDControlType.NONE);
+        }).finallyDo(() -> {
+            elevator.setControlType(controlType);
+        });
+    }
+
 
     public void setElevatorPosition(Distance position) {
         if (elevator.getControlType() != controlType) {

@@ -16,6 +16,8 @@ import java.util.function.Supplier;
 import org.frc5010.common.arch.GenericCommand;
 import org.frc5010.common.constants.GenericPID;
 import org.frc5010.common.drive.swerve.SwerveDrivetrain;
+import org.frc5010.common.telemetry.DisplayDouble;
+import org.frc5010.common.telemetry.DisplayValuesHelper;
 
 /**
  * A command that will automatically drive the robot to a particular position
@@ -24,6 +26,13 @@ public class DriveToPosition extends GenericCommand {
   /** The subsystem that this command will run on */
   private SwerveDrivetrain swerveSubsystem;
   /** The PID constants for translation */
+
+  private DisplayValuesHelper displayValuesHelper = new DisplayValuesHelper("PID Values", logPrefix);
+  private DisplayDouble translationkP;
+  private DisplayDouble translationkD;
+  private DisplayDouble rotationkP;
+  private DisplayDouble rotationkD;
+
   private final GenericPID pidTranslation = new GenericPID(2.5, 0, 0);
   /** The PID constants for rotation */
   private final GenericPID pidRotation = new GenericPID(1, 0, 0);
@@ -107,6 +116,24 @@ public class DriveToPosition extends GenericCommand {
 
     targetTransform = offset;
 
+    translationkP = displayValuesHelper.makeConfigDouble("Translation kP");
+    translationkD = displayValuesHelper.makeConfigDouble("Translation kD");
+    rotationkP = displayValuesHelper.makeConfigDouble("Rotation kP");
+    rotationkD = displayValuesHelper.makeConfigDouble("Rotation kD");
+
+    if (translationkP.getValue() == 0) {
+      translationkP.setValue(pidTranslation.getkP());
+    }
+    if (translationkD.getValue() == 0) {
+      translationkD.setValue(pidTranslation.getkD());
+    }
+    if (rotationkP.getValue() == 0) {
+      rotationkP.setValue(pidRotation.getkP());
+    }
+    if (rotationkD.getValue() == 0) {
+      rotationkD.setValue(pidRotation.getkD());
+    }
+
     addRequirements(swerveSubsystem);
   }
 
@@ -127,6 +154,13 @@ public class DriveToPosition extends GenericCommand {
   // Called when the command is initially scheduled.
   @Override
   public void init() {
+    xController.setP(translationkP.getValue());
+    xController.setD(translationkD.getValue());
+    yController.setP(translationkP.getValue());
+    yController.setD(translationkD.getValue());
+    thetaController.setP(rotationkP.getValue());
+    thetaController.setD(rotationkD.getValue()); 
+
     Pose2d robotPose = poseProvider.get();
     onTargetCounter = 0;
 
@@ -197,7 +231,7 @@ public class DriveToPosition extends GenericCommand {
     // ,0));
 
     ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-        xSpeed, ySpeed, thetaSpeed, swerveSubsystem.getHeading());
+        xSpeed + xController.getSetpoint().velocity*0.5, ySpeed + yController.getSetpoint().velocity*0.5, thetaSpeed + thetaController.getSetpoint().velocity*0.5, swerveSubsystem.getHeading());
 
     SmartDashboard.putNumber("X Speed", chassisSpeeds.vxMetersPerSecond);
     SmartDashboard.putNumber("Y Speed", chassisSpeeds.vyMetersPerSecond);
