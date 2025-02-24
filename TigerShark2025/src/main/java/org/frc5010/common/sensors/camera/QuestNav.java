@@ -28,6 +28,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -52,6 +53,7 @@ public class QuestNav implements PoseProvider {
     private FloatArraySubscriber quaternion;
     private FloatArraySubscriber eulerAngles;
     private DoubleSubscriber battery;
+    private double startTimestamp;
 
     private ChassisSpeeds velocity;
     private Pose3d previousPose;
@@ -80,6 +82,7 @@ public class QuestNav implements PoseProvider {
         super();
         this.robotToQuest = robotToQuest;
         setupNetworkTables(networkTableRoot);
+        setupInitialTimestamp();
     }
 
     public QuestNav(Transform3d robotToQuest, String networkTableRoot) {
@@ -87,7 +90,13 @@ public class QuestNav implements PoseProvider {
         this.robotToQuest = robotToQuest;
         this.networkTableRoot = networkTableRoot;
         setupNetworkTables(networkTableRoot);
+        setupInitialTimestamp();
     }
+
+    private void setupInitialTimestamp() {
+        startTimestamp = timestamp.get();
+    }
+
 
     private void setupNetworkTables(String root) {
         networkTable = networkTableInstance.getTable(root);
@@ -120,7 +129,8 @@ public class QuestNav implements PoseProvider {
 
     public Optional<Pose3d> getRobotPose() {
         if (RobotBase.isReal()) {
-            return Optional.of(new Pose3d(getPosition(), getRotation()));
+            Pose3d pose = new Pose3d(getPosition(), getRotation());
+            return Optional.of(pose);
         } else {
             return Optional.empty();
         }
@@ -155,18 +165,25 @@ public class QuestNav implements PoseProvider {
 
     public double getConfidence() {
         if (RobotBase.isReal()) {
-            return 0.0001;
+            return 0.01;
         } else {
             return Double.MAX_VALUE;
         }
     }
 
     public double getCaptureTime() {
-        return timestamp.getAsDouble();
+        double t = RobotController.getFPGATime() / 1E6;
+        SmartDashboard.putNumber("Quest Timestamp", t);
+        return t;
     }
 
     public boolean isActive() {
-        if (timestamp.get() == 0.0 || RobotBase.isSimulation() || DriverStation.isDisabled()) {
+        double t = timestamp.get();
+        boolean simulation = RobotBase.isSimulation();
+        boolean disabled = DriverStation.isDisabled();
+        double frame = frameCount.get();
+        double previousFrame = previousFrameCount;
+        if (t == 0|| simulation || disabled) {
         return false;
         }
         previousFrameCount = frameCount.get();
@@ -199,6 +216,8 @@ public class QuestNav implements PoseProvider {
         initializedPosition = true;
         softReset(pose);
     }
+
+    
 
     @Override
     public ProviderType getType() {
