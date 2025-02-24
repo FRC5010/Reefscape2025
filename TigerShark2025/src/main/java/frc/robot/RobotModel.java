@@ -69,8 +69,6 @@ public class RobotModel {
         return MetersPerSecondPerSecond.of(gravitationalTorque / centerOfMass.getZ() * getAccelerationDampener());
     }
 
-
-
     public double getMaxForwardAcceleration() {
         return getMaxDirectionalAcceleration(drivetrainConstants.getWheelBase().div(2).plus(getCenterOfMass().getMeasureY())).in(MetersPerSecondPerSecond) * getAccelerationDampener();
     }
@@ -86,5 +84,4 @@ public class RobotModel {
     public double getMaxLeftAcceleration() {
         return - getMaxDirectionalAcceleration(drivetrainConstants.getTrackWidth().div(2).minus(getCenterOfMass().getMeasureX())).in(MetersPerSecondPerSecond) * getAccelerationDampener();
     }
-
 }

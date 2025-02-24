@@ -24,6 +24,7 @@ public class AdvancedCoralSequence extends GenericCommand {
   /** Creates a new AdvancedCoralSequence. */
   public AdvancedCoralSequence(Pose2d scorePose, ScoringLevel scoringLevel, YAGSLSwerveDrivetrain drivetrain, ElevatorSystem elevator) {
     elevatorController = elevator.getPIDController();
+    
     // Use addRequirements() here to declare subsystem dependencies.
 
     driveToPose = drivetrain.driveToPosePrecise(scorePose).get();

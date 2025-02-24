@@ -210,7 +210,7 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
     this.profiledMaxAccel.setValue(maxAccel);
     controller.setProfiledMaxAcceleration(maxAccel);
   }
-
+  
   public double getProfiledMaxAcceleration() {
     return profiledMaxAccel.getValue();
   }
