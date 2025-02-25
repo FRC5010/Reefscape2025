@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import org.frc5010.common.arch.GenericSubsystem;
 import org.frc5010.common.drive.pose.PoseProvider.ProviderType;
+import org.frc5010.common.sensors.AnalogInput5010;
 import org.frc5010.common.subsystems.AprilTagPoseSystem;
 import org.frc5010.common.vision.AprilTags;
 
@@ -19,10 +20,13 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Quaternion;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Robot;
 import frc.robot.FieldConstants.Reef;
 
 /** A class to handle estimating the pose of the robot */
@@ -273,9 +277,8 @@ public class DrivePoseEstimator extends GenericSubsystem {
                 
               
             }
-          } else {
-            provider.resetPose(getCurrentPose3d());
           }
+          
         }
       }  
       SmartDashboard.putBoolean("April Tag Pose Updating", visionUpdated);

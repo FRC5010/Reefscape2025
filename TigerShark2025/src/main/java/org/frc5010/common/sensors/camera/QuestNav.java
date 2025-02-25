@@ -58,6 +58,7 @@ public class QuestNav implements PoseProvider {
     private ChassisSpeeds velocity;
     private Pose3d previousPose;
     private double previousTime;
+    private final double TIMESTAMP_DELAY = 0.002;
 
     private long previousFrameCount;
 
@@ -111,7 +112,7 @@ public class QuestNav implements PoseProvider {
     }
 
     public Translation3d getRawPosition() {
-        return new Translation3d(position.get()[2], -position.get()[0], position.get()[2]);
+        return new Translation3d(position.get()[2], -position.get()[0], position.get()[1]);
     }
 
     private Translation3d rotateAxes(Translation3d raw, Rotation3d rotation) {
@@ -165,14 +166,14 @@ public class QuestNav implements PoseProvider {
 
     public double getConfidence() {
         if (RobotBase.isReal()) {
-            return 0.01;
+            return 0.0001;
         } else {
             return Double.MAX_VALUE;
         }
     }
 
     public double getCaptureTime() {
-        double t = RobotController.getFPGATime() / 1E6;
+        double t = RobotController.getFPGATime() / 1E6 - TIMESTAMP_DELAY;
         SmartDashboard.putNumber("Quest Timestamp", t);
         return t;
     }
@@ -183,7 +184,7 @@ public class QuestNav implements PoseProvider {
         boolean disabled = DriverStation.isDisabled();
         double frame = frameCount.get();
         double previousFrame = previousFrameCount;
-        if (t == 0|| simulation || disabled) {
+        if (t == 0|| simulation || disabled || previousFrame == frameCount.get()) {
         return false;
         }
         previousFrameCount = frameCount.get();
@@ -213,6 +214,7 @@ public class QuestNav implements PoseProvider {
     }
 
     public void resetPose(Pose3d pose) {
+        SmartDashboard.putBoolean("Reset Pose", true);
         initializedPosition = true;
         softReset(pose);
     }
@@ -271,6 +273,7 @@ public class QuestNav implements PoseProvider {
         if (RobotBase.isReal()) {
             cleanUpQuestCommand();
             updateVelocity();
+            SmartDashboard.putBoolean("Reset Pose", false);
 
             Pose2d currPose = getRobotPose().get().toPose2d();
             SmartDashboard.putNumberArray("Quest POSE", new double[] {
