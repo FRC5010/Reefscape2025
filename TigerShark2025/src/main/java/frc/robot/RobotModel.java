@@ -158,7 +158,7 @@ public class RobotModel {
         
     }
 
-    public boolean robotHasLinearPath(Pose2d robotPose, Pose2d targetPose, Translation2d[] convexPolygon, Distance robotWidth, Distance robotLength) {
+    public static boolean robotHasLinearPath(Pose2d robotPose, Pose2d targetPose, Translation2d[] convexPolygon, Distance robotWidth, Distance robotLength) {
         Translation2d[] robotCornerPoints = constructCornerPoints(robotPose, robotWidth, robotLength);
         Translation2d[] targetCornerPoints = constructCornerPoints(targetPose, robotWidth, robotLength);
         
@@ -172,6 +172,14 @@ public class RobotModel {
             }
         }
         return true;
+    }
+
+    public static boolean robotHasLinearPath(Pose2d robotPose, Pose2d targetPose, Pose2d[] convexPolygon, Distance robotWidth, Distance robotLength) {
+        Translation2d[] vertices = new Translation2d[convexPolygon.length];
+        for (int i = 0; i < convexPolygon.length; i++) {
+            vertices[i] = convexPolygon[i].getTranslation();
+        }
+        return robotHasLinearPath(robotPose, targetPose, vertices, robotWidth, robotLength);
     }
 
     public static boolean isToCloseToVertices(Pose2d robotPose, Pose2d[] vertices, double robotRadius) {

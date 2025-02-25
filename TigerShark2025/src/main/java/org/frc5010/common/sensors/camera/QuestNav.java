@@ -159,8 +159,6 @@ public class QuestNav implements PoseProvider {
     }
 
     public Rotation3d getRotation() {
-        // TODO: To support weird rotations/mountings of quest, implement world axis
-        // rotation
        return getProcessedRotation().plus(softResetTransform.getRotation());
     }
 

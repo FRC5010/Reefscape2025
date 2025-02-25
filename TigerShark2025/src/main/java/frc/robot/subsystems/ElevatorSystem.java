@@ -262,19 +262,32 @@ public class ElevatorSystem extends GenericSubsystem {
 
     public Command pidControlCommand(Distance position) {
         return Commands.run(() -> {
-            double output = profiledPID.calculate(elevator.getPosition());
-            elevator.set(MathUtil.clamp(output, -1, 1), profiledPID.getSetpoint().velocity);
+            runControllerToSetpoint();
 
         }, this).beforeStarting(() -> {
-            profiledPID.setPID(elevator.getP(), elevator.getI(), elevator.getD());
-            profiledPID.reset(elevator.getPosition(), elevator.getVelocity());
-            profiledPID.setGoal(position.in(Meters));
-            elevator.setReference(position.in(Meters));
+            resetController(position);
             elevator.setControlType(PIDControlType.NONE);
         }).finallyDo(() -> {
             elevator.setControlType(controlType);
         });
     }
+
+    public void runControllerToSetpoint() {
+        double output = profiledPID.calculate(elevator.getPosition());
+        elevator.set(MathUtil.clamp(output, -1, 1), profiledPID.getSetpoint().velocity);
+    }
+
+    public void setControllerGoal(Distance goal) {
+        profiledPID.setGoal(goal.in(Meters));
+        elevator.setReference(goal.in(Meters));
+    }
+
+    public void resetController(Distance goal) {
+        profiledPID.reset(elevator.getPosition(), elevator.getVelocity());
+        profiledPID.setPID(elevator.getP(), elevator.getI(), elevator.getD());
+        setControllerGoal(goal);
+    }
+
 
     private void setElevatorPIDGoal(double goal) {
         profiledPID.setGoal(goal);
@@ -443,6 +456,8 @@ public class ElevatorSystem extends GenericSubsystem {
         SmartDashboard.putNumber("left acceleration", getMaxLeftAcceleration());
         SmartDashboard.putNumber("right acceleration", getMaxRightAcceleration());
         SmartDashboard.putNumber("Center of Mass Z", getCenterOfMassZ());
+        SmartDashboard.putNumber("Elevator Position Setpoint", profiledPID.getSetpoint().position);
+        SmartDashboard.putNumber("Elevator Velocity Setpoint", profiledPID.getSetpoint().velocity);
     }
 
     @Override

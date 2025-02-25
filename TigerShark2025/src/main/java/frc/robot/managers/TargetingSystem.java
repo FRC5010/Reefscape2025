@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -30,6 +31,8 @@ public class TargetingSystem {
 
     public static Supplier<Distance> maxHeight; 
 
+    private static Distance MAX_NO_TIPPY_HEIGHT = Meters.of(0.5);
+
 
     public static void setupParameters(YAGSLSwerveDrivetrain drivetrain, ShooterSystem shooter, ElevatorSystem elevator,
             AlgaeArm arm) {
@@ -40,6 +43,24 @@ public class TargetingSystem {
 
         
 
+
+        
+
+    }
+
+    private static double getDrivetrainSpeed() {
+        return new Translation2d(drivetrain.getChassisSpeeds().vxMetersPerSecond,   
+                                  drivetrain.getChassisSpeeds().vyMetersPerSecond).getNorm();
+    }
+
+    private static Supplier<Distance> getMaxHeightSupplier(Pose2d targetPose) {
+        return () -> {
+            if (targetPose.getTranslation().getDistance(drivetrain.getPose().getTranslation()) < 1.0 || getDrivetrainSpeed() > 0.5) {
+                return MAX_NO_TIPPY_HEIGHT;
+            } else {
+                return Meters.of(2);
+            }
+        };
     }
 
     public static Command createCoralScoringSequence(Pose2d targetPose, ScoringLevel scoringLevel) {

@@ -300,7 +300,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         new Transform2d()).withInitialVelocity(() -> getFieldVelocity());
     // Create the constraints to use while pathfinding
     PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond() * 1.0,
-        getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond() * 0.7,
+        getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond() * 1.0,
         getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond(),
         getSwerveConstants().getkTeleDriveMaxAngularAccelerationUnitsPerSecond());
     // PathConstraints constraints = new PathConstraints(
@@ -324,9 +324,10 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
           poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose");
           SmartDashboard.putBoolean("Running AutoDrive", true);
         })
-        .until(() -> RobotModel.circularObstacleWillBeAvoided(obstaclePosition, poseEstimator::getCurrentPose,
-            pose.get(), unavoidableVertices, obstacleRadius, robotRadius, maxRobotDimensionDeviation,
-            maxObstacleDimensionDeviation, obstacleAvoidanceResolution))
+        // .until(() -> RobotModel.circularObstacleWillBeAvoided(obstaclePosition, poseEstimator::getCurrentPose,
+        //     pose.get(), unavoidableVertices, obstacleRadius, robotRadius, maxRobotDimensionDeviation,
+        //     maxObstacleDimensionDeviation, obstacleAvoidanceResolution))
+        .until(() -> RobotModel.robotHasLinearPath(getPose(), pose.get(), unavoidableVertices, getSwerveConstants().getTrackWidth(), getSwerveConstants().getWheelBase()))
         .andThen(finishDriving.get()).finallyDo(() -> SmartDashboard.putBoolean("Running AutoDrive", false));
   }
 
