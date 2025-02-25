@@ -15,6 +15,7 @@ import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.arch.GenericRobot.LogLevel;
 import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.motors.MotorFactory;
+import org.frc5010.common.motors.PIDController5010;
 import org.frc5010.common.motors.SystemIdentification;
 import org.frc5010.common.subsystems.PhysicsSim;
 import org.frc5010.common.telemetry.DisplayDouble;

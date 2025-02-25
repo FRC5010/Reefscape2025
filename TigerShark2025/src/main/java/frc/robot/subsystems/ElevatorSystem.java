@@ -389,7 +389,7 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double getCOMAcceleration(double x) {
-        timeChange = (RobotController.getFPGATime() - lastTime) * Math.pow(10, 6);
+        timeChange = (RobotController.getFPGATime() - lastTime) / 1E6;
         lastTime = RobotController.getFPGATime();
         currentVelocity = (x - lastX) / timeChange;
         lastX = x;
@@ -412,6 +412,27 @@ public class ElevatorSystem extends GenericSubsystem {
             default:
                 return LOAD.getLength();
         }
+    }
+
+    public ProfiledPIDController getPIDController() {
+        return profiledPID;
+    }
+
+    // returns constants [+acceleration, -+time (time to accelerate in one direction), time]
+    public double[] getHeightTimeFunction(double height) {
+        double distance = elevator.getPosition() - height;
+        double timeToMaxVelocity = elevator.getProfiledMaxVelocity() / elevator.getProfiledMaxAcceleration();
+        double maxTriangleDistance = elevator.getProfiledMaxAcceleration() * Math.pow(timeToMaxVelocity, 2);
+        double accelerationTime = 0.0, time = 0.0;
+        if (maxTriangleDistance > height) {
+            accelerationTime = Math.sqrt(distance / elevator.getProfiledMaxAcceleration());
+            time = 0.0;
+        } else {
+            double remainingDistance = distance - maxTriangleDistance;
+            accelerationTime = Math.sqrt(maxTriangleDistance / elevator.getProfiledMaxAcceleration());
+            time = remainingDistance / elevator.getProfiledMaxVelocity();
+        }
+        return new double[] {elevator.getProfiledMaxAcceleration(), accelerationTime, time};
     }
 
     @Override
