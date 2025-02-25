@@ -1,6 +1,8 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
 
 import java.util.function.Consumer;
 
@@ -15,11 +17,15 @@ import org.frc5010.common.sensors.gyro.GenericGyro;
 import org.frc5010.common.utils.AllianceFlip;
 
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.auto_routines.AutoChoosers;
@@ -62,6 +68,15 @@ public class Elphaba extends GenericRobot {
         ((YAGSLSwerveDrivetrain) drivetrain).setAccelerationSuppliers(() -> elevatorSystem.getMaxForwardAcceleration(), () -> elevatorSystem.getMaxBackwardAcceleration(), () -> elevatorSystem.getMaxLeftAcceleration(), () -> elevatorSystem.getMaxRightAcceleration());
 
         ((YAGSLSwerveDrivetrain) drivetrain).setVelocitySuppliers(() -> elevatorSystem.getMaxForwardVelocity(), () -> elevatorSystem.getMaxBackwardVelocity(), () -> elevatorSystem.getMaxRightVelocity(), () -> elevatorSystem.getMaxLeftVelocity());
+
+        Pose2d obstaclePosition = DriverStation.getAlliance().get() == Alliance.Blue ? new Pose2d(4.48945, 4.0259, new Rotation2d()) : new Pose2d(13.065, 4.0259, new Rotation2d());
+        Pose2d[] blueVertices = new Pose2d[] {new Pose2d(3.325, 3.313, new Rotation2d()), new Pose2d(3.325, 4.698, new Rotation2d()), new Pose2d(4.490, 5.332, new Rotation2d()), new Pose2d(5.655, 4.689, new Rotation2d()), new Pose2d(5.655, 3.332, new Rotation2d()), new Pose2d(4.490, 2.700, new Rotation2d())};
+        Pose2d[] redVertices = new Pose2d[] {new Pose2d(11.905, 3.313, new Rotation2d()), new Pose2d(11.905, 4.698, new Rotation2d()), new Pose2d(13.07, 5.332, new Rotation2d()), new Pose2d(14.235, 4.689, new Rotation2d()), new Pose2d(14.235, 3.332, new Rotation2d()), new Pose2d(13.07, 2.700, new Rotation2d())};
+        Pose2d[] vertices = DriverStation.getAlliance().get() == Alliance.Blue ? blueVertices : redVertices;
+        Distance obstacleRadius = Inches.of(37.621), maximumObstacleDimensionDeviation = Inches.of(4.8755), robotRadius = Inches.of(24.22), maximumRobotDimensionDeviation = Inches.of(7.0934);
+
+
+        ((YAGSLSwerveDrivetrain) drivetrain).setUpCircularObstacle(obstaclePosition, vertices, obstacleRadius.in(Meters), robotRadius.in(Meters), maximumRobotDimensionDeviation.in(Meters), maximumObstacleDimensionDeviation.in(Meters), 100);
     }
 
     @Override
@@ -140,7 +155,6 @@ public class Elphaba extends GenericRobot {
     public void setupDefaultCommands(Controller driver, Controller operator) {
         // JoystickToSwerve driveCmd = (JoystickToSwerve)drivetrain.createDefaultCommand(driver);
         Command driveCmd = ((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorFieldRelative(() -> ((YAGSLSwerveDrivetrain) drivetrain).getFieldVelocitiesFromJoystick(driver::getLeftYAxis, driver::getLeftXAxis, driver::getRightXAxis));
-        //Command driveCmd = ((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorFieldRelative(() -> ((YAGSLSwerveDrivetrain) drivetrain).getFieldVelocitiesFromJoystick(driver::getLeftXAxis, driver::getLeftYAxis, driver::getRightXAxis));
 
         drivetrain.setDefaultCommand(driveCmd);
 

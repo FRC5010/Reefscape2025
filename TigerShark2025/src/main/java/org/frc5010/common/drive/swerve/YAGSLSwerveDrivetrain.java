@@ -86,6 +86,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
+import frc.robot.RobotModel;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
@@ -110,6 +111,11 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   private DisplayBoolean hasIssues;
   private Supplier<Double> maxForwardAcceleration, maxBackwardAcceleration, maxLeftAcceleration, maxRightAcceleration;
   private Supplier<Double> maxForwardVelocity, maxBackwardVelocity, maxLeftVelocity, maxRightVelocity;
+  private Pose2d obstaclePosition = new Pose2d();
+  private Pose2d[] unavoidableVertices = new Pose2d[0];
+  private double obstacleRadius = 0.0, robotRadius = 0.0, maxRobotDimensionDeviation = 0.0,
+      maxObstacleDimensionDeviation = 0.0;
+  int obstacleAvoidanceResolution = 0;
 
   public YAGSLSwerveDrivetrain(
       Mechanism2d mechVisual,
@@ -314,8 +320,13 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
             new PIDConstants(1.0, 0, 0.0) // Rotation PID constants
         ),
         config,
-        this).beforeStarting(() -> {poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose"); SmartDashboard.putBoolean("Running AutoDrive", true);})
-        .until(() -> poseEstimator.getCurrentPose().getTranslation().getDistance(pose.get().getTranslation()) < 2.0)
+        this).beforeStarting(() -> {
+          poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose");
+          SmartDashboard.putBoolean("Running AutoDrive", true);
+        })
+        .until(() -> RobotModel.circularObstacleWillBeAvoided(obstaclePosition, poseEstimator::getCurrentPose,
+            pose.get(), unavoidableVertices, obstacleRadius, robotRadius, maxRobotDimensionDeviation,
+            maxObstacleDimensionDeviation, obstacleAvoidanceResolution))
         .andThen(finishDriving.get()).finallyDo(() -> SmartDashboard.putBoolean("Running AutoDrive", false));
   }
 
@@ -323,7 +334,8 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     return driveToPosePrecise(() -> pose);
   }
 
-  public ChassisSpeeds getFieldVelocitiesFromJoystick(DoubleSupplier xSpdFunction, DoubleSupplier ySpdFunction, DoubleSupplier turnSpdFunction) {
+  public ChassisSpeeds getFieldVelocitiesFromJoystick(DoubleSupplier xSpdFunction, DoubleSupplier ySpdFunction,
+      DoubleSupplier turnSpdFunction) {
     double xInput = (xSpdFunction.getAsDouble());
     double yInput = (ySpdFunction.getAsDouble());
 
@@ -415,11 +427,23 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     this.maxRightAcceleration = maxRightAcceleration;
   }
 
-  public void setVelocitySuppliers(Supplier<Double> maxForwardVelocity, Supplier<Double> maxBackwardVelocity, Supplier<Double> maxRightVelocity, Supplier<Double> maxLeftVelocity) {
+  public void setVelocitySuppliers(Supplier<Double> maxForwardVelocity, Supplier<Double> maxBackwardVelocity,
+      Supplier<Double> maxRightVelocity, Supplier<Double> maxLeftVelocity) {
     this.maxForwardVelocity = maxForwardVelocity;
     this.maxBackwardVelocity = maxBackwardVelocity;
     this.maxRightVelocity = maxRightVelocity;
     this.maxLeftVelocity = maxLeftVelocity;
+  }
+
+  public void setUpCircularObstacle(Pose2d obstaclePosition, Pose2d[] unavoidableVertices, double obstacleRadius,
+      double robotRadius, double maxRobotDimensionDeviation, double maxObstacleDimensionDeviation, int resolution) {
+    this.obstaclePosition = obstaclePosition;
+    this.unavoidableVertices = unavoidableVertices;
+    this.obstacleRadius = obstacleRadius;
+    this.robotRadius = robotRadius;
+    this.maxRobotDimensionDeviation = maxRobotDimensionDeviation;
+    this.maxObstacleDimensionDeviation = maxObstacleDimensionDeviation;
+    this.obstacleAvoidanceResolution = resolution;
   }
 
   /**

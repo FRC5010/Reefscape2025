@@ -234,7 +234,7 @@
   {
     "name": "/SmartDashboard/ElevatorSystem/elevator/Max Velocity",
     "type": "double",
-    "value": 3.0,
+    "value": 2.5,
     "properties": {
       "persistent": true
     }
@@ -242,7 +242,7 @@
   {
     "name": "/SmartDashboard/ElevatorSystem/elevator/Max Acceleration",
     "type": "double",
-    "value": 2.25,
+    "value": 4.0,
     "properties": {
       "persistent": true
     }
@@ -258,7 +258,7 @@
   {
     "name": "/SmartDashboard/ElevatorSystem/elevator/Conversion",
     "type": "double",
-    "value": 0.019284142905285347,
+    "value": 0.02925869958043294,
     "properties": {
       "persistent": true
     }
@@ -474,7 +474,7 @@
   {
     "name": "/SmartDashboard/AlgaeArm/Algae Arm/kP",
     "type": "double",
-    "value": 0.0,
+    "value": 0.1,
     "properties": {
       "persistent": true
     }
@@ -506,7 +506,7 @@
   {
     "name": "/SmartDashboard/AlgaeArm/Algae Arm/kS",
     "type": "double",
-    "value": 0.0,
+    "value": 0.12,
     "properties": {
       "persistent": true
     }
@@ -514,7 +514,7 @@
   {
     "name": "/SmartDashboard/AlgaeArm/Algae Arm/kV",
     "type": "double",
-    "value": 0.0,
+    "value": 0.12,
     "properties": {
       "persistent": true
     }
@@ -571,6 +571,14 @@
     "name": "/SmartDashboard/AlgaeArm/Algae Arm/Max Acceleration",
     "type": "double",
     "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kG",
+    "type": "double",
+    "value": 0.1478,
     "properties": {
       "persistent": true
     }
