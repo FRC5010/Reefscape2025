@@ -1,6 +1,8 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meter;
 
 import java.util.function.Consumer;
 
@@ -15,8 +17,11 @@ import org.frc5010.common.sensors.gyro.GenericGyro;
 import org.frc5010.common.utils.AllianceFlip;
 
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -48,6 +53,8 @@ public class Elphaba extends GenericRobot {
         CameraServer.startAutomaticCapture();
         
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
+        
+
         gyro = (GenericGyro) subsystems.get(ConfigConstants.GYRO);
 
         elevatorSystem = new ElevatorSystem(mechVisual, new ElevatorSystem.Config());
@@ -62,6 +69,11 @@ public class Elphaba extends GenericRobot {
         ((YAGSLSwerveDrivetrain) drivetrain).setAccelerationSuppliers(() -> elevatorSystem.getMaxForwardAcceleration(), () -> elevatorSystem.getMaxBackwardAcceleration(), () -> elevatorSystem.getMaxLeftAcceleration(), () -> elevatorSystem.getMaxRightAcceleration());
 
         ((YAGSLSwerveDrivetrain) drivetrain).setVelocitySuppliers(() -> elevatorSystem.getMaxForwardVelocity(), () -> elevatorSystem.getMaxBackwardVelocity(), () -> elevatorSystem.getMaxRightVelocity(), () -> elevatorSystem.getMaxLeftVelocity());
+    }
+
+    public void resetPositionToStart() {
+        ((YAGSLSwerveDrivetrain) drivetrain).resetPose(new Pose2d(new Translation2d(Inches.of(-17).plus(FieldConstants.Reef.Side.AB.centerFace.getMeasureX()), FieldConstants.Reef.Side.GH.centerFace.getMeasureY()),
+              Rotation2d.fromDegrees(0)));
     }
 
     @Override
@@ -134,6 +146,8 @@ public class Elphaba extends GenericRobot {
 
 
         reefscapeButtonBoard.getFireButton().whileTrue(shooter.runMotors(() -> 0.5));
+
+        driver.createAButton().onTrue(Commands.runOnce(() -> resetPositionToStart()));
     }
 
     @Override

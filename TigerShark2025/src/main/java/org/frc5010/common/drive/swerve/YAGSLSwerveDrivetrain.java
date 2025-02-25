@@ -147,9 +147,9 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     try {
       File swerveJsonDirectory = new File(Filesystem.getDeployDirectory(), swerveType);
       swerveDrive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(maximumSpeed,
-          new Pose2d(new Translation2d(Meter.of(7.2),
+          new Pose2d(new Translation2d(Meter.of(7.417),
               Meter.of(4)),
-              Rotation2d.fromDegrees(0)));
+              Rotation2d.fromDegrees(180)));
     } catch (Exception e) {
       System.out.println(e.getMessage());
       throw new RuntimeException(e);
@@ -682,6 +682,10 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     swerveDrive.resetOdometry(initialHolonomicPose);
   }
 
+  public void resetPose(Pose2d pose) {
+    poseEstimator.resetToPose(pose);
+  }
+
   /**
    * Gets the current pose (position and rotation) of the robot, as reported by
    * odometry.
@@ -689,6 +693,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
    * @return The robot's pose
    */
   public Pose2d getPose() {
+    
     return swerveDrive.getPose();
   }
 
