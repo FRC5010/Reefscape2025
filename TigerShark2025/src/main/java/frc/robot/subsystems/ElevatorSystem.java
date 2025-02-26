@@ -97,14 +97,14 @@ public class ElevatorSystem extends GenericSubsystem {
         }
     }
 
+    private Distance centerOfMassX = Meters.zero(), centerOfMassY = Inches.of(1.178), wheelBase = Meters.of(0.56);
+    private double g = 9.81, growFactor = 0.233035, exponent = 0.824063, initialValue = 0.189682;
     private double lastError;
     private double lastTimestamp = 0;
 
     public static class Config {
         private final Current MAX_ELEVATOR_STATOR_CURRENT_LIMIT = Amps.of(120);
         private final Current MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT = Amps.of(60);
-        private Distance centerOfMassX = Meters.zero(), centerOfMassY = Inches.of(1.178), wheelBase = Meters.of(0.56);
-        private double g = 9.81, growFactor = 0.233035, exponent = 0.824063, initialValue = 0.189682;
         private final double ELEVATOR_ZERO_CURRENT = 40;
         private SlewRateLimiter rateLimiter = new SlewRateLimiter(0.5);
         Distance stoppingDistance = Meters.of(1.0);
@@ -113,7 +113,8 @@ public class ElevatorSystem extends GenericSubsystem {
     private Config config = new Config();
 
     public ElevatorSystem(Mechanism2d mechanismSimulation, Config config) {
-        if (config != null) this.config = config;
+        if (config != null)
+            this.config = config;
 
         if (0 == BOTTOM.getLength().in(Meters))
             BOTTOM.setLength(Position.BOTTOM.position());
@@ -150,7 +151,8 @@ public class ElevatorSystem extends GenericSubsystem {
 
         elevator.setMotorBrake(true);
         elevator.setCurrentLimit(config.MAX_ELEVATOR_STATOR_CURRENT_LIMIT);
-        ((GenericTalonFXMotor) elevator.getMotorController()).setSupplyCurrent(config.MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT);
+        ((GenericTalonFXMotor) elevator.getMotorController())
+                .setSupplyCurrent(config.MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT);
 
         elevatorFollower.setMotorBrake(true);
 
@@ -188,7 +190,8 @@ public class ElevatorSystem extends GenericSubsystem {
 
         elevator.burnFlash();
 
-        hasHighCurrentLoad = new ValueSwitch(config.ELEVATOR_ZERO_CURRENT, () -> Math.abs(elevator.getOutputCurrent()), 1);
+        hasHighCurrentLoad = new ValueSwitch(config.ELEVATOR_ZERO_CURRENT, () -> Math.abs(elevator.getOutputCurrent()),
+                1);
 
         hasHighCurrentLoad.getTrigger().and(() -> elevator.getPosition() < 0.25).and(() -> elevator.get() < -0.1)
                 .onTrue(zeroElevator());
@@ -288,7 +291,6 @@ public class ElevatorSystem extends GenericSubsystem {
         setControllerGoal(goal);
     }
 
-
     private void setElevatorPIDGoal(double goal) {
         profiledPID.setGoal(goal);
         elevator.setReference(goal);
@@ -310,7 +312,6 @@ public class ElevatorSystem extends GenericSubsystem {
             elevator.setControlType(controlType);
         });
     }
-
 
     public void setElevatorPosition(Distance position) {
         if (elevator.getControlType() != controlType) {
@@ -353,7 +354,7 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double getCenterOfMassZ() {
-        return config.growFactor * Math.pow(elevator.getPosition(), config.exponent) + config.initialValue;
+        return growFactor * Math.pow(elevator.getPosition(), exponent) + initialValue;
     }
 
     // Function that decreases acceleration to counteract elevator flex
@@ -366,8 +367,9 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double getMaxForwardAcceleration() {
-        return ((((config.wheelBase.in(Meters) / 2) + config.centerOfMassY.in(Meters))
-                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) - getGeneralAccelerationDampener();
+        return ((((wheelBase.in(Meters) / 2) + centerOfMassY.in(Meters))
+                * (g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ())
+                - getGeneralAccelerationDampener();
     }
 
     public double getMaxForwardVelocity() {
@@ -375,8 +377,9 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double getMaxBackwardAcceleration() {
-        return -((((config.wheelBase.in(Meters) / 2) - config.centerOfMassY.in(Meters))
-                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) + getBackwardAccelerationDampener();
+        return -((((wheelBase.in(Meters) / 2) - centerOfMassY.in(Meters))
+                * (g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ())
+                + getBackwardAccelerationDampener();
     }
 
     public double getMaxBackwardVelocity() {
@@ -384,8 +387,9 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double getMaxRightAcceleration() {
-        return ((((config.wheelBase.in(Meters) / 2) + config.centerOfMassX.in(Meters))
-                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) - getGeneralAccelerationDampener();
+        return ((((wheelBase.in(Meters) / 2) + centerOfMassX.in(Meters))
+                * (g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ())
+                - getGeneralAccelerationDampener();
     }
 
     public double getMaxRightVelocity() {
@@ -393,8 +397,9 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double getMaxLeftAcceleration() {
-        return -((((config.wheelBase.in(Meters) / 2) - config.centerOfMassX.in(Meters))
-                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ()) + getGeneralAccelerationDampener();
+        return -((((wheelBase.in(Meters) / 2) - centerOfMassX.in(Meters))
+                * (g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ())
+                + getGeneralAccelerationDampener();
     }
 
     public double getMaxLeftVelocity() {
@@ -408,8 +413,9 @@ public class ElevatorSystem extends GenericSubsystem {
         lastX = x;
         currentAcceleration = (currentVelocity - lastVelocity) / timeChange;
         lastVelocity = currentVelocity;
-        return (config.growFactor * config.exponent * (config.exponent - 1) * Math.pow(x, config.exponent - 2) * Math.pow(currentVelocity, 2))
-                + (config.growFactor * config.exponent * Math.pow(x, config.exponent - 1) * currentAcceleration);
+        return (growFactor * exponent * (exponent - 1) * Math.pow(x, exponent - 2)
+                * Math.pow(currentVelocity, 2))
+                + (growFactor * exponent * Math.pow(x, exponent - 1) * currentAcceleration);
     }
 
     public Distance selectElevatorLevel(Supplier<ReefscapeButtonBoard.ScoringLevel> level) {
@@ -431,7 +437,8 @@ public class ElevatorSystem extends GenericSubsystem {
         return profiledPID;
     }
 
-    // returns constants [+acceleration, -+time (time to accelerate in one direction), time]
+    // returns constants [+acceleration, -+time (time to accelerate in one
+    // direction), time]
     public double[] getHeightTimeFunction(double height) {
         double distance = elevator.getPosition() - height;
         double timeToMaxVelocity = elevator.getProfiledMaxVelocity() / elevator.getProfiledMaxAcceleration();
@@ -445,7 +452,16 @@ public class ElevatorSystem extends GenericSubsystem {
             accelerationTime = Math.sqrt(maxTriangleDistance / elevator.getProfiledMaxAcceleration());
             time = remainingDistance / elevator.getProfiledMaxVelocity();
         }
-        return new double[] {elevator.getProfiledMaxAcceleration(), accelerationTime, time};
+        return new double[] { elevator.getProfiledMaxAcceleration(), accelerationTime, time };
+    }
+
+    public void setRobotParameters(Distance centerofMassX, Distance centerOfMassY, Distance wheelBase, double growFactor, double exponent, double initialValue) {
+        this.centerOfMassX = centerOfMassX;
+        this.centerOfMassY = centerOfMassY;
+        this.wheelBase = wheelBase;
+        this.growFactor = growFactor;
+        this.exponent = exponent;
+        this.initialValue = initialValue;
     }
 
     @Override

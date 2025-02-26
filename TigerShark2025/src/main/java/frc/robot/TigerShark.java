@@ -1,9 +1,12 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Meters;
+
 import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.auto.AutoErrorTracker;
 import org.frc5010.common.config.ConfigConstants;
 import org.frc5010.common.drive.GenericDrivetrain;
+import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 import org.frc5010.common.sensors.Controller;
 import org.frc5010.common.utils.AllianceFlip;
 
@@ -30,6 +33,8 @@ public class TigerShark extends GenericRobot {
         shooterSystem = new ShooterSystem(mechVisual, new ShooterSystem.Config());
         algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config());
         reefscapeButtonBoard = new ReefscapeButtonBoard(2, 3);
+
+        elevatorSystem.setRobotParameters(Meters.of(0.0059182), Meters.of(0.0141478), Meters.of(0.56), 0.167775, 0.822008, 0.210722);
     }
 
     @Override
@@ -40,7 +45,10 @@ public class TigerShark extends GenericRobot {
 
     @Override
     public void setupDefaultCommands(Controller driver, Controller operator) {
-        drivetrain.setDefaultCommand(drivetrain.createDefaultCommand(driver));
+        Command driveCmd = ((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorFieldRelative(() -> ((YAGSLSwerveDrivetrain) drivetrain).getFieldVelocitiesFromJoystick(driver::getLeftYAxis, driver::getLeftXAxis, driver::getRightXAxis));
+        
+        drivetrain.setDefaultCommand(driveCmd);
+
         shooterSystem.setDefaultCommand(Commands.run(() -> {
             shooterSystem.shooterLeftSpeed(operator.getLeftTrigger());
             shooterSystem.shooterRightSpeed(operator.getRightTrigger());
