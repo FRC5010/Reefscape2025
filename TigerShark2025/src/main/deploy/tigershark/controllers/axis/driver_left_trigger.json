@@ -1,7 +1,7 @@
 {
     "channel" : 2,
     "deadband" : 0.07,
-    "invert" : true,
+    "invert" : false,
     "scale" : 1.0,
     "curvePower" : 1.0,
     "limit" : 1.0

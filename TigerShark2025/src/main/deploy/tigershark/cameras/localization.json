@@ -1,13 +1,13 @@
 {
-    "name": "pancake",
+    "name": "elphaba",
     "use": "apriltag",
     "type": "limelight",
     "strategy": "LOWEST_AMBIGUITY",
     "column": 0,
-    "x": 0.21108,
-    "y": 0.228,
-    "z": 0.2846885,
+    "x": 0.235,
+    "y": -0.305,
+    "z": 0.0,
     "roll": 0,
-    "pitch": 10,
+    "pitch": -15,
     "yaw": 0
 }

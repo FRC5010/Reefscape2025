@@ -20,6 +20,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * Swerve setpoint generator based on a version created by FRC team 254.
@@ -73,6 +74,11 @@ public class SwerveSetpointGenerator5010 {
       PathConstraints5010 constraints,
       double dt,
       double inputVoltage) {
+    
+    if (Double.isNaN(desiredStateRobotRelative.vxMetersPerSecond)) {
+      System.out.println("Problem");
+    }
+    
     if (Double.isNaN(inputVoltage)) {
       inputVoltage = 12.0;
     } else {
@@ -90,14 +96,14 @@ public class SwerveSetpointGenerator5010 {
       double xVel = vel.getX();
       double yVel = vel.getY();
       double factor1 = 1.0, factor2 = 1.0, factor3 = 1.0, factor = 1.0;
-      if (xVel > constraints.getMaxRightVelocity()) {
+      if (xVel > constraints.getMaxRightVelocity() && xVel != 0) {
         factor1 = constraints.getMaxRightVelocity() / xVel;
-      } else if(xVel < constraints.getMaxLeftVelocity()) {
+      } else if(xVel < constraints.getMaxLeftVelocity() && xVel != 0) {
         factor1 = constraints.getMaxLeftVelocity() / xVel;
       }
-      if (yVel > constraints.getMaxForwardVelocity()) {
+      if (yVel > constraints.getMaxForwardVelocity() && yVel != 0) {
         factor2 = constraints.getMaxForwardVelocity() / yVel;
-      } else if (yVel < constraints.getMaxBackwardVelocity()) {
+      } else if (yVel < constraints.getMaxBackwardVelocity() && yVel != 0) {
         factor2 = constraints.getMaxBackwardVelocity();
       }
       factor = factor1 < factor2 ? factor1 : factor2;
@@ -107,6 +113,10 @@ public class SwerveSetpointGenerator5010 {
       factor = factor3 < factor ? factor3 : factor;
       vel = vel.times(factor);
 
+      if (Double.isNaN(desiredStateRobotRelative.vxMetersPerSecond)) {
+        System.out.println("Problem");
+      }
+
       desiredStateRobotRelative =
           new ChassisSpeeds(
               vel.getX(),
@@ -115,6 +125,10 @@ public class SwerveSetpointGenerator5010 {
                   desiredStateRobotRelative.omegaRadiansPerSecond,
                   -constraints.maxAngularVelocityRadPerSec(),
                   constraints.maxAngularVelocityRadPerSec()));
+    }
+
+    if (Double.isNaN(desiredStateRobotRelative.vxMetersPerSecond)) {
+      System.out.println("Problem");
     }
 
     SwerveModuleState[] desiredModuleStates =
@@ -177,7 +191,6 @@ public class SwerveSetpointGenerator5010 {
       // of the desired angle, and accelerate again.
       return generateSetpoint(prevSetpoint, new ChassisSpeeds(), constraints, dt, inputVoltage);
     }
-
     // Compute the deltas between start and goal. We can then interpolate from the start state to
     // the goal state; then find the amount we can move from start towards goal in this cycle such
     // that no kinematic limit is exceeded.
@@ -458,7 +471,9 @@ public class SwerveSetpointGenerator5010 {
       forceXFF[m] = wheelForces[m].getX();
       forceYFF[m] = wheelForces[m].getY();
     }
-
+    if (Double.isNaN(retSpeeds.vxMetersPerSecond)) {
+      SmartDashboard.putBoolean("Swerve Bad", true);
+    }
     return new SwerveSetpoint(
         retSpeeds,
         retStates,

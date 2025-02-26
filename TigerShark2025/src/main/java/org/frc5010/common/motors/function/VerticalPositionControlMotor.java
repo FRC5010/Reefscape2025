@@ -264,8 +264,8 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
         return SystemIdentification.getSysIdFullCommand(
                 SystemIdentification.angleSysIdRoutine(_motor, encoder, "Vertical Motor", subsystemBase),
                 4,
-                2,
-                3);
+                1,
+                1);
     }
 
 }

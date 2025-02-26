@@ -5,7 +5,7 @@
     "canbus": null
   },
   "angle": {
-    "type": "nova_neo",
+    "type": "sparkmax_neo",
     "id": 2,
     "canbus": null
   },
@@ -16,12 +16,12 @@
   },
   "inverted": {
     "drive": false,
-    "angle": true
+    "angle": false
   },
   "absoluteEncoderOffset": 0.0,
   "absoluteEncoderInverted": true,
   "location": {
-    "front": 10.375,
-    "left": 10.375
+    "front": 11,
+    "left": 11
   }
 }

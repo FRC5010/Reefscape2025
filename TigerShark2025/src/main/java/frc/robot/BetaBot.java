@@ -37,22 +37,19 @@ import frc.robot.auto_routines.Right1Coral;
 import frc.robot.auto_routines.Right4Coral;
 import frc.robot.managers.TargetingSystem;
 import frc.robot.subsystems.AlgaeArm;
-import frc.robot.subsystems.ClimbSubsystem;
-import frc.robot.subsystems.ClimbSystem;
 import frc.robot.subsystems.ElevatorSystem;
 import frc.robot.subsystems.ShooterSystem;
 
-public class TigerShark extends GenericRobot {
+public class BetaBot extends GenericRobot {
     GenericDrivetrain drivetrain;
     ElevatorSystem elevatorSystem;
     ShooterSystem shooter;
     AlgaeArm algaeArm;
-    ClimbSubsystem climb;
     GenericGyro gyro;
     ReefscapeButtonBoard reefscapeButtonBoard;
     AutoChoosers autoChoosers;
 
-    public TigerShark(String directory) {
+    public BetaBot(String directory) {
         super(directory);
         AllianceFlip.configure(FieldConstants.fieldDimensions);
 
@@ -63,19 +60,13 @@ public class TigerShark extends GenericRobot {
 
         gyro = (GenericGyro) subsystems.get(ConfigConstants.GYRO);
 
-        ElevatorSystem.Config eleConfig = new ElevatorSystem.Config();
-        eleConfig.gearing = 72.0 / 14.0;
-        elevatorSystem = new ElevatorSystem(mechVisual, eleConfig);
+        elevatorSystem = new ElevatorSystem(mechVisual, new ElevatorSystem.Config());
         shooter = new ShooterSystem(mechVisual, new ShooterSystem.Config());
         algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config());
 
         TargetingSystem.setupParameters((YAGSLSwerveDrivetrain) drivetrain, shooter, elevatorSystem, algaeArm);
 
         reefscapeButtonBoard = new ReefscapeButtonBoard(2, 3);
-
-        climb = new ClimbSubsystem();
-
-        elevatorSystem.setRobotParameters(Meters.of(0.0059182), Meters.of(0.0141478), Meters.of(0.56), 0.167775, 0.822008, 0.210722);
         autoChoosers = new AutoChoosers(shuffleTab);
 
         ((YAGSLSwerveDrivetrain) drivetrain).setAccelerationSuppliers(() -> elevatorSystem.getMaxForwardAcceleration(), () -> elevatorSystem.getMaxBackwardAcceleration(), () -> elevatorSystem.getMaxLeftAcceleration(), () -> elevatorSystem.getMaxRightAcceleration());
@@ -105,7 +96,7 @@ public class TigerShark extends GenericRobot {
             driver.createBButton().whileTrue(((YAGSLSwerveDrivetrain) drivetrain).sysIdAngleMotorCommand());
             operator.createYButton().whileTrue(elevatorSystem.elevatorSysIdCommand());
 
-            QuestNav calibrationQuest = new QuestNav(new Transform3d(new Translation3d(), new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(-90))));
+            QuestNav calibrationQuest = new QuestNav(new Transform3d(new Translation3d(), new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(-94))));
             driver.createXButton().whileTrue(calibrationQuest.determineOffsetToRobotCenter(drivetrain));
 
             driver.createYButton().whileTrue(shooter.getSysIdCommand());
@@ -131,7 +122,7 @@ public class TigerShark extends GenericRobot {
         }
         reefscapeButtonBoard.configureOperatorButtonBindings(operator);
 
-        
+
 
         driver.createXButton().whileTrue(
         Commands.deferredProxy(() ->
@@ -152,7 +143,7 @@ public class TigerShark extends GenericRobot {
         driver.LEFT_BUMPER.and(AlgaeArm.algaeSelected).and(ReefscapeButtonBoard.algaeLevelIsSelected)
             .whileTrue(algaeArm.getDeployCommand());
 
-       //driver.createBButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
+       driver.createBButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
 
        driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
                 .pidControlCommand(

@@ -103,11 +103,14 @@ public class ElevatorSystem extends GenericSubsystem {
     private double lastTimestamp = 0;
 
     public static class Config {
-        private final Current MAX_ELEVATOR_STATOR_CURRENT_LIMIT = Amps.of(120);
-        private final Current MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT = Amps.of(60);
-        private final double ELEVATOR_ZERO_CURRENT = 40;
-        private SlewRateLimiter rateLimiter = new SlewRateLimiter(0.5);
-        Distance stoppingDistance = Meters.of(1.0);
+        public final Current MAX_ELEVATOR_STATOR_CURRENT_LIMIT = Amps.of(120);
+        public final Current MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT = Amps.of(60);
+        public Distance centerOfMassX = Meters.zero(), centerOfMassY = Inches.of(1.178), wheelBase = Meters.of(0.56);
+        public double g = 9.81, growFactor = 0.233035, exponent = 0.824063, initialValue = 0.189682;
+        public final double ELEVATOR_ZERO_CURRENT = 40;
+        public SlewRateLimiter rateLimiter = new SlewRateLimiter(0.5);
+        public Distance stoppingDistance = Meters.of(1.0);
+        public double gearing = 6;
     }
 
     private Config config = new Config();
@@ -156,7 +159,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
         elevatorFollower.setMotorBrake(true);
 
-        elevator.setupSimulatedMotor(6, Pounds.of(30), Inches.of(1.1),
+        elevator.setupSimulatedMotor(config.gearing, Pounds.of(30), Inches.of(1.1),
                 LOAD.getLength(), Inches.of(83.475 - 6.725), LOAD.getLength(),
                 Meters.of(0.2), RobotBase.isSimulation() ? 0.75 : 0.263672);
         elevatorFollower.setCurrentLimit(config.MAX_ELEVATOR_STATOR_CURRENT_LIMIT);
@@ -169,7 +172,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
         elevator.setMotorFeedFwd(new MotorFeedFwdConstants(0.26329, 0.38506, 0.04261));
         elevator.setProfiledMaxVelocity(2.5);
-        elevator.setProfiledMaxAcceleration(4);
+        elevator.setProfiledMaxAcceleration(15);
         elevator.setValues(new GenericPID(3, 0.0, 0.0));
         elevator.setOutputRange(-1, 1);
 
@@ -373,7 +376,7 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double getMaxForwardVelocity() {
-        return Math.sqrt(2 * (-getMaxBackwardAcceleration()) * config.stoppingDistance.in(Meters));
+        return Math.sqrt(2 * (Math.abs(getMaxBackwardAcceleration())) * config.stoppingDistance.in(Meters));
     }
 
     public double getMaxBackwardAcceleration() {
@@ -383,7 +386,7 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double getMaxBackwardVelocity() {
-        return Math.sqrt(2 * (-getMaxForwardAcceleration()) * config.stoppingDistance.in(Meters));
+        return Math.sqrt(2 * (-Math.abs(getMaxForwardAcceleration())) * config.stoppingDistance.in(Meters));
     }
 
     public double getMaxRightAcceleration() {
@@ -393,7 +396,7 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double getMaxRightVelocity() {
-        return Math.sqrt(2 * (-getMaxLeftAcceleration()) * config.stoppingDistance.in(Meters));
+        return Math.sqrt(2 * (Math.abs(getMaxLeftAcceleration())) * config.stoppingDistance.in(Meters));
     }
 
     public double getMaxLeftAcceleration() {
@@ -403,7 +406,7 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double getMaxLeftVelocity() {
-        return Math.sqrt(2 * (-getMaxRightAcceleration()) * config.stoppingDistance.in(Meters));
+        return Math.sqrt(2 * (-Math.abs(getMaxRightAcceleration())) * config.stoppingDistance.in(Meters));
     }
 
     public double getCOMAcceleration(double x) {

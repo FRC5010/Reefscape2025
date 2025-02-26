@@ -24,6 +24,8 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import javax.transaction.xa.Xid;
+
 import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.arch.GenericRobot.LogLevel;
 import org.frc5010.common.auto.pathplanner.PathfindingCommand5010;
@@ -116,6 +118,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   private double obstacleRadius = 0.0, robotRadius = 0.0, maxRobotDimensionDeviation = 0.0,
       maxObstacleDimensionDeviation = 0.0;
   int obstacleAvoidanceResolution = 0;
+  double previousLeftXInput = 0.0, previousLeftYInput = 0.0, previousRightXInput = 0.0;
 
   public YAGSLSwerveDrivetrain(
       Mechanism2d mechVisual,
@@ -324,10 +327,13 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
           poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose");
           SmartDashboard.putBoolean("Running AutoDrive", true);
         })
-        // .until(() -> RobotModel.circularObstacleWillBeAvoided(obstaclePosition, poseEstimator::getCurrentPose,
-        //     pose.get(), unavoidableVertices, obstacleRadius, robotRadius, maxRobotDimensionDeviation,
-        //     maxObstacleDimensionDeviation, obstacleAvoidanceResolution))
-        .until(() -> RobotModel.robotHasLinearPath(getPose(), pose.get(), unavoidableVertices, getSwerveConstants().getTrackWidth(), getSwerveConstants().getWheelBase()))
+        // .until(() -> RobotModel.circularObstacleWillBeAvoided(obstaclePosition,
+        // poseEstimator::getCurrentPose,
+        // pose.get(), unavoidableVertices, obstacleRadius, robotRadius,
+        // maxRobotDimensionDeviation,
+        // maxObstacleDimensionDeviation, obstacleAvoidanceResolution))
+        .until(() -> RobotModel.robotHasLinearPath(getPose(), pose.get(), unavoidableVertices,
+            getSwerveConstants().getTrackWidth(), getSwerveConstants().getWheelBase()))
         .andThen(finishDriving.get()).finallyDo(() -> SmartDashboard.putBoolean("Running AutoDrive", false));
   }
 
@@ -336,9 +342,18 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   }
 
   public ChassisSpeeds getFieldVelocitiesFromJoystick(DoubleSupplier xSpdFunction, DoubleSupplier ySpdFunction,
-      DoubleSupplier turnSpdFunction) {
+    DoubleSupplier turnSpdFunction) {
     double xInput = (xSpdFunction.getAsDouble());
     double yInput = (ySpdFunction.getAsDouble());
+
+    if (Double.isNaN(xInput) || Double.isNaN(yInput) || Double.isNaN(turnSpdFunction.getAsDouble())) {
+      SmartDashboard.putBoolean("Controller Overide", true);
+    } else {
+      SmartDashboard.putBoolean("Controller Overide", false);
+    }
+
+    xInput = Double.isNaN(xInput) ? previousLeftXInput : xInput;
+    yInput = Double.isNaN(yInput) ? previousLeftYInput : yInput;
 
     Translation2d inputTranslation = new Translation2d(xInput, yInput);
     double magnitude = inputTranslation.getNorm();
@@ -347,6 +362,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     double curvedMagnitude = Math.pow(magnitude, 3);
 
     double turnSpeed = (turnSpdFunction.getAsDouble());
+    turnSpeed = Double.isNaN(turnSpeed) ? previousRightXInput : turnSpeed;
 
     // limit power
     double xSpeed = curvedMagnitude
@@ -364,6 +380,15 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         DriverStation.getAlliance().get() == Alliance.Red ? -xSpeed : xSpeed,
         DriverStation.getAlliance().get() == Alliance.Red ? -ySpeed : ySpeed,
         turnSpeed);
+
+    previousLeftXInput = xInput;
+    previousLeftYInput = yInput;
+    previousRightXInput = turnSpeed;
+
+    if (Double.isNaN(xInput) || Double.isNaN(yInput) || Double.isNaN(turnSpdFunction.getAsDouble())) {
+      System.out.println("Input Problems");
+    }
+
     return chassisSpeeds;
   }
 
@@ -379,6 +404,10 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
    */
   private Command driveWithSetpointGenerator(Supplier<ChassisSpeeds> robotRelativeChassisSpeed)
       throws IOException, ParseException {
+        if (Double.isNaN(robotRelativeChassisSpeed.get().vxMetersPerSecond)) {
+          robotRelativeChassisSpeed.get();
+          System.out.println("Problem");
+        }
     SwerveSetpointGenerator5010 setpointGenerator = new SwerveSetpointGenerator5010(RobotConfig.fromGUISettings(),
         swerveDrive.getMaximumModuleAngleVelocity().in(RadiansPerSecond));
 
@@ -414,6 +443,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
           swerveDrive.drive(newSetpoint.robotRelativeSpeeds(),
               newSetpoint.moduleStates(),
               newSetpoint.feedforwards().linearForces());
+
           prevSetpoint.set(newSetpoint);
           previousTime.set(newTime);
         });
@@ -456,7 +486,11 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   public Command driveWithSetpointGeneratorFieldRelative(Supplier<ChassisSpeeds> fieldRelativeSpeeds) {
     try {
       return driveWithSetpointGenerator(() -> {
-        return ChassisSpeeds.fromFieldRelativeSpeeds(fieldRelativeSpeeds.get(), getHeading());
+        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(fieldRelativeSpeeds.get(), getHeading());
+        if (Double.isNaN(speeds.vxMetersPerSecond)) {
+          System.out.println("Problem");
+        }
+        return speeds;
 
       });
     } catch (Exception e) {
@@ -718,7 +752,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
    * @return The robot's pose
    */
   public Pose2d getPose() {
-    
+
     return swerveDrive.getPose();
   }
 
