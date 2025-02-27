@@ -61,6 +61,9 @@ public class Elphaba extends GenericRobot {
         gyro = (GenericGyro) subsystems.get(ConfigConstants.GYRO);
 
         elevatorSystem = new ElevatorSystem(mechVisual, new ElevatorSystem.Config());
+
+        elevatorSystem.setCOGFunctionParameters(0.233035, 0.824063, 0.189682);
+
         shooter = new ShooterSystem(mechVisual, new ShooterSystem.Config());
         algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config());
 

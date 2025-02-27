@@ -98,7 +98,7 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     private Distance centerOfMassX = Meters.zero(), centerOfMassY = Inches.of(1.178), wheelBase = Meters.of(0.56);
-    private double g = 9.81, growFactor = 0.233035, exponent = 0.824063, initialValue = 0.189682;
+    private double growFactor = 0.233035, exponent = 0.824063, initialValue = 0.189682;
     private double lastError;
     private double lastTimestamp = 0;
 
@@ -106,7 +106,7 @@ public class ElevatorSystem extends GenericSubsystem {
         public final Current MAX_ELEVATOR_STATOR_CURRENT_LIMIT = Amps.of(120);
         public final Current MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT = Amps.of(60);
         public Distance centerOfMassX = Meters.zero(), centerOfMassY = Inches.of(1.178), wheelBase = Meters.of(0.56);
-        public double g = 9.81, growFactor = 0.233035, exponent = 0.824063, initialValue = 0.189682;
+        public double g = 9.81;
         public final double ELEVATOR_ZERO_CURRENT = 40;
         public SlewRateLimiter rateLimiter = new SlewRateLimiter(0.5);
         public Distance stoppingDistance = Meters.of(1.0);
@@ -371,7 +371,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
     public double getMaxForwardAcceleration() {
         return ((((wheelBase.in(Meters) / 2) + centerOfMassY.in(Meters))
-                * (g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ())
+                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ())
                 - getGeneralAccelerationDampener();
     }
 
@@ -381,7 +381,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
     public double getMaxBackwardAcceleration() {
         return -((((wheelBase.in(Meters) / 2) - centerOfMassY.in(Meters))
-                * (g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ())
+                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ())
                 + getBackwardAccelerationDampener();
     }
 
@@ -391,7 +391,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
     public double getMaxRightAcceleration() {
         return ((((wheelBase.in(Meters) / 2) + centerOfMassX.in(Meters))
-                * (g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ())
+                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ())
                 - getGeneralAccelerationDampener();
     }
 
@@ -401,7 +401,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
     public double getMaxLeftAcceleration() {
         return -((((wheelBase.in(Meters) / 2) - centerOfMassX.in(Meters))
-                * (g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ())
+                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ())
                 + getGeneralAccelerationDampener();
     }
 
@@ -465,6 +465,12 @@ public class ElevatorSystem extends GenericSubsystem {
         this.growFactor = growFactor;
         this.exponent = exponent;
         this.initialValue = initialValue;
+    }
+
+    public void setCOGFunctionParameters(double growFactor, double exponent, double intialValue) {
+        this.growFactor = growFactor;
+        this.exponent = exponent;
+        this.initialValue = intialValue;
     }
 
     @Override

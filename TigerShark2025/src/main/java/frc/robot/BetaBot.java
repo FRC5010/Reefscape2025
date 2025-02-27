@@ -61,6 +61,9 @@ public class BetaBot extends GenericRobot {
         gyro = (GenericGyro) subsystems.get(ConfigConstants.GYRO);
 
         elevatorSystem = new ElevatorSystem(mechVisual, new ElevatorSystem.Config());
+
+        elevatorSystem.setCOGFunctionParameters(0.167775, 0.822008, 0.210722);
+
         shooter = new ShooterSystem(mechVisual, new ShooterSystem.Config());
         algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config());
 
