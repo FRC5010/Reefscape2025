@@ -6,6 +6,7 @@ package org.frc5010.common.drive.swerve;
 
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Meter;
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
@@ -298,12 +299,13 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   }
 
   public Supplier<Command> driveToPosePrecise(Supplier<Pose2d> pose) {
+    final Transform2d pathOffset = new Transform2d(Meters.of(-0.5), Meters.of(0), new Rotation2d());
     Supplier<Pose3d> pose3D = () -> new Pose3d(pose.get());
     Supplier<DriveToPosition> finishDriving = () -> new DriveToPosition((SwerveDrivetrain) this, this::getPose, pose3D,
         new Transform2d()).withInitialVelocity(() -> getFieldVelocity());
     // Create the constraints to use while pathfinding
     PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond() * 1.0,
-        getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond() * 1.0,
+        getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond() * 0.7,
         getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond(),
         getSwerveConstants().getkTeleDriveMaxAngularAccelerationUnitsPerSecond());
     // PathConstraints constraints = new PathConstraints(
@@ -311,7 +313,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     // swerveDrive.getMaximumChassisAngularVelocity(), Units.degreesToRadians(720));
     // Since AutoBuilder is configured, we can use it to build pathfinding commands
     return () -> new PathfindingCommand5010(
-        pose.get(),
+        pose.get().transformBy(pathOffset),
         constraints,
         0.0,
         this::getPose,
@@ -324,17 +326,20 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         ),
         config,
         this).beforeStarting(() -> {
-          poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose");
+          poseEstimator.setTargetPoseOnField(pose.get().transformBy(pathOffset), "Auto Drive Pose");
           SmartDashboard.putBoolean("Running AutoDrive", true);
         })
+        .until(() -> getPose().getTranslation().getDistance(pose.get().getTranslation()) < 1)
         // .until(() -> RobotModel.circularObstacleWillBeAvoided(obstaclePosition,
         // poseEstimator::getCurrentPose,
         // pose.get(), unavoidableVertices, obstacleRadius, robotRadius,
         // maxRobotDimensionDeviation,
         // maxObstacleDimensionDeviation, obstacleAvoidanceResolution))
-        .until(() -> RobotModel.robotHasLinearPath(getPose(), pose.get(), unavoidableVertices,
-            getSwerveConstants().getTrackWidth(), getSwerveConstants().getWheelBase()))
-        .andThen(finishDriving.get()).finallyDo(() -> SmartDashboard.putBoolean("Running AutoDrive", false));
+        // .until(() -> RobotModel.robotHasLinearPath(getPose(), pose.get(), unavoidableVertices,
+        //     getSwerveConstants().getTrackWidth(), getSwerveConstants().getWheelBase()))
+        .andThen(finishDriving.get().beforeStarting(() -> {
+          poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose");
+        })).finallyDo(() -> SmartDashboard.putBoolean("Running AutoDrive", false));
   }
 
   public Supplier<Command> driveToPosePrecise(Pose2d pose) {

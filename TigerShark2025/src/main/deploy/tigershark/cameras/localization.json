@@ -1,13 +1,13 @@
 {
-    "name": "elphaba",
+    "name": "orange",
     "use": "apriltag",
     "type": "limelight",
     "strategy": "LOWEST_AMBIGUITY",
     "column": 0,
     "x": 0.235,
     "y": -0.305,
-    "z": 0.0,
+    "z": 0.78,
     "roll": 0,
     "pitch": -15,
-    "yaw": 0
+    "yaw": -3
 }

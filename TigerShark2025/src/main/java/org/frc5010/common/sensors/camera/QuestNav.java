@@ -138,11 +138,12 @@ public class QuestNav implements PoseProvider {
     }
 
     public Translation3d getProcessedPosition() {
-        Translation3d hardResetTransformation = rotateAxes(correctWorldAxis(getRawPosition())
-                .plus(robotToQuest.getTranslation())
-                .plus(robotToQuest.getTranslation().times(-1).rotateBy(getRawRotation())),
-                initPose.getRotation())
-                .plus(initPose.getTranslation());
+        Translation3d correctedWorldAxis = correctWorldAxis(getRawPosition());
+        Translation3d offsetCorrection = correctedWorldAxis
+        .plus(robotToQuest.getTranslation())
+        .plus(robotToQuest.getTranslation().times(-1).rotateBy(new Rotation3d(0, 0, getRawRotation().getZ())));
+        Translation3d rotatedAxis = rotateAxes(offsetCorrection, initPose.getRotation());
+        Translation3d hardResetTransformation = rotatedAxis.plus(initPose.getTranslation());
         return hardResetTransformation;
         
     }
@@ -214,7 +215,7 @@ public class QuestNav implements PoseProvider {
     public void resetPose(Pose3d pose) {
         SmartDashboard.putBoolean("Reset Pose", true);
         initializedPosition = true;
-        softReset(pose);
+        hardReset(pose);
     }
 
     

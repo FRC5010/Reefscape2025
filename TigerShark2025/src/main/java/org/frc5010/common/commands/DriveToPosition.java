@@ -257,6 +257,6 @@ public class DriveToPosition extends GenericCommand {
       onTargetCounter++;
     }
 
-    return onTargetCounter > 5;
+    return onTargetCounter > 25;
   }
 }

@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.Arrays;
@@ -251,14 +252,15 @@ public class LimeLightCamera extends GenericCamera {
     
     Stream<RawFiducial> fiducialStream = Arrays.stream(LimelightHelpers.getRawFiducials(name)).sorted((raw1, raw2) -> raw1.ambiguity == raw2.ambiguity ? 0 : (raw1.ambiguity > raw2.ambiguity ? 1 : -1));
     double min_ambiguity = fiducialStream.findFirst().map(fiducial -> fiducial.ambiguity).orElse(100.0);
-    double confidence = estimate.avgTagDist > 2 ? 1.0 : min_ambiguity * Math.max(estimate.avgTagDist/2, 0.5);
-    SmartDashboard.putNumber("Limelight Confidence", min_ambiguity);
+    //double confidence = estimate.avgTagDist > 2 ? 1.0 : min_ambiguity * Math.max(estimate.avgTagDist/2, 0.5);
+    double confidence = min_ambiguity;
+    SmartDashboard.putNumber("Limelight Confidence", confidence);
     return confidence;
   }
 
   @Override
   public boolean isActive() {
-    return hasValidTarget();
+    return hasValidTarget() && DriverStation.isDisabled();
   }
 
   @Override

@@ -81,7 +81,7 @@ public class AlgaeArm extends GenericSubsystem {
         public double zPos = 16.25;
         public GenericPID pid = new GenericPID(2, 0.0, 0.0);
         public MotorFeedFwdConstants feedFwd = new MotorFeedFwdConstants(0.02728, 0.11622, 0.00094272);
-        public double statorCurrentLimit = 120.0;
+        public double statorCurrentLimit = 160.0;
         public double supplyCurrentLimit = 50.0;
         public double maxVelocity = 83.333;
         public double maxAcceleration = 16.66;
@@ -92,13 +92,15 @@ public class AlgaeArm extends GenericSubsystem {
     public AlgaeArm(Mechanism2d mechanismSimulation, Config config) {
         super(mechanismSimulation);
         if (config != null) this.config = config;
-
+       
         motor = new AngularControlMotor(MotorFactory.TalonFX(config.canId, Motor.KrakenX60), "Algae Arm", displayValues);
         motor.setupSimulatedMotor(config.gearing, Pounds.of(config.mass).in(Kilograms), Inches.of(config.length), Degrees.of(config.maxAngle), Degrees.of(config.minAngle),
                 true, config.kG, Degrees.of(config.startAngle), false, config.conversion);
         motor.setVisualizer(mechanismSimulation, new Pose3d(
                 new Translation3d(Inches.of(config.xPos).in(Meters), Inches.of(config.yPos).in(Meters), Inches.of(config.zPos).in(Meters)),
                 new Rotation3d()));
+
+        motor.setMotorBrake(true);
         motor.setValues(config.pid);
         motor.setMotorFeedFwd(config.feedFwd);
         motor.setCurrentLimit(Amps.of(config.statorCurrentLimit));

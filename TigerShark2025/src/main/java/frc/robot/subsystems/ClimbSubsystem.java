@@ -4,7 +4,13 @@
 
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
+
+import java.util.function.DoubleSupplier;
 
 import org.frc5010.common.arch.GenericSubsystem;
 import org.frc5010.common.motors.MotorConstants.Motor;
@@ -13,12 +19,20 @@ import org.frc5010.common.motors.function.PositionControlMotor;
 import org.frc5010.common.sensors.encoder.GenericEncoder;
 import org.frc5010.common.telemetry.DisplayValuesHelper;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
 public class ClimbSubsystem extends GenericSubsystem {
   PositionControlMotor climbMotor;
   GenericEncoder climbMotorEncoder;
+  private final double GEAR_RATIO = 60;
+  private final Distance SPOOL_RADIUS = Inches.of(0.75 / 2.0);
+  private final Distance PIVOT_TO_ATTACHMENT = Inches.of(10);
+  private final Translation2d PIVOT_LOCATION = new Translation2d(Inches.of(20), Inches.of(20));
+
 
   public static enum ClimbPosition {
     RETRACTED(Rotations.of(0.0)),
@@ -35,17 +49,40 @@ public class ClimbSubsystem extends GenericSubsystem {
     }
   }
 
+
+  private Distance rotationsToStringLength(double rotations) {
+    return SPOOL_RADIUS.times(2).times(Math.PI).times(rotations);
+  }
+
+  private Angle spoolRotationsToDegrees(double rotations) {
+    double stringLength = rotationsToStringLength(rotations).in(Meters);
+    double SideB = PIVOT_LOCATION.getNorm();
+    double ClimbSide = PIVOT_TO_ATTACHMENT.in(Meters);
+
+    double climbAngle = Math.acos((Math.pow(stringLength, 2) - Math.pow(SideB, 2) - Math.pow(ClimbSide, 2)) / ( -2 * SideB * ClimbSide));
+    return Radians.of(climbAngle);
+  }
+
+  public Angle getClimbAngle() {
+    return spoolRotationsToDegrees(climbMotorEncoder.getPosition());
+  }
+
   public ClimbSubsystem() {
     climbMotor = new PositionControlMotor(MotorFactory.TalonFX(13, Motor.KrakenX60), "Climb Motor", new DisplayValuesHelper("Motors", "Climb Motor"));
     climbMotorEncoder = climbMotor.getMotorEncoder();
+    climbMotorEncoder.setPositionConversion((1 / GEAR_RATIO));
   }
 
-  public void retractClimb() {
-    Commands.runOnce(() -> climbMotor.set(-0.25)).until(() -> getRotation() <= ClimbPosition.RETRACTED.getPosition().in(Rotations));
+  public Command retractClimb() {
+    return Commands.run(() -> climbMotor.set(-1.0), this).until(() -> getRotation() <= ClimbPosition.RETRACTED.getPosition().in(Rotations));
   }
 
-  public void extendClimb() {
-    Commands.runOnce(() -> climbMotor.set(0.25)).until(() -> getRotation() >= ClimbPosition.EXTENDED.getPosition().in(Rotations));
+  public Command extendClimb() {
+    return Commands.run(() -> climbMotor.set(1.0), this).until(() -> getRotation() >= ClimbPosition.EXTENDED.getPosition().in(Rotations));
+  }
+
+  public Command runClimb(DoubleSupplier speed) {
+    return Commands.run(() -> climbMotor.set(speed.getAsDouble()), this);
   }
 
   public double getRotation() {

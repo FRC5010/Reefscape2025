@@ -38,7 +38,6 @@ import frc.robot.auto_routines.Right4Coral;
 import frc.robot.managers.TargetingSystem;
 import frc.robot.subsystems.AlgaeArm;
 import frc.robot.subsystems.ClimbSubsystem;
-import frc.robot.subsystems.ClimbSystem;
 import frc.robot.subsystems.ElevatorSystem;
 import frc.robot.subsystems.ShooterSystem;
 
@@ -82,6 +81,8 @@ public class TigerShark extends GenericRobot {
 
         ((YAGSLSwerveDrivetrain) drivetrain).setVelocitySuppliers(() -> elevatorSystem.getMaxForwardVelocity(), () -> elevatorSystem.getMaxBackwardVelocity(), () -> elevatorSystem.getMaxRightVelocity(), () -> elevatorSystem.getMaxLeftVelocity());
 
+        resetPositionToStart();
+
         Pose2d obstaclePosition = DriverStation.getAlliance().get() == Alliance.Blue ? new Pose2d(4.48945, 4.0259, new Rotation2d()) : new Pose2d(13.065, 4.0259, new Rotation2d());
         Pose2d[] blueVertices = new Pose2d[] {new Pose2d(3.325, 3.313, new Rotation2d()), new Pose2d(3.325, 4.698, new Rotation2d()), new Pose2d(4.490, 5.332, new Rotation2d()), new Pose2d(5.655, 4.689, new Rotation2d()), new Pose2d(5.655, 3.332, new Rotation2d()), new Pose2d(4.490, 2.700, new Rotation2d())};
         Pose2d[] redVertices = new Pose2d[] {new Pose2d(11.905, 3.313, new Rotation2d()), new Pose2d(11.905, 4.698, new Rotation2d()), new Pose2d(13.07, 5.332, new Rotation2d()), new Pose2d(14.235, 4.689, new Rotation2d()), new Pose2d(14.235, 3.332, new Rotation2d()), new Pose2d(13.07, 2.700, new Rotation2d())};
@@ -93,8 +94,8 @@ public class TigerShark extends GenericRobot {
     }
 
     public void resetPositionToStart() {
-        ((YAGSLSwerveDrivetrain) drivetrain).resetPose(new Pose2d(new Translation2d(Inches.of(-17).plus(FieldConstants.Reef.Side.AB.centerFace.getMeasureX()), FieldConstants.Reef.Side.GH.centerFace.getMeasureY()),
-              Rotation2d.fromDegrees(0)));
+        ((YAGSLSwerveDrivetrain) drivetrain).resetPose(new Pose2d(new Translation2d(Inches.of(17.25).plus(FieldConstants.Reef.Side.GH.centerFace.getMeasureX()), FieldConstants.Reef.Side.GH.centerFace.getMeasureY()),
+              Rotation2d.fromDegrees(180)));
     }
 
     @Override
@@ -152,7 +153,10 @@ public class TigerShark extends GenericRobot {
         driver.LEFT_BUMPER.and(AlgaeArm.algaeSelected).and(ReefscapeButtonBoard.algaeLevelIsSelected)
             .whileTrue(algaeArm.getDeployCommand());
 
-       //driver.createBButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
+       driver.createBButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
+
+
+
 
        driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
                 .pidControlCommand(
@@ -169,6 +173,8 @@ public class TigerShark extends GenericRobot {
         reefscapeButtonBoard.getFireButton().whileTrue(shooter.runMotors(() -> 0.5));
 
         driver.createAButton().onTrue(Commands.runOnce(() -> resetPositionToStart()));
+
+        climb.setDefaultCommand(climb.runClimb(operator::getRightYAxis));
     }
 
     @Override
@@ -207,6 +213,6 @@ public class TigerShark extends GenericRobot {
         addAutoToChooser("Right 4 Coral", new Right4Coral());
         addAutoToChooser("Right 1 Coral", new Right1Coral(((YAGSLSwerveDrivetrain)drivetrain), shooter, elevatorSystem));
         addAutoToChooser("2 Piece Coral", new Coral2(((YAGSLSwerveDrivetrain)drivetrain), shooter, elevatorSystem));
-        addAutoToChooser("Custom Auto", Commands.deferredProxy(() -> new CustomAuto()));
+        addAutoToChooser("Custom Auto", new CustomAuto());
     }
 }

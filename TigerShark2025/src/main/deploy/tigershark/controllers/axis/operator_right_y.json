@@ -5,5 +5,5 @@
     "scale" : 1.0,
     "curvePower" : 3.0,
     "limit" : 1.0,
-    "rate" : 1.0
+    "rate" : 10.0
 }

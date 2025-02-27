@@ -94,9 +94,9 @@ public class CameraConfigurationJson {
         case "limelight": {
           camera = new LimeLightCamera(name, column, robotToCamera);
           ((LimeLightCamera) camera)
-              .setGyroSupplier(() -> (GenericGyro) robot.getDevice(ConfigConstants.GYRO));
-              // .setPoseEstimationChooser(() -> RobotState.isDisabled());
-          ((LimeLightCamera) camera).setIMUMode(0);
+              .setGyroSupplier(() -> (GenericGyro) robot.getDevice(ConfigConstants.GYRO))
+              .setPoseEstimationChooser(() -> false);
+          ((LimeLightCamera) camera).setIMUMode(3);
           break;
         }
         case "photonvision": {

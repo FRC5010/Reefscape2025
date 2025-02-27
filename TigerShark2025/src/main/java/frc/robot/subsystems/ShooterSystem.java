@@ -91,7 +91,7 @@ public class ShooterSystem extends GenericSubsystem {
     entryBroken = new Trigger(entryBeambreak.isBrokenSupplier());
     alignmentBroken = new Trigger(alignmentBeambreak.isBrokenSupplier());
 
-    coralState = entryBeambreak.isBroken() ? CoralState.FULLY_CAPTURED : CoralState.EMPTY;
+    coralState = alignmentBeambreak.isBroken() ? CoralState.FULLY_CAPTURED : CoralState.EMPTY;
 
     isEmpty = new Trigger(() -> coralState == CoralState.EMPTY);
     isEntryActive = new Trigger(() -> coralState == CoralState.ENTRY);
@@ -131,16 +131,17 @@ public class ShooterSystem extends GenericSubsystem {
     Trigger coralOutOfShooter = entryBroken.negate().and(alignmentBroken.negate());
 
     // Empty
-    entryBroken.and(isEmpty).onTrue(setCoralState(CoralState.ENTRY));
+    alignmentBroken.and(isEmpty).onTrue(setCoralState(CoralState.FULLY_CAPTURED));
+    alignmentBroken.negate().onTrue(setCoralState(CoralState.EMPTY));
     // Entry
-    alignmentBroken.and(currentSwitch.getTrigger()).onTrue(setCoralState(CoralState.FULLY_CAPTURED)); // Entry -> Fully Captured
-    coralOutOfShooter.and(isEntryActive).onTrue(setCoralState(CoralState.EMPTY)); // Entry -> Empty
-    // Fully Captured
-    alignmentBroken.and(isCoralFullyCaptured).onFalse(setCoralState(CoralState.ALIGNED)); // Fully Captured -> Aligned
-    coralOutOfShooter.and(isCoralFullyCaptured).onTrue(setCoralState(CoralState.EMPTY)); // Fully Captured -> Empty
-    // Aligned
-    alignmentBroken.and(isAligned).onFalse(setCoralState(CoralState.FULLY_CAPTURED)); // Aligned -> Fully Captured
-    coralOutOfShooter.and(isAligned).onTrue(setCoralState(CoralState.EMPTY)); // Aligned -> Empty
+    // alignmentBroken.and(currentSwitch.getTrigger()).onTrue(setCoralState(CoralState.FULLY_CAPTURED)); // Entry -> Fully Captured
+    // coralOutOfShooter.and(isEntryActive).onTrue(setCoralState(CoralState.EMPTY)); // Entry -> Empty
+    // // Fully Captured
+    // alignmentBroken.and(isCoralFullyCaptured).onFalse(setCoralState(CoralState.ALIGNED)); // Fully Captured -> Aligned
+    // coralOutOfShooter.and(isCoralFullyCaptured).onTrue(setCoralState(CoralState.EMPTY)); // Fully Captured -> Empty
+    // // Aligned
+    // alignmentBroken.and(isAligned).onFalse(setCoralState(CoralState.FULLY_CAPTURED)); // Aligned -> Fully Captured
+    // coralOutOfShooter.and(isAligned).onTrue(setCoralState(CoralState.EMPTY)); // Aligned -> Empty
   }
 
   public void shooterLeftSpeed(double speed) {

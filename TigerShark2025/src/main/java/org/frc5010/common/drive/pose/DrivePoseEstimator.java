@@ -268,7 +268,7 @@ public class DrivePoseEstimator extends GenericSubsystem {
                   robotPose.get().toPose2d(), provider.getCaptureTime(), vision.getStdConfidenceVector(confidence));
               if (confidence < CONFIDENCE_RESET_THRESHOLD && provider.getType() == ProviderType.FIELD_BASED && robotPose.get().getTranslation().getDistance(getCurrentPose3d().getTranslation()) < 0.08) {
                 for (PoseProvider provider2 : poseProviders) {
-                  provider2.resetPose(robotPose.get());
+                  //provider2.resetPose(robotPose.get());
                 }
                 accepterUpdating = true;
                 
@@ -277,6 +277,8 @@ public class DrivePoseEstimator extends GenericSubsystem {
                 
               
             }
+          } else if (DriverStation.isDisabled()) {
+            provider.resetPose(getCurrentPose3d());
           }
           
         }
