@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.auto_routines.AutoChoosers;
 import frc.robot.auto_routines.Coral2;
 import frc.robot.auto_routines.CustomAuto;
+import frc.robot.auto_routines.DriveOnlyCustom;
 import frc.robot.auto_routines.Right1Coral;
 import frc.robot.auto_routines.Right4Coral;
 import frc.robot.managers.TargetingSystem;
@@ -48,6 +49,7 @@ public class Elphaba extends GenericRobot {
     GenericGyro gyro;
     ReefscapeButtonBoard reefscapeButtonBoard;
     AutoChoosers autoChoosers;
+    
 
     public Elphaba(String directory) {
         super(directory);
@@ -87,6 +89,7 @@ public class Elphaba extends GenericRobot {
 
         ((YAGSLSwerveDrivetrain) drivetrain).setUpCircularObstacle(obstaclePosition, vertices, obstacleRadius.in(Meters), robotRadius.in(Meters), maximumRobotDimensionDeviation.in(Meters), maximumObstacleDimensionDeviation.in(Meters), 100);
     }
+
 
     public void resetPositionToStart() {
         ((YAGSLSwerveDrivetrain) drivetrain).resetPose(new Pose2d(new Translation2d(Inches.of(-17).plus(FieldConstants.Reef.Side.AB.centerFace.getMeasureX()), FieldConstants.Reef.Side.GH.centerFace.getMeasureY()),
@@ -164,19 +167,19 @@ public class Elphaba extends GenericRobot {
 
         reefscapeButtonBoard.getFireButton().whileTrue(shooter.runMotors(() -> 0.5));
 
-        driver.createAButton().onTrue(Commands.runOnce(() -> resetPositionToStart()));
+        driver.createBackButton().onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true));
     }
 
     @Override
     public void setupDefaultCommands(Controller driver, Controller operator) {
         // JoystickToSwerve driveCmd = (JoystickToSwerve)drivetrain.createDefaultCommand(driver);
-        Command driveCmd = ((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorFieldRelative(() -> ((YAGSLSwerveDrivetrain) drivetrain).getFieldVelocitiesFromJoystick(driver::getLeftYAxis, driver::getLeftXAxis, driver::getRightXAxis));
+        Command driveCmd = ((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorOrientationConsidered(() -> ((YAGSLSwerveDrivetrain) drivetrain).getFieldVelocitiesFromJoystick(driver::getLeftYAxis, driver::getLeftXAxis, driver::getRightXAxis));
 
         drivetrain.setDefaultCommand(driveCmd);
 
         shooter.setDefaultCommand(shooter.runMotors(() -> operator.getLeftTrigger()));
 
-        elevatorSystem.setDefaultCommand(elevatorSystem.basicSuppliersMovement(operator::getLeftYAxis));
+       // elevatorSystem.setDefaultCommand(elevatorSystem.basicSuppliersMovement(operator::getLeftYAxis));
         algaeArm.setDefaultCommand(algaeArm.getInitialCommand(operator::getRightTrigger));
 
 
@@ -204,5 +207,6 @@ public class Elphaba extends GenericRobot {
         addAutoToChooser("Right 1 Coral", new Right1Coral(((YAGSLSwerveDrivetrain)drivetrain), shooter, elevatorSystem));
         addAutoToChooser("2 Piece Coral", new Coral2(((YAGSLSwerveDrivetrain)drivetrain), shooter, elevatorSystem));
         addAutoToChooser("Custom Auto", Commands.deferredProxy(() -> new CustomAuto()));
+        addAutoToChooser("Drive Only Custom Auto", new DriveOnlyCustom());
     }
 }

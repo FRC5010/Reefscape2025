@@ -11,6 +11,8 @@ import java.util.function.Supplier;
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -32,6 +34,8 @@ public class TargetingSystem {
     public static Supplier<Distance> maxHeight; 
 
     private static Distance MAX_NO_TIPPY_HEIGHT = Meters.of(0.5);
+    private static Transform2d CoralOffset = new Transform2d(-0.5, 0.0, new Rotation2d());
+    private static Transform2d StationOffset = new Transform2d(0.5, 0.0, new Rotation2d());
 
 
     public static void setupParameters(YAGSLSwerveDrivetrain drivetrain, ShooterSystem shooter, ElevatorSystem elevator,
@@ -46,6 +50,10 @@ public class TargetingSystem {
 
         
 
+    }
+
+    public static YAGSLSwerveDrivetrain getDrivetrain() {
+        return drivetrain;
     }
 
     private static double getDrivetrainSpeed() {
@@ -66,14 +74,14 @@ public class TargetingSystem {
     public static Command createCoralScoringSequence(Pose2d targetPose, ScoringLevel scoringLevel) {
         Distance level = elevator.selectElevatorLevel(() -> scoringLevel);
 
-        return drivetrain.driveToPosePrecise(targetPose).get()
+        return drivetrain.driveToPosePrecise(targetPose, CoralOffset).get()
                 .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)));
     }
 
     public static Command createAutoCoralScoringSequence(Pose2d targetPose, ScoringLevel scoringLevel) {
         Distance level = elevator.selectElevatorLevel(() -> scoringLevel);
         Distance intakeLevel = elevator.selectElevatorLevel(() -> ScoringLevel.INTAKE);
-        return drivetrain.driveToPosePrecise(targetPose).get()
+        return drivetrain.driveToPosePrecise(targetPose, CoralOffset).get()
                 .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level))
                         .andThen(shooter.runMotors(() -> 1.0).until(shooter.isEmpty()))).andThen(elevator.pidControlCommand(intakeLevel).until(() -> elevator.isAtLocation(intakeLevel)));
     }
@@ -81,7 +89,7 @@ public class TargetingSystem {
     public static Command createLoadingSequence(Pose2d targetPose) {
         Distance level = elevator.selectElevatorLevel(() -> ScoringLevel.INTAKE);
 
-        return drivetrain.driveToPosePrecise(targetPose).get()
+        return drivetrain.driveToPosePrecise(targetPose, StationOffset).get()
                 .alongWith(Commands.runOnce(() -> SmartDashboard.putNumber("Elevator Level:", level.in(Meters))),
                         elevator.pidControlCommand(level));
     }
@@ -92,7 +100,7 @@ public class TargetingSystem {
         // return drivetrain.driveToPosePrecise(targetPose).get()
         //         .alongWith(Commands.runOnce(() -> SmartDashboard.putNumber("Elevator Level:", level.in(Meters))),
         //                 elevator.pidControlCommand(level));
-        return elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)).andThen(drivetrain.driveToPosePrecise(targetPose).get().alongWith(shooter.runMotors(() -> 1.0).until(shooter.isFullyCaptured()).andThen(Commands.runOnce(() -> {
+        return elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)).andThen(drivetrain.driveToPosePrecise(targetPose, StationOffset).get().alongWith(shooter.runMotors(() -> 1.0).until(shooter.isFullyCaptured()).andThen(Commands.runOnce(() -> {
             shooter.shooterLeftSpeed(0);
             shooter.shooterRightSpeed(0);
         }, shooter))));

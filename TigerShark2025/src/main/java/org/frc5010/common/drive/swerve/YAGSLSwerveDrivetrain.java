@@ -298,14 +298,13 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     );
   }
 
-  public Supplier<Command> driveToPosePrecise(Supplier<Pose2d> pose) {
-    final Transform2d pathOffset = new Transform2d(Meters.of(-0.5), Meters.of(0), new Rotation2d());
+  public Supplier<Command> driveToPosePrecise(Supplier<Pose2d> pose, Transform2d PathPlanOffset) {
     Supplier<Pose3d> pose3D = () -> new Pose3d(pose.get());
     Supplier<DriveToPosition> finishDriving = () -> new DriveToPosition((SwerveDrivetrain) this, this::getPose, pose3D,
         new Transform2d()).withInitialVelocity(() -> getFieldVelocity());
     // Create the constraints to use while pathfinding
     PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond() * 1.0,
-        getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond() * 0.7,
+        getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond() * 1.0,
         getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond(),
         getSwerveConstants().getkTeleDriveMaxAngularAccelerationUnitsPerSecond());
     // PathConstraints constraints = new PathConstraints(
@@ -313,7 +312,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     // swerveDrive.getMaximumChassisAngularVelocity(), Units.degreesToRadians(720));
     // Since AutoBuilder is configured, we can use it to build pathfinding commands
     return () -> new PathfindingCommand5010(
-        pose.get().transformBy(pathOffset),
+        pose.get().transformBy(PathPlanOffset),
         constraints,
         0.0,
         this::getPose,
@@ -326,10 +325,10 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         ),
         config,
         this).beforeStarting(() -> {
-          poseEstimator.setTargetPoseOnField(pose.get().transformBy(pathOffset), "Auto Drive Pose");
+          poseEstimator.setTargetPoseOnField(pose.get().transformBy(PathPlanOffset), "Auto Drive Pose");
           SmartDashboard.putBoolean("Running AutoDrive", true);
         })
-        .until(() -> getPose().getTranslation().getDistance(pose.get().getTranslation()) < 1)
+        .until(() -> getPose().getTranslation().getDistance(pose.get().getTranslation()) < 0.6)
         // .until(() -> RobotModel.circularObstacleWillBeAvoided(obstaclePosition,
         // poseEstimator::getCurrentPose,
         // pose.get(), unavoidableVertices, obstacleRadius, robotRadius,
@@ -342,8 +341,12 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         })).finallyDo(() -> SmartDashboard.putBoolean("Running AutoDrive", false));
   }
 
-  public Supplier<Command> driveToPosePrecise(Pose2d pose) {
-    return driveToPosePrecise(() -> pose);
+  public Supplier<Command> driveToPosePrecise(Supplier<Pose2d> pose) {
+    return driveToPosePrecise(pose, new Transform2d());
+  }
+
+  public Supplier<Command> driveToPosePrecise(Pose2d pose, Transform2d PathPlanOffset) {
+    return driveToPosePrecise(() -> pose, PathPlanOffset);
   }
 
   public ChassisSpeeds getFieldVelocitiesFromJoystick(DoubleSupplier xSpdFunction, DoubleSupplier ySpdFunction,
@@ -407,12 +410,8 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
    * @throws IOException    If the PathPlanner GUI settings is invalid
    * @throws ParseException If PathPlanner GUI settings is nonexistent.
    */
-  private Command driveWithSetpointGenerator(Supplier<ChassisSpeeds> robotRelativeChassisSpeed)
+  public Command driveWithSetpointGenerator(Supplier<ChassisSpeeds> robotRelativeChassisSpeed)
       throws IOException, ParseException {
-        if (Double.isNaN(robotRelativeChassisSpeed.get().vxMetersPerSecond)) {
-          robotRelativeChassisSpeed.get();
-          System.out.println("Problem");
-        }
     SwerveSetpointGenerator5010 setpointGenerator = new SwerveSetpointGenerator5010(RobotConfig.fromGUISettings(),
         swerveDrive.getMaximumModuleAngleVelocity().in(RadiansPerSecond));
 
@@ -492,9 +491,6 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     try {
       return driveWithSetpointGenerator(() -> {
         ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(fieldRelativeSpeeds.get(), getHeading());
-        if (Double.isNaN(speeds.vxMetersPerSecond)) {
-          System.out.println("Problem");
-        }
         return speeds;
 
       });
@@ -502,7 +498,19 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
       DriverStation.reportError(e.toString(), true);
     }
     return Commands.none();
+  }
 
+  public Command driveWithSetpointGeneratorOrientationConsidered(Supplier<ChassisSpeeds> inputSpeeds) {
+    try {
+      return driveWithSetpointGenerator(() -> {
+        ChassisSpeeds speeds = isFieldOrientedDrive.getValue() ? ChassisSpeeds.fromFieldRelativeSpeeds(inputSpeeds.get(), getHeading()) : inputSpeeds.get();
+        return speeds;
+
+      });
+    } catch (Exception e) {
+      DriverStation.reportError(e.toString(), true);
+    }
+    return Commands.none();
   }
 
   /**

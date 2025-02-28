@@ -35,7 +35,7 @@ public class DriveToPosition extends GenericCommand {
 
   private final GenericPID pidTranslation = new GenericPID(2.5, 0, 0);
   /** The PID constants for rotation */
-  private final GenericPID pidRotation = new GenericPID(1, 0, 0);
+  private final GenericPID pidRotation = new GenericPID(0.5, 0, 0);
 
   private int onTargetCounter = 0;
 
@@ -109,9 +109,9 @@ public class DriveToPosition extends GenericCommand {
     this.poseProvider = poseProvider;
     this.targetPoseProvider = targetPoseProvider;
 
-    xController.setTolerance(0.01);
-    yController.setTolerance(0.005);
-    thetaController.setTolerance(Units.degreesToRadians(3));
+    xController.setTolerance(0.02);
+    yController.setTolerance(0.015);
+    thetaController.setTolerance(Units.degreesToRadians(5));
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
     targetTransform = offset;
@@ -229,9 +229,10 @@ public class DriveToPosition extends GenericCommand {
     // yController.calculate(robotPose.getY()) *
     // swerveSubsystem.getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond()
     // ,0));
-
+    ySpeed = ySpeed + yController.getSetpoint().velocity*0.8;
+    double ySign = Math.signum(ySpeed);
     ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-        xSpeed + xController.getSetpoint().velocity*0.5, ySpeed + yController.getSetpoint().velocity*0.5, thetaSpeed + thetaController.getSetpoint().velocity*0.5, swerveSubsystem.getHeading());
+        xSpeed + xController.getSetpoint().velocity*0.8, Math.max(Math.abs(ySpeed), 0.1) * ySign, thetaSpeed + thetaController.getSetpoint().velocity*0.8, swerveSubsystem.getHeading());
 
     SmartDashboard.putNumber("X Speed", chassisSpeeds.vxMetersPerSecond);
     SmartDashboard.putNumber("Y Speed", chassisSpeeds.vyMetersPerSecond);
@@ -257,6 +258,6 @@ public class DriveToPosition extends GenericCommand {
       onTargetCounter++;
     }
 
-    return onTargetCounter > 25;
+    return onTargetCounter > 20;
   }
 }

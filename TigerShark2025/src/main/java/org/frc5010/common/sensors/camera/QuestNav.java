@@ -43,6 +43,7 @@ public class QuestNav implements PoseProvider {
     private Pose3d initPose = new Pose3d();
     private Transform3d softResetTransform = new Transform3d();
     private Pose3d softResetPose = new Pose3d();
+    private double xScale = 1.03;
 
     private IntegerEntry miso;
     private IntegerPublisher mosi;
@@ -112,7 +113,7 @@ public class QuestNav implements PoseProvider {
     }
 
     public Translation3d getRawPosition() {
-        return new Translation3d(position.get()[2], -position.get()[0], position.get()[1]);
+        return new Translation3d(position.get()[2], -position.get()[0]*xScale, position.get()[1]);
     }
 
     private Translation3d rotateAxes(Translation3d raw, Rotation3d rotation) {
@@ -178,16 +179,17 @@ public class QuestNav implements PoseProvider {
     }
 
     public boolean isActive() {
-        double t = timestamp.get();
-        boolean simulation = RobotBase.isSimulation();
-        boolean disabled = DriverStation.isDisabled();
-        double frame = frameCount.get();
-        double previousFrame = previousFrameCount;
-        if (t == 0|| simulation || disabled || previousFrame == frameCount.get()) {
-        return false;
-        }
-        previousFrameCount = frameCount.get();
-        return initializedPosition;
+        return true;
+        // double t = timestamp.get();
+        // boolean simulation = RobotBase.isSimulation();
+        // boolean disabled = DriverStation.isDisabled();
+        // double frame = frameCount.get();
+        // double previousFrame = previousFrameCount;
+        // if (t == 0|| simulation || disabled || previousFrame == frameCount.get()) {
+        // return false;
+        // }
+        // previousFrameCount = frameCount.get();
+        // return initializedPosition;
     }
 
     public boolean processQuestCommand(QuestCommand command) {

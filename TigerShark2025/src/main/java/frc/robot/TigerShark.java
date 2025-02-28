@@ -26,13 +26,16 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.auto_routines.AutoChoosers;
 import frc.robot.auto_routines.Coral2;
 import frc.robot.auto_routines.CustomAuto;
+import frc.robot.auto_routines.DriveOnlyCustom;
 import frc.robot.auto_routines.Right1Coral;
 import frc.robot.auto_routines.Right4Coral;
 import frc.robot.managers.TargetingSystem;
@@ -50,6 +53,7 @@ public class TigerShark extends GenericRobot {
     GenericGyro gyro;
     ReefscapeButtonBoard reefscapeButtonBoard;
     AutoChoosers autoChoosers;
+    DigitalInput brainZero;
 
     public TigerShark(String directory) {
         super(directory);
@@ -58,12 +62,12 @@ public class TigerShark extends GenericRobot {
         CameraServer.startAutomaticCapture();
         
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
-        
+        brainZero = new DigitalInput(0);
 
         gyro = (GenericGyro) subsystems.get(ConfigConstants.GYRO);
 
         ElevatorSystem.Config eleConfig = new ElevatorSystem.Config();
-        eleConfig.gearing = 72.0 / 14.0;
+        eleConfig.gearing = 72.0 / 12.0;
         elevatorSystem = new ElevatorSystem(mechVisual, eleConfig);
         shooter = new ShooterSystem(mechVisual, new ShooterSystem.Config());
         algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config());
@@ -172,7 +176,8 @@ public class TigerShark extends GenericRobot {
 
         reefscapeButtonBoard.getFireButton().whileTrue(shooter.runMotors(() -> 0.5));
 
-        driver.createAButton().onTrue(Commands.runOnce(() -> resetPositionToStart()));
+        driver.createBackButton().onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true));
+        new Trigger(brainZero::get).onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true));
 
         climb.setDefaultCommand(climb.runClimb(operator::getRightYAxis));
     }
@@ -214,5 +219,6 @@ public class TigerShark extends GenericRobot {
         addAutoToChooser("Right 1 Coral", new Right1Coral(((YAGSLSwerveDrivetrain)drivetrain), shooter, elevatorSystem));
         addAutoToChooser("2 Piece Coral", new Coral2(((YAGSLSwerveDrivetrain)drivetrain), shooter, elevatorSystem));
         addAutoToChooser("Custom Auto", new CustomAuto());
+        
     }
 }

@@ -147,7 +147,7 @@ public class SwerveDrivetrain extends GenericDrivetrain {
       } else {
 
       }
-      driver.createBackButton().onTrue(Commands.runOnce(() -> toggleFieldOrientedDrive()));
+      driver.createAButton().onTrue(Commands.runOnce(() -> toggleFieldOrientedDrive()));
       driver
           .createDownPovButton()
           .whileTrue(
