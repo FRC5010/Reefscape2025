@@ -66,6 +66,12 @@
       "/Shuffleboard/Pancake/Auto Modes": "String Chooser",
       "/Shuffleboard/Pose/Pose Field": "Field2d",
       "/Shuffleboard/TigerShark/Auto Modes": "String Chooser",
+      "/Shuffleboard/TigerShark/Level": "String Chooser",
+      "/Shuffleboard/TigerShark/Loading Station": "String Chooser",
+      "/Shuffleboard/TigerShark/Reef 1": "String Chooser",
+      "/Shuffleboard/TigerShark/Reef 2": "String Chooser",
+      "/Shuffleboard/TigerShark/Reef 3": "String Chooser",
+      "/Shuffleboard/TigerShark/Reef 4": "String Chooser",
       "/SmartDashboard/Alerts": "Alerts",
       "/SmartDashboard/Drive Visual": "Mechanism2d",
       "/SmartDashboard/DriveToPosition": "Command",
@@ -664,7 +670,10 @@
         "left": 534,
         "right": 3466,
         "top": 291,
-        "width": 17.54825210571289
+        "width": 17.54825210571289,
+        "window": {
+          "visible": true
+        }
       }
     }
   },

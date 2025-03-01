@@ -43,7 +43,7 @@ public class QuestNav implements PoseProvider {
     private Pose3d initPose = new Pose3d();
     private Transform3d softResetTransform = new Transform3d();
     private Pose3d softResetPose = new Pose3d();
-    private double xScale = 1.03;
+    private double xScale = 1.0;
 
     private IntegerEntry miso;
     private IntegerPublisher mosi;

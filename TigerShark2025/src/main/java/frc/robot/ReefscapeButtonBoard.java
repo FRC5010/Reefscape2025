@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 
 import org.frc5010.common.sensors.ButtonBoard;
 import org.frc5010.common.sensors.Controller;
+import org.frc5010.common.utils.AllianceFlip;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -296,7 +297,7 @@ public class ReefscapeButtonBoard {
     }
 
     public static Pose2d getLoadingPose(LoadingStationLocation loadingStationLocation) {
-        return loadingStationLocation.getPose();
+        return AllianceFlip.apply(loadingStationLocation.getPose());
     }
 
     public static Pose2d getStationPose() {
@@ -308,11 +309,11 @@ public class ReefscapeButtonBoard {
     }
 
     public static Pose2d getScoringPose() {
-        return scoringLocation.getPose().transformBy(scoringAlignment.getTransform2d());
+        return AllianceFlip.apply(scoringLocation.getPose().transformBy(scoringAlignment.getTransform2d()));
     }
 
     public static Pose2d getScoringPose(ScoringLocation location, ScoringAlignment alignment) {
-        return location.getPose().transformBy(alignment.getTransform2d());
+        return AllianceFlip.apply(location.getPose().transformBy(alignment.getTransform2d()));
     }
 
     public static Supplier<Pose2d> getScoringPoseSupplier() {

@@ -385,8 +385,8 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     ChassisSpeeds chassisSpeeds;
 
     chassisSpeeds = new ChassisSpeeds(
-        DriverStation.getAlliance().get() == Alliance.Red ? -xSpeed : xSpeed,
-        DriverStation.getAlliance().get() == Alliance.Red ? -ySpeed : ySpeed,
+        DriverStation.getAlliance().get() == Alliance.Red && isFieldOrientedDrive.getValue() ? -xSpeed : xSpeed,
+        DriverStation.getAlliance().get() == Alliance.Red && isFieldOrientedDrive.getValue() ? -ySpeed : ySpeed,
         turnSpeed);
 
     previousLeftXInput = xInput;

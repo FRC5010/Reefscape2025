@@ -98,8 +98,8 @@ public class TigerShark extends GenericRobot {
     }
 
     public void resetPositionToStart() {
-        ((YAGSLSwerveDrivetrain) drivetrain).resetPose(new Pose2d(new Translation2d(Inches.of(17.25).plus(FieldConstants.Reef.Side.GH.centerFace.getMeasureX()), FieldConstants.Reef.Side.GH.centerFace.getMeasureY()),
-              Rotation2d.fromDegrees(180)));
+        ((YAGSLSwerveDrivetrain) drivetrain).resetPose(AllianceFlip.apply(new Pose2d(new Translation2d(Inches.of(34.75/2).plus(FieldConstants.Reef.Side.GH.centerFace.getMeasureX()), FieldConstants.Reef.Side.GH.centerFace.getMeasureY()),
+              Rotation2d.fromDegrees(180))));
     }
 
     @Override
@@ -185,7 +185,9 @@ public class TigerShark extends GenericRobot {
     @Override
     public void setupDefaultCommands(Controller driver, Controller operator) {
         // JoystickToSwerve driveCmd = (JoystickToSwerve)drivetrain.createDefaultCommand(driver);
-        Command driveCmd = ((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorFieldRelative(() -> ((YAGSLSwerveDrivetrain) drivetrain).getFieldVelocitiesFromJoystick(driver::getLeftYAxis, driver::getLeftXAxis, driver::getRightXAxis));
+        Command driveCmd = ((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorOrientationConsidered(() -> ((YAGSLSwerveDrivetrain) drivetrain).getFieldVelocitiesFromJoystick(driver::getLeftYAxis, driver::getLeftXAxis, driver::getRightXAxis));
+
+
 
         drivetrain.setDefaultCommand(driveCmd);
 
