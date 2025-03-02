@@ -101,6 +101,7 @@ public class ElevatorSystem extends GenericSubsystem {
     private double growFactor = 0.233035, exponent = 0.824063, initialValue = 0.189682;
     private double lastError;
     private double lastTimestamp = 0;
+    private int elevatorAtReferenceCounter = 0;
 
     public static class Config {
         public final Current MAX_ELEVATOR_STATOR_CURRENT_LIMIT = Amps.of(120);
@@ -354,6 +355,15 @@ public class ElevatorSystem extends GenericSubsystem {
 
     public Boolean isAtLocation(Distance position) {
         return Math.abs(position.in(Meters) - elevator.getPosition()) < 0.02;
+    }
+
+    public Boolean isAtLocationImproved(Distance position) {
+        if (Math.abs(position.in(Meters) - elevator.getPosition()) < 0.02) {
+            elevatorAtReferenceCounter++;
+            return elevatorAtReferenceCounter > 10;
+        }
+        elevatorAtReferenceCounter = 0;
+        return false;
     }
 
     public double getCenterOfMassZ() {

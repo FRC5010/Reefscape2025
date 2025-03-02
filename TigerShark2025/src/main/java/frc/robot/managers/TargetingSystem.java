@@ -44,12 +44,6 @@ public class TargetingSystem {
         TargetingSystem.shooter = shooter;
         TargetingSystem.elevator = elevator;
         TargetingSystem.arm = arm;
-
-        
-
-
-        
-
     }
 
     public static YAGSLSwerveDrivetrain getDrivetrain() {
@@ -75,15 +69,15 @@ public class TargetingSystem {
         Distance level = elevator.selectElevatorLevel(() -> scoringLevel);
 
         return drivetrain.driveToPosePrecise(targetPose, CoralOffset).get()
-                .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)));
+                .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocationImproved(level)));
     }
 
     public static Command createAutoCoralScoringSequence(Pose2d targetPose, ScoringLevel scoringLevel) {
         Distance level = elevator.selectElevatorLevel(() -> scoringLevel);
         Distance intakeLevel = elevator.selectElevatorLevel(() -> ScoringLevel.INTAKE);
         return drivetrain.driveToPosePrecise(targetPose, CoralOffset).get()
-                .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level))
-                        .andThen(shooter.runMotors(() -> 1.0).until(shooter.isEmpty()))).andThen(elevator.pidControlCommand(intakeLevel).until(() -> elevator.isAtLocation(intakeLevel)));
+                .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocationImproved(level))
+                        .andThen(shooter.runMotors(() -> 1.0).until(shooter.isEmpty()))).andThen(elevator.pidControlCommand(intakeLevel).until(() -> elevator.isAtLocationImproved(intakeLevel)));
     }
 
     public static Command createLoadingSequence(Pose2d targetPose) {
@@ -100,9 +94,13 @@ public class TargetingSystem {
         // return drivetrain.driveToPosePrecise(targetPose).get()
         //         .alongWith(Commands.runOnce(() -> SmartDashboard.putNumber("Elevator Level:", level.in(Meters))),
         //                 elevator.pidControlCommand(level));
-        return elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)).andThen(drivetrain.driveToPosePrecise(targetPose, StationOffset).get().alongWith(shooter.runMotors(() -> 1.0).until(shooter.isFullyCaptured()).andThen(Commands.runOnce(() -> {
+        return elevator.pidControlCommand(level).until(() -> elevator.isAtLocationImproved(level)).andThen(drivetrain.driveToPosePrecise(targetPose, StationOffset).get().alongWith(shooter.runMotors(() -> 1.0).until(shooter.isFullyCaptured()).andThen(Commands.runOnce(() -> {
             shooter.shooterLeftSpeed(0);
             shooter.shooterRightSpeed(0);
         }, shooter))));
+    }
+
+    public static Command driveXMetersQuest(Distance distance) {
+        return drivetrain.driveToPose(drivetrain.getPose().transformBy(new Transform2d(distance.in(Meters), 0.0, drivetrain.getHeading())));
     }
 }

@@ -54,6 +54,7 @@ public class TigerShark extends GenericRobot {
     ReefscapeButtonBoard reefscapeButtonBoard;
     AutoChoosers autoChoosers;
     DigitalInput brainZero;
+    Pose2d startingPose1, startingPose2, startingPose3;
 
     public TigerShark(String directory) {
         super(directory);
@@ -95,6 +96,10 @@ public class TigerShark extends GenericRobot {
 
 
         ((YAGSLSwerveDrivetrain) drivetrain).setUpCircularObstacle(obstaclePosition, vertices, obstacleRadius.in(Meters), robotRadius.in(Meters), maximumRobotDimensionDeviation.in(Meters), maximumObstacleDimensionDeviation.in(Meters), 100);
+
+        startingPose1 = new Pose2d(FieldConstants.innerStartingLineX.minus(Inches.of(1.0)).plus(Inches.of(17.875)).in(Meters), FieldConstants.fieldDimensions.fieldWidth.minus(Inches.of(17.875)).in(Meters), new Rotation2d(180));
+        startingPose2 = new Pose2d(FieldConstants.innerStartingLineX.minus(Inches.of(1.0)).plus(Inches.of(17.875)).in(Meters), FieldConstants.fieldDimensions.fieldWidth.in(Meters) / 2, new Rotation2d(180));
+        startingPose3 = new Pose2d(FieldConstants.innerStartingLineX.minus(Inches.of(1.0)).plus(Inches.of(17.875)).in(Meters), Inches.of(17.875).in(Meters), new Rotation2d(180));
     }
 
     public void resetPositionToStart() {
@@ -132,6 +137,7 @@ public class TigerShark extends GenericRobot {
                             3.14 * 5,
                             drivetrain));
 
+            operator.createYButton().onTrue(TargetingSystem.driveXMetersQuest(Meters.of(1.0)));
             return;
         }
         reefscapeButtonBoard.configureOperatorButtonBindings(operator);
