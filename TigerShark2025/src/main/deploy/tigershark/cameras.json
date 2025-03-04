@@ -1,6 +1,7 @@
 {
   "cameras": [
     "quest.json",
+    "photonvision.json",
     "localization.json"
   ]
 }

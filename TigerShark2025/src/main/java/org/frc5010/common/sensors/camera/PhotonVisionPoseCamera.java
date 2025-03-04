@@ -4,6 +4,8 @@
 
 package org.frc5010.common.sensors.camera;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -24,16 +26,18 @@ public class PhotonVisionPoseCamera extends PhotonVisionCamera {
   protected PoseStrategy strategy;
   /** The pose supplier */
   protected Supplier<Pose2d> poseSupplier;
+  /** The current list of fiducial IDs */
+  protected List<Integer> fiducialIds = new ArrayList<>();
 
   /**
    * Constructor
    *
-   * @param name - the name of the camera
-   * @param colIndex - the column index for the dashboard
-   * @param fieldLayout - the field layout
-   * @param strategy - the pose strategy
+   * @param name          - the name of the camera
+   * @param colIndex      - the column index for the dashboard
+   * @param fieldLayout   - the field layout
+   * @param strategy      - the pose strategy
    * @param cameraToRobot - the camera-to-robot transform
-   * @param poseSupplier - the pose supplier
+   * @param poseSupplier  - the pose supplier
    */
   public PhotonVisionPoseCamera(
       String name,
@@ -49,12 +53,34 @@ public class PhotonVisionPoseCamera extends PhotonVisionCamera {
     poseEstimator = new PhotonPoseEstimator(fieldLayout, strategy, cameraToRobot);
   }
 
+  public PhotonVisionPoseCamera(
+      String name,
+      int colIndex,
+      AprilTagFieldLayout fieldLayout,
+      PoseStrategy strategy,
+      Transform3d cameraToRobot,
+      Supplier<Pose2d> poseSupplier,
+      List<Integer> fiducialIds) {
+    super(name, colIndex, cameraToRobot);
+    this.strategy = strategy;
+    this.poseSupplier = poseSupplier;
+    this.fieldLayout = fieldLayout;
+    this.fiducialIds = fiducialIds;
+    poseEstimator = new PhotonPoseEstimator(fieldLayout, strategy, cameraToRobot);
+  }
+
   /** Update the camera and target with the latest result */
   @Override
   public void updateCameraInfo() {
     super.updateCameraInfo();
     if (camResult.hasTargets()) {
-      target = Optional.ofNullable(camResult.getBestTarget());
+      if (fiducialIds.size() > 0) {
+        target = camResult.getTargets().stream()
+            .filter(it -> fiducialIds.contains(it.getFiducialId()))
+            .findFirst();
+      } else {
+        target = Optional.ofNullable(camResult.getBestTarget());
+      }
     }
   }
 

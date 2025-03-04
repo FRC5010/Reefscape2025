@@ -179,5 +179,6 @@ public class PhotonVisionCamera extends GenericCamera {
     return getLatency();
   }
 
-  public void resetPose(Pose3d init) {}
+  public void resetPose(Pose3d init) {
+  }
 }

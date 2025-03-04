@@ -37,6 +37,7 @@ public class SimulatedFiducialTargetCamera extends SimulatedCamera {
       List<Integer> fiducialIds) {
     super(name, colIndex, fieldLayout, strategy, cameraToRobot, poseSupplier);
     this.fiducialIds = fiducialIds;
+    visionLayout.addDouble("Target ID", () -> target.map(it -> it.getFiducialId()).orElse(-1));
   }
 
   /** Update the simulated camera */
@@ -49,5 +50,10 @@ public class SimulatedFiducialTargetCamera extends SimulatedCamera {
               .filter(it -> fiducialIds.contains(it.getFiducialId()))
               .findFirst();
     }
+  }
+
+  @Override
+  public boolean hasValidTarget() {
+    return target.isPresent();
   }
 }
