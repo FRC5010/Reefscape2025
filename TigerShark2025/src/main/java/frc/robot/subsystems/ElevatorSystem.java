@@ -23,7 +23,6 @@ import org.frc5010.common.motors.function.VerticalPositionControlMotor;
 import org.frc5010.common.motors.hardware.GenericTalonFXMotor;
 import org.frc5010.common.sensors.ValueSwitch;
 import org.frc5010.common.telemetry.DisplayLength;
-import org.opencv.core.Mat;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;

@@ -66,6 +66,12 @@ public class CameraConfigurationJson {
   public double pitch = 0;
   /** Camera yaw angle in degrees, in the robot's reference frame */
   public double yaw = 0;
+  /** Camera width in pixels */
+  public int width = 800;
+  /** Camera height in pixels */
+  public int height = 600;
+  /* Camera FOV in degrees */
+  public double fov = 70;
   /** optional target height in meters */
   public double targetHeight = 0;
   /** optional target fiducial id */
@@ -156,15 +162,15 @@ public class CameraConfigurationJson {
               PoseStrategy.valueOf(strategy),
               robotToCamera,
               robot.getPoseSupplier(),
-              targetFiducialIdList);
+              targetFiducialIdList, width, height, fov);
         } else {
-        camera = new SimulatedCamera(
-            name,
-            column,
-            AprilTags.aprilTagFieldLayout,
-            PoseStrategy.valueOf(strategy),
-            robotToCamera,
-            robot.getSimulatedPoseSupplier());
+          camera = new SimulatedCamera(
+              name,
+              column,
+              AprilTags.aprilTagFieldLayout,
+              PoseStrategy.valueOf(strategy),
+              robotToCamera,
+              robot.getSimulatedPoseSupplier(), width, height, fov);
         }
       } else if (targetFiducialIds.length > 0) {
         List<Integer> targetFiducialIdList = new ArrayList<>();
@@ -178,7 +184,7 @@ public class CameraConfigurationJson {
             PoseStrategy.LOWEST_AMBIGUITY,
             robotToCamera,
             robot.getSimulatedPoseSupplier(),
-            targetFiducialIdList);
+            targetFiducialIdList, width, height, fov);
       } else if (targetHeight > 0) {
         camera = new SimulatedVisualTargetCamera(
             name,
@@ -186,7 +192,7 @@ public class CameraConfigurationJson {
             AprilTags.aprilTagFieldLayout,
             PoseStrategy.LOWEST_AMBIGUITY,
             robotToCamera,
-            robot.getSimulatedPoseSupplier());
+            robot.getSimulatedPoseSupplier(), width, height, fov);
       } else if (!"quest".equalsIgnoreCase(use)) {
         camera = new SimulatedCamera(
             name,
@@ -194,7 +200,7 @@ public class CameraConfigurationJson {
             AprilTags.aprilTagFieldLayout,
             PoseStrategy.LOWEST_AMBIGUITY,
             robotToCamera,
-            robot.getSimulatedPoseSupplier());
+            robot.getSimulatedPoseSupplier(), width, height, fov);
       }
     }
     switch (use) {

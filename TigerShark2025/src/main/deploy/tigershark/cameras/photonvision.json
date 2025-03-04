@@ -2,7 +2,7 @@
     "name": "photonvision",
     "use": "apriltag",
     "type": "photonvision",
-    "strategy": "LOWEST_AMBIGUITY",
+    "strategy": "MULTI_TAG_PNP_ON_COPROCESSOR",
     "column": 0,
     "x": 0.23224,
     "y": -0.234,
@@ -10,5 +10,8 @@
     "roll": 0,
     "pitch": 0,
     "yaw": 5,
+    "width:": 1280,
+    "height": 720,
+    "fov": 80,
     "targetFiducialIds": [6,7,8,9,10,11,17,18,19,20,21,22]
 }
