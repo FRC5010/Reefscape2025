@@ -96,8 +96,10 @@ public class SegmentedLedSystem extends GenericSubsystem {
     return ledStripSegments.get(name);
   }
 
-  public void addLedSegment(String name, int start, int end, Color color) {
-    ledStripSegments.put(name, new LEDStripSegment(0, 0, color));
+  public LEDStripSegment addLedSegment(String name, int start, int end, Color color) {
+    LEDStripSegment segment = new LEDStripSegment(start, end, color);
+    ledStripSegments.put(name, segment);
+    return segment;
   }
 
   public void setLedSegmentAction(String name, Function<Integer, Color8Bit> state) {

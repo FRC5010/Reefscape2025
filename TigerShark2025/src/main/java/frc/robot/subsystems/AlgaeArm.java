@@ -141,9 +141,9 @@ public class AlgaeArm extends GenericSubsystem {
         }
     }
 
-    public Command getInitialCommand(DoubleSupplier inputSpeeDoubleSupplier){
+    public Command getInitialCommand(DoubleSupplier inputSpeedDoubleSupplier){
         return Commands.run(()->{
-            double armPosition = 90 - inputSpeeDoubleSupplier.getAsDouble() * 120;
+            double armPosition = 90 - inputSpeedDoubleSupplier.getAsDouble() * 120;
             driveToAngle(armPosition);
             //motor.setReference(armPosition/60);
         }, this);

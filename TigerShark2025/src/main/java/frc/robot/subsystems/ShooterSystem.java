@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.ReefscapeButtonBoard.ScoringLevel;
 
 
 public class ShooterSystem extends GenericSubsystem {
@@ -94,7 +95,7 @@ public class ShooterSystem extends GenericSubsystem {
     coralState = alignmentBeambreak.isBroken() ? CoralState.FULLY_CAPTURED : CoralState.EMPTY;
 
     isEmpty = new Trigger(() -> coralState == CoralState.EMPTY);
-    isEntryActive = new Trigger(() -> coralState == CoralState.ENTRY);
+    // isEntryActive = new Trigger(() -> coralState == CoralState.ENTRY);
     isCoralFullyCaptured = new Trigger(() -> coralState == CoralState.FULLY_CAPTURED);
     isAligned = new Trigger(() -> coralState == CoralState.ALIGNED);
 
@@ -166,6 +167,20 @@ public class ShooterSystem extends GenericSubsystem {
     }, this);
   }
 
+  public Command shootL1() {
+    return Commands.run(()->{
+      shooterLeftSpeed(1.0);
+      shooterRightSpeed(0.7);
+  }, this).until(isEmpty);
+  }
+
+  public Command getShootCommand(ScoringLevel level) {
+    if (ScoringLevel.L1 == level) {
+      return shootL1();
+    } 
+    return runMotors(() -> 1.0).until(isEmpty());
+  }
+
   public Command captureCoral() {
     return runMotors(() -> 0.1);
   }
@@ -196,6 +211,8 @@ public class ShooterSystem extends GenericSubsystem {
       shooterRight.draw();
       entryBeamBreakDisplay.setValue(entryBroken.getAsBoolean());
       alignmentBeamBreakDisplay.setValue(alignmentBroken.getAsBoolean());
+      
+      coralState = alignmentBeambreak.isBroken() ? CoralState.FULLY_CAPTURED : CoralState.EMPTY;
 
       SmartDashboard.putString("Coral State", coralState.name());
       SmartDashboard.putNumber("Shooter Left Current", shooterLeft.getOutputCurrent());

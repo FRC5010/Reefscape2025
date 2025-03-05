@@ -7,12 +7,15 @@ package org.frc5010.common.drive.pose;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.frc5010.common.arch.GenericSubsystem;
 import org.frc5010.common.drive.pose.PoseProvider.ProviderType;
 import org.frc5010.common.sensors.AnalogInput5010;
 import org.frc5010.common.subsystems.AprilTagPoseSystem;
+import org.frc5010.common.subsystems.LEDStripSegment;
+import org.frc5010.common.subsystems.SegmentedLedSystem;
 import org.frc5010.common.vision.AprilTags;
 
 import edu.wpi.first.apriltag.AprilTag;
@@ -26,6 +29,8 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.Robot;
 import frc.robot.FieldConstants.Reef;
 
@@ -125,6 +130,23 @@ public class DrivePoseEstimator extends GenericSubsystem {
         tagPoses.add(at.pose.toPose2d());
       }
     }
+  }
+
+  public Function<Integer, Color8Bit> displayProviderStatuses(int length) {
+    int providerLEDLength = length / poseProviders.size();
+    return (Integer index) -> {
+      int provider = index.intValue() / providerLEDLength;
+      if (provider > poseProviders.size()) {
+        return new Color8Bit(Color.kWhite);
+      }
+      Color color;
+      color = poseProviders.get(provider).isActive() ? Color.kGreen : Color.kRed;
+      return new Color8Bit(color);
+    };
+  }
+
+  public void displayOnLEDSegment(LEDStripSegment ledStrip, int length) {
+    ledStrip.setLedAction(displayProviderStatuses(length));
   }
 
   /**
@@ -258,6 +280,7 @@ public class DrivePoseEstimator extends GenericSubsystem {
       boolean accepterUpdating = false;
       if (!disableVisionUpdateCommand) {
         for (PoseProvider provider: poseProviders) {
+          
           if (provider.isActive()) {
             Optional<Pose3d> robotPose = provider.getRobotPose();
             if (robotPose.isPresent()) {
@@ -273,12 +296,11 @@ public class DrivePoseEstimator extends GenericSubsystem {
                 accepterUpdating = true;
                 
               }
-    
-                
+              
               
             }
           } else if (DriverStation.isDisabled()) {
-            provider.resetPose(getCurrentPose3d());
+            // provider.resetPose(getCurrentPose3d());
           }
           
         }

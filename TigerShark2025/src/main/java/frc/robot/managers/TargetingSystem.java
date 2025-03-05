@@ -5,6 +5,7 @@
 package frc.robot.managers;
 
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Seconds;
 
 import java.util.function.Supplier;
 
@@ -31,12 +32,11 @@ public class TargetingSystem {
     public static ElevatorSystem elevator;
     public static AlgaeArm arm;
 
-    public static Supplier<Distance> maxHeight; 
+    public static Supplier<Distance> maxHeight;
 
     private static Distance MAX_NO_TIPPY_HEIGHT = Meters.of(0.5);
     private static Transform2d CoralOffset = new Transform2d(-0.5, 0.0, new Rotation2d());
     private static Transform2d StationOffset = new Transform2d(0.5, 0.0, new Rotation2d());
-
 
     public static void setupParameters(YAGSLSwerveDrivetrain drivetrain, ShooterSystem shooter, ElevatorSystem elevator,
             AlgaeArm arm) {
@@ -51,13 +51,14 @@ public class TargetingSystem {
     }
 
     private static double getDrivetrainSpeed() {
-        return new Translation2d(drivetrain.getChassisSpeeds().vxMetersPerSecond,   
-                                  drivetrain.getChassisSpeeds().vyMetersPerSecond).getNorm();
+        return new Translation2d(drivetrain.getChassisSpeeds().vxMetersPerSecond,
+                drivetrain.getChassisSpeeds().vyMetersPerSecond).getNorm();
     }
 
     private static Supplier<Distance> getMaxHeightSupplier(Pose2d targetPose) {
         return () -> {
-            if (targetPose.getTranslation().getDistance(drivetrain.getPose().getTranslation()) < 1.0 || getDrivetrainSpeed() > 0.5) {
+            if (targetPose.getTranslation().getDistance(drivetrain.getPose().getTranslation()) < 1.0
+                    || getDrivetrainSpeed() > 0.5) {
                 return MAX_NO_TIPPY_HEIGHT;
             } else {
                 return Meters.of(2);
@@ -75,9 +76,10 @@ public class TargetingSystem {
     public static Command createAutoCoralScoringSequence(Pose2d targetPose, ScoringLevel scoringLevel) {
         Distance level = elevator.selectElevatorLevel(() -> scoringLevel);
         Distance intakeLevel = elevator.selectElevatorLevel(() -> ScoringLevel.INTAKE);
-        return drivetrain.driveToPosePrecise(targetPose, CoralOffset).get()
-                .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocationImproved(level))
-                        .andThen(shooter.runMotors(() -> 1.0).until(shooter.isEmpty()))).andThen(elevator.pidControlCommand(intakeLevel).until(() -> elevator.isAtLocationImproved(intakeLevel)));
+        return drivetrain.driveToPosePrecise(() -> targetPose, CoralOffset, Seconds.of(3)).get()
+                .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level))
+                .andThen(shooter.getShootCommand(scoringLevel)))
+                .andThen(elevator.pidControlCommand(intakeLevel).until(() -> elevator.isAtLocation(intakeLevel)));
     }
 
     public static Command createLoadingSequence(Pose2d targetPose) {
@@ -92,12 +94,15 @@ public class TargetingSystem {
         Distance level = elevator.selectElevatorLevel(() -> ScoringLevel.INTAKE);
 
         // return drivetrain.driveToPosePrecise(targetPose).get()
-        //         .alongWith(Commands.runOnce(() -> SmartDashboard.putNumber("Elevator Level:", level.in(Meters))),
-        //                 elevator.pidControlCommand(level));
-        return elevator.pidControlCommand(level).until(() -> elevator.isAtLocationImproved(level)).andThen(drivetrain.driveToPosePrecise(targetPose, StationOffset).get().alongWith(shooter.runMotors(() -> 1.0).until(shooter.isFullyCaptured()).andThen(Commands.runOnce(() -> {
-            shooter.shooterLeftSpeed(0);
-            shooter.shooterRightSpeed(0);
-        }, shooter))));
+        // .alongWith(Commands.runOnce(() -> SmartDashboard.putNumber("Elevator Level:",
+        // level.in(Meters))),
+        // elevator.pidControlCommand(level));
+        return elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level))
+                .andThen(drivetrain.driveToPosePrecise(targetPose, StationOffset).get().alongWith(
+                        shooter.runMotors(() -> 1.0)).until(shooter.isFullyCaptured()).andThen(Commands.runOnce(() -> {
+                            shooter.shooterLeftSpeed(0);
+                            shooter.shooterRightSpeed(0);
+                        }, shooter)));
     }
 
     public static Command driveXMetersQuest(Distance distance) {

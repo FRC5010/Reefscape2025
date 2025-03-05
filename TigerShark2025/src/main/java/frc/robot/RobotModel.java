@@ -25,6 +25,8 @@ public class RobotModel {
     private Supplier<Translation3d> centerOfMassVelocitySupplier;
     private Supplier<Translation3d> centerOfMassAccelerationSupplier;
     private Supplier<Double> dampeningFactor = () -> 1.0;
+    public static final Distance ROBOT_SIZE = Inches.of(34.75);
+    public static final Distance HALF_ROBOT_SIZE = ROBOT_SIZE.div(2);
 
     private SwerveConstants drivetrainConstants = new SwerveConstants(Meters.zero(), Meters.zero());
     private LinearAcceleration gravity = MetersPerSecondPerSecond.of(9.8);

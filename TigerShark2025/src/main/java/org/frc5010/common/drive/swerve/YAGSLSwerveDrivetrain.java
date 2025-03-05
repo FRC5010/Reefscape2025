@@ -12,6 +12,7 @@ import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
 import java.io.File;
@@ -71,6 +72,7 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -112,8 +114,8 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   /** 5010 Code */
   private DoubleSupplier angleSpeedSupplier = null;
   private DisplayBoolean hasIssues;
-  private Supplier<Double> maxForwardAcceleration, maxBackwardAcceleration, maxLeftAcceleration, maxRightAcceleration;
-  private Supplier<Double> maxForwardVelocity, maxBackwardVelocity, maxLeftVelocity, maxRightVelocity;
+  public Supplier<Double> maxForwardAcceleration, maxBackwardAcceleration, maxLeftAcceleration, maxRightAcceleration;
+  public Supplier<Double> maxForwardVelocity, maxBackwardVelocity, maxLeftVelocity, maxRightVelocity;
   private Pose2d obstaclePosition = new Pose2d();
   private Pose2d[] unavoidableVertices = new Pose2d[0];
   private double obstacleRadius = 0.0, robotRadius = 0.0, maxRobotDimensionDeviation = 0.0,
@@ -297,8 +299,11 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         0.0 // Goal end velocity in meters/sec
     );
   }
-
   public Supplier<Command> driveToPosePrecise(Supplier<Pose2d> pose, Transform2d PathPlanOffset) {
+    return driveToPosePrecise(pose, PathPlanOffset, Seconds.of(100));
+  }
+
+  public Supplier<Command> driveToPosePrecise(Supplier<Pose2d> pose, Transform2d PathPlanOffset, Time timeout) {
     Supplier<Pose3d> pose3D = () -> new Pose3d(pose.get());
     Supplier<DriveToPosition> finishDriving = () -> new DriveToPosition((SwerveDrivetrain) this, this::getPose, pose3D,
         new Transform2d()).withInitialVelocity(() -> getFieldVelocity());
@@ -311,6 +316,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     // swerveDrive.getMaximumChassisVelocity(), 4.0,
     // swerveDrive.getMaximumChassisAngularVelocity(), Units.degreesToRadians(720));
     // Since AutoBuilder is configured, we can use it to build pathfinding commands
+
     return () -> new PathfindingCommand5010(
         pose.get().transformBy(PathPlanOffset),
         constraints,
@@ -338,7 +344,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         //     getSwerveConstants().getTrackWidth(), getSwerveConstants().getWheelBase()))
         .andThen(finishDriving.get().beforeStarting(() -> {
           poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose");
-        })).finallyDo(() -> SmartDashboard.putBoolean("Running AutoDrive", false));
+        }).withTimeout(timeout)).finallyDo(() -> SmartDashboard.putBoolean("Running AutoDrive", false));
   }
 
   public Supplier<Command> driveToPosePrecise(Supplier<Pose2d> pose) {

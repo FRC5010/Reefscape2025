@@ -6,6 +6,7 @@ package org.frc5010.common.sensors.camera;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -28,6 +29,7 @@ public class LimeLightCamera extends GenericCamera {
   Optional<PoseEstimate> poseEstimate = Optional.empty();
   Optional<Pose3d> targetPose = Optional.empty();
   Supplier<GenericGyro> gyroSupplier;
+  Supplier<Rotation2d> angleResetSupplier;
   BooleanSupplier megatagChooser;
 
   /**
@@ -161,6 +163,8 @@ public class LimeLightCamera extends GenericCamera {
     if (null != gyroSupplier.get()) {
       GenericGyro gyro =  gyroSupplier.get();
       LimelightHelpers.SetRobotOrientation(name,gyro.getAngle(), gyro.getRate(), 0.0, 0.0, 0.0, 0.0);
+    } else if (null != angleResetSupplier.get()) {
+      LimelightHelpers.SetRobotOrientation(name, angleResetSupplier.get().getDegrees(), 0.0, 0.0, 0.0, 0.0, 0.0);
     }
     
     LimelightHelpers.getLatestResults(name);
@@ -241,6 +245,11 @@ public class LimeLightCamera extends GenericCamera {
     return this;
   }
 
+  public LimeLightCamera setAngleSupplier(Supplier<Rotation2d> rotationSupplier) {
+    this.angleResetSupplier = rotationSupplier;
+    return this;
+  }
+
   public void setRobotToCameraOnLL() {
     LimelightHelpers.setCameraPose_RobotSpace(name, robotToCamera.getX(), -robotToCamera.getY(), robotToCamera.getZ(),
     robotToCamera.getRotation().getX(), robotToCamera.getRotation().getY(), robotToCamera.getRotation().getZ());
@@ -252,15 +261,17 @@ public class LimeLightCamera extends GenericCamera {
     
     Stream<RawFiducial> fiducialStream = Arrays.stream(LimelightHelpers.getRawFiducials(name)).sorted((raw1, raw2) -> raw1.ambiguity == raw2.ambiguity ? 0 : (raw1.ambiguity > raw2.ambiguity ? 1 : -1));
     double min_ambiguity = fiducialStream.findFirst().map(fiducial -> fiducial.ambiguity).orElse(100.0);
-    //double confidence = estimate.avgTagDist > 2 ? 1.0 : min_ambiguity * Math.max(estimate.avgTagDist/2, 0.5);
-    double confidence = min_ambiguity;
+    double confidence = estimate.avgTagDist > 2 ? 1.0 : min_ambiguity * Math.max(estimate.avgTagDist/2, 0.5);
     SmartDashboard.putNumber("Limelight Confidence", confidence);
     return confidence;
   }
 
+
+
+
   @Override
   public boolean isActive() {
-    return hasValidTarget() && DriverStation.isDisabled();
+    return hasValidTarget();
   }
 
   @Override

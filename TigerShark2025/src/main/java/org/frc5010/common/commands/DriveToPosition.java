@@ -109,8 +109,8 @@ public class DriveToPosition extends GenericCommand {
     this.poseProvider = poseProvider;
     this.targetPoseProvider = targetPoseProvider;
 
-    xController.setTolerance(0.02);
-    yController.setTolerance(0.015);
+    xController.setTolerance(0.025);
+    yController.setTolerance(0.025);
     thetaController.setTolerance(Units.degreesToRadians(5));
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
@@ -241,11 +241,14 @@ public class DriveToPosition extends GenericCommand {
     SmartDashboard.putBoolean("Y Controller at Setpoins", yController.atGoal());
     SmartDashboard.putBoolean("Theta Controller at Setpoins", thetaController.atGoal());
     swerveSubsystem.drive(chassisSpeeds, null);
+
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void stop(boolean interrupted) {
+    onTargetCounter = 0;
+    SmartDashboard.putBoolean("DriveToPositionInterrupted", interrupted);
     swerveSubsystem.drive(
         new ChassisSpeeds(0, 0, 0), null);
   }

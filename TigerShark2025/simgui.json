@@ -73,6 +73,7 @@
       "/Shuffleboard/TigerShark/Reef 3": "String Chooser",
       "/Shuffleboard/TigerShark/Reef 4": "String Chooser",
       "/SmartDashboard/Alerts": "Alerts",
+      "/SmartDashboard/CustomAuto": "Command",
       "/SmartDashboard/Drive Visual": "Mechanism2d",
       "/SmartDashboard/DriveToPosition": "Command",
       "/SmartDashboard/Encoders": "Alerts",
