@@ -14,6 +14,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 public interface PoseProvider {
 
     public enum ProviderType {
+        ALL,
         FIELD_BASED,
         ENVIRONMENT_BASED,
         RELATIVE
