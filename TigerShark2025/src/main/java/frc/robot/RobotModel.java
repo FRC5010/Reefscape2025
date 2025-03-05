@@ -11,17 +11,14 @@ import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import java.util.function.Supplier;
 
 import org.frc5010.common.constants.SwerveConstants;
-import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.ExponentialProfile;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
-import frc.robot.subsystems.ElevatorSystem;
 
 /** Add your docs here. */
 public class RobotModel {
@@ -29,6 +26,8 @@ public class RobotModel {
     private Supplier<Translation3d> centerOfMassVelocitySupplier;
     private Supplier<Translation3d> centerOfMassAccelerationSupplier;
     private Supplier<Double> dampeningFactor = () -> 1.0;
+    public static final Distance ROBOT_SIZE = Inches.of(34.75);
+    public static final Distance HALF_ROBOT_SIZE = ROBOT_SIZE.div(2);
 
     private SwerveConstants drivetrainConstants = new SwerveConstants(Meters.zero(), Meters.zero());
     private LinearAcceleration gravity = MetersPerSecondPerSecond.of(9.8);

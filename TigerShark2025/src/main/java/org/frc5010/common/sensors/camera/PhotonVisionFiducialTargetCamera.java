@@ -45,4 +45,9 @@ public class PhotonVisionFiducialTargetCamera extends PhotonVisionCamera {
               .findFirst();
     }
   }
+
+  @Override
+  public boolean hasValidTarget() {
+    return target.isPresent();
+  }
 }

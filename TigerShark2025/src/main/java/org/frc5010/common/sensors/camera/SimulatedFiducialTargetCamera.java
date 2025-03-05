@@ -20,12 +20,16 @@ public class SimulatedFiducialTargetCamera extends SimulatedCamera {
   /**
    * Constructor
    *
-   * @param name - the name of the camera
-   * @param colIndex - the column index for the dashboard
-   * @param fieldLayout - the field layout
-   * @param strategy - the pose strategy
+   * @param name          - the name of the camera
+   * @param colIndex      - the column index for the dashboard
+   * @param fieldLayout   - the field layout
+   * @param strategy      - the pose strategy
    * @param cameraToRobot - the camera-to-robot transform
-   * @param poseSupplier - the pose supplier
+   * @param poseSupplier  - the pose supplier
+   * @param fiducialIds   - the list of fiducial IDs
+   * @param width         - the camera width
+   * @param height        - the camera height
+   * @param fov           - the camera field of view
    */
   public SimulatedFiducialTargetCamera(
       String name,
@@ -34,9 +38,10 @@ public class SimulatedFiducialTargetCamera extends SimulatedCamera {
       PoseStrategy strategy,
       Transform3d cameraToRobot,
       Supplier<Pose2d> poseSupplier,
-      List<Integer> fiducialIds) {
-    super(name, colIndex, fieldLayout, strategy, cameraToRobot, poseSupplier);
+      List<Integer> fiducialIds, int width, int height, double fov) {
+    super(name, colIndex, fieldLayout, strategy, cameraToRobot, poseSupplier, width, height, fov);
     this.fiducialIds = fiducialIds;
+    visionLayout.addDouble("Target ID", () -> target.map(it -> it.getFiducialId()).orElse(-1));
   }
 
   /** Update the simulated camera */
@@ -44,10 +49,14 @@ public class SimulatedFiducialTargetCamera extends SimulatedCamera {
   public void updateCameraInfo() {
     super.updateCameraInfo();
     if (camResult.hasTargets()) {
-      target =
-          camResult.getTargets().stream()
-              .filter(it -> fiducialIds.contains(it.getFiducialId()))
-              .findFirst();
+      target = camResult.getTargets().stream()
+          .filter(it -> fiducialIds.contains(it.getFiducialId()))
+          .findFirst();
     }
+  }
+
+  @Override
+  public boolean hasValidTarget() {
+    return target.isPresent();
   }
 }

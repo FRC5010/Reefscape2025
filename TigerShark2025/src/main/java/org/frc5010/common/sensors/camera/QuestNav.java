@@ -32,10 +32,12 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /** Add your docs here. */
 public class QuestNav implements PoseProvider {
     private boolean initializedPosition = false;
+    public static boolean isActive = false;
     private String networkTableRoot = "questnav";
     private NetworkTableInstance networkTableInstance = NetworkTableInstance.getDefault();
     private NetworkTable networkTable;
@@ -175,21 +177,26 @@ public class QuestNav implements PoseProvider {
     public double getCaptureTime() {
         double t = RobotController.getFPGATime() / 1E6 - TIMESTAMP_DELAY;
         SmartDashboard.putNumber("Quest Timestamp", t);
+        updateFrameCount();
         return t;
     }
 
     public boolean isActive() {
-        return true;
-        // double t = timestamp.get();
-        // boolean simulation = RobotBase.isSimulation();
-        // boolean disabled = DriverStation.isDisabled();
-        // double frame = frameCount.get();
-        // double previousFrame = previousFrameCount;
-        // if (t == 0|| simulation || disabled || previousFrame == frameCount.get()) {
-        // return false;
-        // }
-        // previousFrameCount = frameCount.get();
-        // return initializedPosition;
+        double t = timestamp.get();
+        boolean simulation = RobotBase.isSimulation();
+        boolean disabled = DriverStation.isDisabled();
+        double frame = frameCount.get();
+        double previousFrame = previousFrameCount;
+        if (t == 0 || simulation || previousFrame == frame) {
+        isActive = false;
+        return false;
+        }
+        isActive = true;
+        return initializedPosition;
+    }
+
+    public void updateFrameCount() {
+        previousFrameCount = frameCount.get();
     }
 
     public boolean processQuestCommand(QuestCommand command) {
@@ -212,6 +219,10 @@ public class QuestNav implements PoseProvider {
     public void hardReset(Pose3d pose) {
         initPose = pose;
         resetQuestPose();
+    }
+
+    public static Trigger isQuestOn() {
+        return new Trigger(() -> isActive);
     }
 
     public void resetPose(Pose3d pose) {

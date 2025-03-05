@@ -100,6 +100,7 @@ public abstract class GenericRobot extends GenericMechanism implements GenericDe
       e.printStackTrace();
       return;
     }
+    initRealOrSim();
   }
 
   /** Creates a new robot using a programmatic configuration */
@@ -112,6 +113,7 @@ public abstract class GenericRobot extends GenericMechanism implements GenericDe
     operator = Optional.of(new Controller(Controller.JoystickPorts.ONE.ordinal()));
     controllers.put("operator", operator.get());
     initializeDisplay();
+    initRealOrSim();
   }
 
   protected void initializeDisplay() {

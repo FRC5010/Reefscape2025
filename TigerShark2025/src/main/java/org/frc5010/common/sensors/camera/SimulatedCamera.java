@@ -8,6 +8,10 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.simulation.PhotonCameraSim;
@@ -25,6 +29,8 @@ public class SimulatedCamera extends PhotonVisionPoseCamera {
   protected SimCameraProperties cameraProp = new SimCameraProperties();
   /** The simulated camera */
   protected PhotonCameraSim cameraSim;
+  /** The current list of fiducial IDs */
+  protected List<Integer> fiducialIds = new ArrayList<>();
 
   /**
    * Constructor
@@ -35,6 +41,9 @@ public class SimulatedCamera extends PhotonVisionPoseCamera {
    * @param strategy      - the pose strategy
    * @param cameraToRobot - the camera-to-robot transform
    * @param poseSupplier  - the pose supplier
+   * @param width         - the camera width
+   * @param height        - the camera height
+   * @param fov           - the camera field of view
    */
   public SimulatedCamera(
       String name,
@@ -42,7 +51,8 @@ public class SimulatedCamera extends PhotonVisionPoseCamera {
       AprilTagFieldLayout fieldLayout,
       PoseStrategy strategy,
       Transform3d cameraToRobot,
-      Supplier<Pose2d> poseSupplier) {
+      Supplier<Pose2d> poseSupplier,
+      int width, int height, double fov) {
     super(name, colIndex, fieldLayout, strategy, cameraToRobot, poseSupplier);
     if (!tagsLoaded) {
       visionSim.addAprilTags(fieldLayout);
@@ -50,7 +60,7 @@ public class SimulatedCamera extends PhotonVisionPoseCamera {
     }
 
     // A 640 x 480 camera with a 100 degree diagonal FOV.
-    cameraProp.setCalibration(960, 720, Rotation2d.fromDegrees(100));
+    cameraProp.setCalibration(width, height, Rotation2d.fromDegrees(fov));
     // Approximate detection noise with average and standard deviation error in
     // pixels.
     cameraProp.setCalibError(0.25, 0.08);
@@ -73,12 +83,74 @@ public class SimulatedCamera extends PhotonVisionPoseCamera {
     cameraSim.enableDrawWireframe(true);
   }
 
+  /**
+   * Constructor
+   *
+   * @param name          - the name of the camera
+   * @param colIndex      - the column index for the dashboard
+   * @param fieldLayout   - the field layout
+   * @param strategy      - the pose strategy
+   * @param cameraToRobot - the camera-to-robot transform
+   * @param poseSupplier  - the pose supplier
+   * @param fiducialIds   - the list of fiducial IDs
+   * @param width         - the width of the camera
+   * @param height        - the height of the camera
+   * @param fov           - the field of view
+   */
+  public SimulatedCamera(
+      String name,
+      int colIndex,
+      AprilTagFieldLayout fieldLayout,
+      PoseStrategy strategy,
+      Transform3d cameraToRobot,
+      Supplier<Pose2d> poseSupplier,
+      List<Integer> fiducialIds,
+      int width, int height, double fov) {
+    this(name, colIndex, fieldLayout, strategy, cameraToRobot, poseSupplier);
+    this.fiducialIds = fiducialIds;
+    visionLayout.addDouble("Target ID", () -> target.map(it -> it.getFiducialId()).orElse(-1));
+  }
+
+  /**
+   * Constructor
+   *
+   * @param name          - the name of the camera
+   * @param colIndex      - the column index for the dashboard
+   * @param fieldLayout   - the field layout
+   * @param strategy      - the pose strategy
+   * @param cameraToRobot - the camera-to-robot transform
+   * @param poseSupplier  - the pose supplier
+   */
+  public SimulatedCamera(
+      String name,
+      int colIndex,
+      AprilTagFieldLayout fieldLayout,
+      PoseStrategy strategy,
+      Transform3d cameraToRobot,
+      Supplier<Pose2d> poseSupplier) {
+    this(name, colIndex, fieldLayout, strategy, cameraToRobot, poseSupplier, 640, 480, 70.0);
+  }
+
   /** Update the simulated camera */
   @Override
   public void updateCameraInfo() {
     super.updateCameraInfo();
+    if (camResult.hasTargets()) {
+      if (fiducialIds.size() > 0) {
+        target = camResult.getTargets().stream()
+            .filter(it -> fiducialIds.contains(it.getFiducialId()))
+            .findFirst();
+      } else {
+        target = Optional.ofNullable(camResult.getBestTarget());
+      }
+    }
     Pose2d p = poseSupplier.get();
     visionSim.update(p);
     visionSim.resetRobotPose(p);
+  }
+
+  @Override
+  public boolean hasValidTarget() {
+    return fiducialIds.size() > 0 ? target.isPresent() : super.hasValidTarget();
   }
 }

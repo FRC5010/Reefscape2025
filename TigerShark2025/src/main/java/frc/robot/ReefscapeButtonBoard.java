@@ -18,6 +18,7 @@ import org.frc5010.common.utils.AllianceFlip;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -36,8 +37,12 @@ public class ReefscapeButtonBoard {
         public int getButton();
     }
 
-    private static Transform2d robotOffset = new Transform2d(Inches.of(17.5), Meters.zero(), Rotation2d.fromDegrees(180)); // Move to more appropriate, common, location
-    private static Transform2d robotStationOffset = new Transform2d(Inches.of(18), Meters.zero(), Rotation2d.fromDegrees(0));
+    private static Distance reefGap = Inches.of(0.5);
+    private static Transform2d robotOffset = new Transform2d(RobotModel.HALF_ROBOT_SIZE.plus(reefGap), Meters.zero(), Rotation2d.fromDegrees(180)); // Move to more appropriate, common, location
+
+    private static Distance stationGap = Inches.of(0.5);
+    private static Transform2d robotStationOffset = new Transform2d(RobotModel.HALF_ROBOT_SIZE.plus(stationGap), Meters.zero(), Rotation2d.fromDegrees(0));
+    
 
     public enum ScoringLocation implements ButtonStateSetting{
         FRONT_AB(21, FieldConstants.Reef.Side.AB.getRobotPose(robotOffset)), // new Pose2d(3.179, 4.035, new Rotation2d(0.0)
@@ -301,7 +306,7 @@ public class ReefscapeButtonBoard {
     }
 
     public static Pose2d getStationPose() {
-        return loadingStationLocation.getPose();
+        return AllianceFlip.apply(loadingStationLocation.getPose());
     }
 
     public static void setLoadingStation(LoadingStationLocation loadingLocation) {

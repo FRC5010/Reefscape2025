@@ -23,8 +23,6 @@ import org.frc5010.common.motors.PIDController5010.PIDControlType;
 import org.frc5010.common.motors.function.AngularControlMotor;
 import org.frc5010.common.motors.hardware.GenericTalonFXMotor;
 
-import com.ctre.phoenix6.hardware.TalonFX;
-
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -143,9 +141,9 @@ public class AlgaeArm extends GenericSubsystem {
         }
     }
 
-    public Command getInitialCommand(DoubleSupplier inputSpeeDoubleSupplier){
+    public Command getInitialCommand(DoubleSupplier inputSpeedDoubleSupplier){
         return Commands.run(()->{
-            double armPosition = 90 - inputSpeeDoubleSupplier.getAsDouble() * 120;
+            double armPosition = 90 - inputSpeedDoubleSupplier.getAsDouble() * 120;
             driveToAngle(armPosition);
             //motor.setReference(armPosition/60);
         }, this);

@@ -3,7 +3,6 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.Meter;
 
 import java.util.function.Consumer;
 
@@ -15,6 +14,8 @@ import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 import org.frc5010.common.sensors.Controller;
 import org.frc5010.common.sensors.camera.QuestNav;
 import org.frc5010.common.sensors.gyro.GenericGyro;
+import org.frc5010.common.subsystems.LedSubsystem;
+import org.frc5010.common.subsystems.SegmentedLedSystem;
 import org.frc5010.common.utils.AllianceFlip;
 
 import edu.wpi.first.cameraserver.CameraServer;
@@ -28,16 +29,15 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.auto_routines.AutoChoosers;
 import frc.robot.auto_routines.Coral2;
 import frc.robot.auto_routines.CustomAuto;
-import frc.robot.auto_routines.DriveOnlyCustom;
 import frc.robot.auto_routines.Right1Coral;
 import frc.robot.auto_routines.Right4Coral;
+import frc.robot.commands.ReefLineupDrive;
 import frc.robot.managers.TargetingSystem;
 import frc.robot.subsystems.AlgaeArm;
 import frc.robot.subsystems.ClimbSubsystem;
@@ -53,16 +53,23 @@ public class TigerShark extends GenericRobot {
     GenericGyro gyro;
     ReefscapeButtonBoard reefscapeButtonBoard;
     AutoChoosers autoChoosers;
-    DigitalInput brainZero;
+    DigitalInput brainZero, brainOne;
+    DigitalInput centerLineZero;
+    Pose2d centerLineResetPose;
+    SegmentedLedSystem segmentedLED;
+    LedSubsystem leds;
+    private final Distance ROBOT_WIDTH = Inches.of(34.75);
+    Pose2d startingPose1, startingPose2, startingPose3;
 
     public TigerShark(String directory) {
         super(directory);
         AllianceFlip.configure(FieldConstants.fieldDimensions);
 
-        CameraServer.startAutomaticCapture();
-        
+        CameraServer.startAutomaticCapture(); 
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
         brainZero = new DigitalInput(0);
+        brainOne = new DigitalInput(1);
+    
 
         gyro = (GenericGyro) subsystems.get(ConfigConstants.GYRO);
 
@@ -85,22 +92,49 @@ public class TigerShark extends GenericRobot {
 
         ((YAGSLSwerveDrivetrain) drivetrain).setVelocitySuppliers(() -> elevatorSystem.getMaxForwardVelocity(), () -> elevatorSystem.getMaxBackwardVelocity(), () -> elevatorSystem.getMaxRightVelocity(), () -> elevatorSystem.getMaxLeftVelocity());
 
-        resetPositionToStart();
 
-        Pose2d obstaclePosition = DriverStation.getAlliance().get() == Alliance.Blue ? new Pose2d(4.48945, 4.0259, new Rotation2d()) : new Pose2d(13.065, 4.0259, new Rotation2d());
-        Pose2d[] blueVertices = new Pose2d[] {new Pose2d(3.325, 3.313, new Rotation2d()), new Pose2d(3.325, 4.698, new Rotation2d()), new Pose2d(4.490, 5.332, new Rotation2d()), new Pose2d(5.655, 4.689, new Rotation2d()), new Pose2d(5.655, 3.332, new Rotation2d()), new Pose2d(4.490, 2.700, new Rotation2d())};
-        Pose2d[] redVertices = new Pose2d[] {new Pose2d(11.905, 3.313, new Rotation2d()), new Pose2d(11.905, 4.698, new Rotation2d()), new Pose2d(13.07, 5.332, new Rotation2d()), new Pose2d(14.235, 4.689, new Rotation2d()), new Pose2d(14.235, 3.332, new Rotation2d()), new Pose2d(13.07, 2.700, new Rotation2d())};
-        Pose2d[] vertices = DriverStation.getAlliance().get() == Alliance.Blue ? blueVertices : redVertices;
-        Distance obstacleRadius = Inches.of(37.621), maximumObstacleDimensionDeviation = Inches.of(4.8755), robotRadius = Inches.of(24.22), maximumRobotDimensionDeviation = Inches.of(7.0934);
+        centerLineResetPose = new Pose2d(FieldConstants.Reef.Side.GH.getCenterFace().getTranslation().getMeasureX().plus(Inches.of(113).minus(ROBOT_WIDTH.div(2))), Inches.of(146.5).minus(ROBOT_WIDTH.div(2)), Rotation2d.fromDegrees(180));
+        resetPositionToCenterLine();
+
+        // segmentedLED = new SegmentedLedSystem(0, 30, mechVisual);
+        // LEDStripSegment providerSegment = segmentedLED.addLedSegment("Pose Providers", 0, 10, Color.WHITE);
+        leds = new LedSubsystem(0, 30);
+        leds.setRainbow();
+
+        // ((YAGSLSwerveDrivetrain) drivetrain).getPoseEstimator().displayOnLEDSegment(providerSegment, 10);
+
+        // Pose2d obstaclePosition = DriverStation.getAlliance().get() == Alliance.Blue ? new Pose2d(4.48945, 4.0259, new Rotation2d()) : new Pose2d(13.065, 4.0259, new Rotation2d());
+        // Pose2d[] blueVertices = new Pose2d[] {new Pose2d(3.325, 3.313, new Rotation2d()), new Pose2d(3.325, 4.698, new Rotation2d()), new Pose2d(4.490, 5.332, new Rotation2d()), new Pose2d(5.655, 4.689, new Rotation2d()), new Pose2d(5.655, 3.332, new Rotation2d()), new Pose2d(4.490, 2.700, new Rotation2d())};
+        // Pose2d[] redVertices = new Pose2d[] {new Pose2d(11.905, 3.313, new Rotation2d()), new Pose2d(11.905, 4.698, new Rotation2d()), new Pose2d(13.07, 5.332, new Rotation2d()), new Pose2d(14.235, 4.689, new Rotation2d()), new Pose2d(14.235, 3.332, new Rotation2d()), new Pose2d(13.07, 2.700, new Rotation2d())};
+        // Pose2d[] vertices = DriverStation.getAlliance().get() == Alliance.Blue ? blueVertices : redVertices;
+        // Distance obstacleRadius = Inches.of(37.621), maximumObstacleDimensionDeviation = Inches.of(4.8755), robotRadius = Inches.of(24.22), maximumRobotDimensionDeviation = Inches.of(7.0934);
 
 
-        ((YAGSLSwerveDrivetrain) drivetrain).setUpCircularObstacle(obstaclePosition, vertices, obstacleRadius.in(Meters), robotRadius.in(Meters), maximumRobotDimensionDeviation.in(Meters), maximumObstacleDimensionDeviation.in(Meters), 100);
+        // ((YAGSLSwerveDrivetrain) drivetrain).setUpCircularObstacle(obstaclePosition, vertices, obstacleRadius.in(Meters), robotRadius.in(Meters), maximumRobotDimensionDeviation.in(Meters), maximumObstacleDimensionDeviation.in(Meters), 100);
+        startingPose1 = new Pose2d(FieldConstants.innerStartingLineX.plus(Inches.of(1.0)).minus(Inches.of(17.875)).in(Meters), FieldConstants.fieldDimensions.fieldWidth.minus(Inches.of(17.875)).in(Meters), new Rotation2d(Degrees.of(180)));
+        startingPose2 = new Pose2d(FieldConstants.innerStartingLineX.plus(Inches.of(1.0)).minus(Inches.of(17.875)).in(Meters), FieldConstants.fieldDimensions.fieldWidth.in(Meters) / 2, new Rotation2d(Degrees.of(180)));
+        startingPose3 = new Pose2d(FieldConstants.innerStartingLineX.plus(Inches.of(1.0)).minus(Inches.of(17.875)).in(Meters), Inches.of(17.875).in(Meters), new Rotation2d(Degrees.of(180)));
     }
 
     public void resetPositionToStart() {
-        ((YAGSLSwerveDrivetrain) drivetrain).resetPose(AllianceFlip.apply(new Pose2d(new Translation2d(Inches.of(34.75/2).plus(FieldConstants.Reef.Side.GH.centerFace.getMeasureX()), FieldConstants.Reef.Side.GH.centerFace.getMeasureY()),
+        ((YAGSLSwerveDrivetrain) drivetrain).resetPose(AllianceFlip.apply(new Pose2d(new Translation2d(RobotModel.HALF_ROBOT_SIZE.plus(FieldConstants.Reef.Side.GH.centerFace.getMeasureX()), FieldConstants.Reef.Side.GH.centerFace.getMeasureY()),
               Rotation2d.fromDegrees(180))));
     }
+
+    public void resetPositionToDiagonalStart() {
+        ((YAGSLSwerveDrivetrain) drivetrain).resetPose(AllianceFlip.apply(new Pose2d(new Translation2d(Meters.of(7.585), Meters.of(6.160)),
+              Rotation2d.fromDegrees(-135))));
+    }
+
+    public void resetPositionToCenterLine() {
+        ((YAGSLSwerveDrivetrain) drivetrain).resetPose(AllianceFlip.apply(centerLineResetPose));
+    }
+
+    public void resetPosition(Pose2d position) {
+        ((YAGSLSwerveDrivetrain) drivetrain).resetPose(AllianceFlip.apply(position));
+    }
+
+    
 
     @Override
     public void configureButtonBindings(Controller driver, Controller operator) {
@@ -132,19 +166,29 @@ public class TigerShark extends GenericRobot {
                             3.14 * 5,
                             drivetrain));
 
+            operator.createYButton().onTrue(TargetingSystem.driveXMetersQuest(Meters.of(1.0)));
             return;
         }
         reefscapeButtonBoard.configureOperatorButtonBindings(operator);
 
         
 
+        // driver.createXButton().whileTrue(
+        // Commands.deferredProxy(() ->
+        // TargetingSystem.createCoralScoringSequence(ReefscapeButtonBoard.getScoringPose(), ReefscapeButtonBoard.getScoringLevel())));
         driver.createXButton().whileTrue(
-        Commands.deferredProxy(() ->
-        TargetingSystem.createCoralScoringSequence(AllianceFlip.apply(ReefscapeButtonBoard.getScoringPose()), ReefscapeButtonBoard.getScoringLevel())));
+            Commands.deferredProxy(() -> {
+                try {
+                    return new ReefLineupDrive((YAGSLSwerveDrivetrain)drivetrain, driver::getLeftXAxis, driver::getLeftYAxis, ReefscapeButtonBoard.getScoringLocation());
+                } catch (Exception e) {
+                    return Commands.none();
+                } 
+            }
+        ));
 
         driver.createYButton().whileTrue(
             Commands.deferredProxy( () ->
-        TargetingSystem.createLoadingSequence(AllianceFlip.apply(ReefscapeButtonBoard.getStationPose())) 
+        TargetingSystem.createLoadingSequence(ReefscapeButtonBoard.getStationPose()) 
         ));
         
         
@@ -169,15 +213,23 @@ public class TigerShark extends GenericRobot {
         driver.createRightPovButton().onTrue(elevatorSystem.zeroElevator());
         driver.createDownPovButton().whileTrue(elevatorSystem.elevatorPositionZeroSequence());
         driver.createUpPovButton().whileTrue(Commands.run(()->{
-            shooter.shooterLeftSpeed(1.0);
-            shooter.shooterRightSpeed(0.7);
+            shooter.shooterLeftSpeed(0.25);
+            shooter.shooterRightSpeed(0.1);
         }, shooter));
 
 
         reefscapeButtonBoard.getFireButton().whileTrue(shooter.runMotors(() -> 0.5));
 
+        operator.createUpPovButton().onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true));
+        operator.createRightPovButton().onTrue(Commands.runOnce(() -> resetPosition(startingPose1)).ignoringDisable(true));
+        operator.createDownPovButton().onTrue(Commands.runOnce(() -> resetPosition(startingPose2)).ignoringDisable(true));
+        operator.createLeftPovButton().onTrue(Commands.runOnce(() -> resetPosition(startingPose3)).ignoringDisable(true));
+
         driver.createBackButton().onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true));
-        new Trigger(brainZero::get).onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true));
+        new Trigger(brainZero::get).onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true).andThen(Commands.run(() -> leds.setRainbow(), leds)).withDeadline(Commands.waitSeconds(3)));
+        new Trigger(brainOne::get).onTrue(Commands.runOnce(() -> resetPositionToDiagonalStart()).ignoringDisable(true).andThen(Commands.run(() -> leds.setRainbow(), leds)).withDeadline(Commands.waitSeconds(3)));
+        QuestNav.isQuestOn().onTrue(Commands.runOnce(() -> leds.setSolidColor(0, 255, 0), leds).ignoringDisable(true)); 
+        QuestNav.isQuestOn().onFalse(Commands.runOnce(() -> leds.setSolidColor(255, 0, 0), leds).ignoringDisable(true));
 
         climb.setDefaultCommand(climb.runClimb(operator::getRightYAxis));
     }
@@ -191,7 +243,7 @@ public class TigerShark extends GenericRobot {
 
         drivetrain.setDefaultCommand(driveCmd);
 
-        shooter.setDefaultCommand(shooter.runMotors(() -> operator.getLeftTrigger()));
+        shooter.setDefaultCommand(shooter.runMotors(() -> operator.getLeftTrigger()*0.5));
 
         elevatorSystem.setDefaultCommand(elevatorSystem.basicSuppliersMovement(operator::getLeftYAxis));
         algaeArm.setDefaultCommand(algaeArm.getInitialCommand(operator::getRightTrigger));
@@ -211,7 +263,7 @@ public class TigerShark extends GenericRobot {
 
     @Override
     public Command generateAutoCommand(Command autoCommand) {
-        return drivetrain.generateAutoCommand(autoCommand);
+        return drivetrain.generateAutoCommand(autoCommand).alongWith(algaeArm.getInitialCommand(() -> 0));
     }
 
     @Override
