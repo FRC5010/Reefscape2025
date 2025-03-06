@@ -38,6 +38,7 @@ import org.frc5010.common.constants.GenericDrivetrainConstants;
 import org.frc5010.common.constants.RobotConstantsDef;
 import org.frc5010.common.drive.pose.DrivePoseEstimator;
 import org.frc5010.common.drive.pose.YAGSLSwervePose;
+import org.frc5010.common.drive.pose.DrivePoseEstimator.State;
 import org.frc5010.common.drive.pose.PoseProvider.ProviderType;
 import org.frc5010.common.drive.swerve_utils.PathConstraints5010;
 import org.frc5010.common.drive.swerve_utils.SwerveSetpointGenerator5010;
@@ -344,10 +345,10 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         // .until(() -> RobotModel.robotHasLinearPath(getPose(), pose.get(), unavoidableVertices,
         //     getSwerveConstants().getTrackWidth(), getSwerveConstants().getWheelBase()))
         .andThen(finishDriving.get().beforeStarting(() -> {
-          poseEstimator.setProviderType(ProviderType.FIELD_BASED);
+          poseEstimator.setState(State.ENABLED_FIELD);
           poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose");
         }).withTimeout(timeout)).finallyDo(() -> {
-          poseEstimator.setProviderType(ProviderType.ENVIRONMENT_BASED);
+          poseEstimator.setState(State.ENABLED_ENV);
           SmartDashboard.putBoolean("Running AutoDrive", false);
         });
   }

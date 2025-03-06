@@ -51,9 +51,21 @@ public class DrivePoseEstimator extends GenericSubsystem {
   private boolean updatingPoseAcceptor = false;
 
   private static double CONFIDENCE_RESET_THRESHOLD = 0.025;
-  private ProviderType currentProviderType = ProviderType.ALL;
   private boolean activateAcceptorUpdates = true;
   private boolean poseAcceptable = false;
+
+  public static enum State {
+    DISABLED_FIELD(ProviderType.FIELD_BASED), DISABLED_ENV(ProviderType.ENVIRONMENT_BASED),
+    ENABLED_FIELD(ProviderType.FIELD_BASED), ENABLED_ENV(ProviderType.ENVIRONMENT_BASED), ALL(ProviderType.ALL);
+
+    public ProviderType type;
+
+    private State(ProviderType type) {
+      this.type = type;
+    }
+  }
+
+  private static State state = State.DISABLED_FIELD;
 
   /**
    * Build a DrivePoseEstimator
@@ -134,8 +146,8 @@ public class DrivePoseEstimator extends GenericSubsystem {
 
     // Switches from field to environment based estimation
     new Trigger(() -> DriverStation.isDisabled())
-        .onFalse(Commands.runOnce(() -> this.setProviderType(ProviderType.ENVIRONMENT_BASED)))
-        .onTrue(Commands.runOnce(() -> this.setProviderType(ProviderType.FIELD_BASED)));
+        .onFalse(Commands.runOnce(() -> this.setState(State.ENABLED_ENV)))
+        .onTrue(Commands.runOnce(() -> this.setState(State.DISABLED_ENV)));
   }
 
   public Function<Integer, Color8Bit> displayProviderStatuses(int length) {
@@ -283,14 +295,11 @@ public class DrivePoseEstimator extends GenericSubsystem {
    * Creates a command that updates the pose estimator using the pose providers.
    *
    * <p>
-   * This command will update the local measurements of the pose tracker and check
-   * if vision
-   * update is disabled. If vision update is not disabled, it will iterate over
-   * each pose provider
-   * and update the vision measurements of the pose tracker if a robot pose is
-   * present. Finally, it
-   * will update a boolean value on the SmartDashboard to indicate if any vision
-   * updates were made.
+   * DISABLED_FIELD - reads pose from AT camera providers and updates the Env providers with low ambiguity poses from a distance
+   * DISABLED_ENV - reads pose from Env providers, expecting a pose reset to be provided
+   * ENABLED_FIELD - reads pose from the AT camera providers and updates the Env providers if the pose is high caliber and close
+   * ENABLED_ENV - reads the pose from the Env providers and expects given pose to be correct
+   * ALL - reads and fuses poses from both Env and Field sources, resetting Env pose based on update
    *
    * @return the command that updates the pose estimator
    */
@@ -302,7 +311,7 @@ public class DrivePoseEstimator extends GenericSubsystem {
     if (!disableVisionUpdateCommand) {
       for (PoseProvider provider : poseProviders) {
         if (provider.isActive()
-            && (currentProviderType == ProviderType.ALL || provider.getType() == currentProviderType)) {
+            && (state.type == ProviderType.ALL || provider.getType() == state.type)) {
           Optional<Pose3d> robotPose = provider.getRobotPose();
           if (robotPose.isPresent()) {
             double confidence = provider.getConfidence();
@@ -312,15 +321,16 @@ public class DrivePoseEstimator extends GenericSubsystem {
                 robotPose.get().toPose2d(), provider.getCaptureTime(), vision.getStdConfidenceVector(confidence));
 
             // Decides if pose would be good to update
-            poseAcceptable = activateAcceptorUpdates && confidence < CONFIDENCE_RESET_THRESHOLD
-                && provider.getType() == ProviderType.FIELD_BASED
+            poseAcceptable = activateAcceptorUpdates
+                && provider.getType() == ProviderType.FIELD_BASED && state == State.ENABLED_FIELD
+                && confidence < CONFIDENCE_RESET_THRESHOLD
                 && robotPose.get().getTranslation().getDistance(getCurrentPose3d().getTranslation()) < 0.08;
           }
         }
       }
 
       // Accept poses after estimation integration
-      if (activateAcceptorUpdates && (poseAcceptable || DriverStation.isDisabled())) {
+      if (activateAcceptorUpdates && (poseAcceptable || state == State.DISABLED_FIELD)) {
         for (PoseProvider provider2 : poseProviders) {
           if (provider2.getType() == ProviderType.ENVIRONMENT_BASED) {
             provider2.resetPose(getCurrentPose3d());
@@ -335,8 +345,8 @@ public class DrivePoseEstimator extends GenericSubsystem {
     updatingPoseAcceptor = accepterUpdating;
   }
 
-  public void setProviderType(ProviderType type) {
-    currentProviderType = type;
+  public void setState(State type) {
+    state = type;
   }
 
   /**

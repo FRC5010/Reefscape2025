@@ -148,6 +148,8 @@ public class TigerShark extends GenericRobot {
             driver.createXButton().whileTrue(calibrationQuest.determineOffsetToRobotCenter(drivetrain));
 
             driver.createYButton().whileTrue(shooter.getSysIdCommand());
+
+            driver.createUpPovButton().whileTrue(Commands.run(() -> ((YAGSLSwerveDrivetrain) drivetrain).drive(new ChassisSpeeds(0.1, 0, 0)), drivetrain));
             operator.createXButton().whileTrue(algaeArm.getSysIdCommand());
 
             operator.createAButton().whileTrue(
