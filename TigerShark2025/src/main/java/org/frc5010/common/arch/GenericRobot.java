@@ -173,7 +173,7 @@ public abstract class GenericRobot extends GenericMechanism implements GenericDe
   /** Initialize the robot depending on whether we are simulating or not */
   @Override
   protected void initRealOrSim() {
-    if (RobotBase.isReal()) {
+    if (RobotBase.isReal() && false) {
       WpiDataLogging.start(true);
     } else {
       WpiDataLogging.start(false);

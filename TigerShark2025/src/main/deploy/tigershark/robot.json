@@ -1,6 +1,6 @@
 {
-    "userConfig": "competition_mode.json",
-    "logLevel": "CONFIG",
+    "userConfig": "demo_mode.json",
+    "logLevel": "COMPETITION",
     "driveType": "YAGSL_SWERVE_DRIVE",
     "trackWidth": 22,
     "trackWidthUom": "in",
