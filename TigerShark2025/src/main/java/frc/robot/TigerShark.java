@@ -65,7 +65,7 @@ public class TigerShark extends GenericRobot {
         super(directory);
         AllianceFlip.configure(FieldConstants.fieldDimensions);
 
-        CameraServer.startAutomaticCapture(); 
+        //CameraServer.startAutomaticCapture(); 
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
         brainZero = new DigitalInput(0);
         brainOne = new DigitalInput(1);

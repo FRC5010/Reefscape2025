@@ -11,6 +11,21 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
+import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
+
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -44,18 +59,6 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import org.ironmaple.simulation.SimulatedArena;
-import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
-import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
-import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
-import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 import swervelib.encoders.CANCoderSwerve;
 import swervelib.imu.Pigeon2Swerve;
 import swervelib.imu.SwerveIMU;
@@ -1145,6 +1148,7 @@ public class SwerveDrive
    * periodically. In simulation mode will also post the pose of each module. Updates SmartDashboard with module encoder
    * readings and states.
    */
+  private static Pose2d lastPoseEstimate = null;
   public void updateOdometry()
   {
     SwerveDriveTelemetry.startOdomCycle();
@@ -1153,8 +1157,26 @@ public class SwerveDrive
     try
     {
       // Update odometry
-      swerveDrivePoseEstimator.update(getYaw(), getModulePositions());
+      Rotation2d yaw = getYaw();
+      swerveDrivePoseEstimator.update(yaw, getModulePositions());
 
+      Pose2d currentPose = swerveDrivePoseEstimator.getEstimatedPosition();
+      if (lastPoseEstimate != null) {
+        double distance = Math.abs(lastPoseEstimate.getTranslation().getDistance(currentPose.getTranslation()));
+        if(distance > 0.1 && DriverStation.isEnabled()) {
+          DriverStation.reportError("Pose error: Distance " + distance + "  Yaw " + yaw + " Last Pose " + lastPoseEstimate + " to " + currentPose, false);
+          Arrays.stream(getModulePositions()).forEach(it -> DriverStation.reportError("Pose error: Module " + it , false));
+          swerveDrivePoseEstimator.resetPose(lastPoseEstimate);
+          currentPose = swerveDrivePoseEstimator.update(yaw, getModulePositions());
+          distance = Math.abs(lastPoseEstimate.getTranslation().getDistance(currentPose.getTranslation()));
+          if(distance > 0.1) {
+            DriverStation.reportError("Pose error: Nope that didn't help", false);
+          } else {
+            DriverStation.reportError("Pose error: Reset pose to last known", false);
+          }
+        }
+      }
+      lastPoseEstimate = currentPose;
       if (SwerveDriveTelemetry.isSimulation)
       {
         try
