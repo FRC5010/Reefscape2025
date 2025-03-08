@@ -69,7 +69,9 @@ public class TigerShark extends GenericRobot {
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
         brainZero = new DigitalInput(0);
         brainOne = new DigitalInput(1);
-    
+
+        leds = new LedSubsystem(0, 30);
+        leds.setRainbow();
 
         gyro = (GenericGyro) subsystems.get(ConfigConstants.GYRO);
 
@@ -77,7 +79,7 @@ public class TigerShark extends GenericRobot {
         eleConfig.gearing = 72.0 / 12.0;
         elevatorSystem = new ElevatorSystem(mechVisual, eleConfig);
         shooter = new ShooterSystem(mechVisual, new ShooterSystem.Config());
-        algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config());
+        algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config(), leds);
 
         TargetingSystem.setupParameters((YAGSLSwerveDrivetrain) drivetrain, shooter, elevatorSystem, algaeArm);
 
@@ -98,8 +100,6 @@ public class TigerShark extends GenericRobot {
 
         // segmentedLED = new SegmentedLedSystem(0, 30, mechVisual);
         // LEDStripSegment providerSegment = segmentedLED.addLedSegment("Pose Providers", 0, 10, Color.WHITE);
-        leds = new LedSubsystem(0, 30);
-        leds.setRainbow();
 
         // ((YAGSLSwerveDrivetrain) drivetrain).getPoseEstimator().displayOnLEDSegment(providerSegment, 10);
 

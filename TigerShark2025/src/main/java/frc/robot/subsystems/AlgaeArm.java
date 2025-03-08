@@ -22,6 +22,7 @@ import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.motors.PIDController5010.PIDControlType;
 import org.frc5010.common.motors.function.AngularControlMotor;
 import org.frc5010.common.motors.hardware.GenericTalonFXMotor;
+import org.frc5010.common.subsystems.LedSubsystem;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -39,19 +40,23 @@ public class AlgaeArm extends GenericSubsystem {
     protected AngularControlMotor motor;
     protected Angle safeDistance = Degrees.of(10);
     protected PIDControlType controlType = PIDControlType.NONE;
-    protected State state = State.POSITION;
+    protected State state = State.RETRACTED;
+    protected Position armPosition = Position.UP;
+    private Trigger retracted, deploying, deployed, retracting;
+
     
     public static enum State {
-        POSITION,
-        DEPLOY,
-        RETRACT
+        RETRACTED,
+        DEPLOYING,
+        DEPLOYED,
+        RETRACTING
     }
 
     public static enum Position {
         UP(Degrees.of(90)),
         DOWN(Degrees.of(-45)),
         L2(Degrees.of(30)),
-        L3(Degrees.of(45)),;
+        L3(Degrees.of(45));
 
         private final Angle position;
 
@@ -85,9 +90,10 @@ public class AlgaeArm extends GenericSubsystem {
         public double maxAcceleration = 16.66;
         public boolean invert = true;
     }
+
     private Config config = new Config();
 
-    public AlgaeArm(Mechanism2d mechanismSimulation, Config config) {
+    public AlgaeArm(Mechanism2d mechanismSimulation, Config config, LedSubsystem leds) {
         super(mechanismSimulation);
         if (config != null) this.config = config;
        
@@ -110,6 +116,16 @@ public class AlgaeArm extends GenericSubsystem {
 
         // Ensure this angle works
         motor.getMotorEncoder().setPosition(config.startAngle);
+
+        retracted = new Trigger(() -> getAlgaeArmPosition() - Position.UP.position().in(Degrees) < 2);
+        deploying = new Trigger(() -> driveToAngle(armPosition.position().in(Degrees)) < 0).and(retracted.negate()).and(deployed.negate());
+        deployed = new Trigger(() -> getAlgaeArmPosition() - armPosition.position().in(Degrees) < 2).and(retracted.negate());
+        retracting = new Trigger(() -> driveToAngle(armPosition.position().in(Degrees)) > 0).and(retracted.negate().and(deployed.negate()));
+
+        retracted.onTrue(Commands.runOnce(() -> leds.setSolidColor(0, 255, 0), leds)); // green
+        deploying.onTrue(Commands.runOnce(() -> leds.setSolidColor(255, 210, 0), leds)); // orange
+        deployed.onTrue(Commands.runOnce(() -> leds.setSolidColor(255, 0, 0), leds)); // red
+        retracting.onTrue(Commands.runOnce(() -> leds.setSolidColor(0, 0, 255), leds)); // blue
     }
 
     public static Trigger algaeSelected = new Trigger(() -> ReefscapeButtonBoard.getCurrentAlignment() == ReefscapeButtonBoard.ScoringAlignment.ALGAE);
@@ -155,19 +171,38 @@ public class AlgaeArm extends GenericSubsystem {
         }, this);
     }
 
-    public void driveToAngle(double position){
+    public double driveToAngle(double position){
+        setDesiredPosition(position);
         double difference = position - motor.getPivotPosition();
-            double sign = Math.signum(difference);
-            double effort = 0.05;
-            if (Math.abs(difference) < safeDistance.in(Degrees)) {
-                effort *= Math.max(Math.abs(difference) / safeDistance.in(Degrees), 0.05);
+        double sign = Math.signum(difference);
+        double effort = 0.05;
+        if (Math.abs(difference) < safeDistance.in(Degrees)) {
+            effort *= Math.max(Math.abs(difference) / safeDistance.in(Degrees), 0.05);
 
-                if (Math.abs(difference) < 5) {
-                    effort = 0;
-                }
+            if (Math.abs(difference) < 5) {
+                effort = 0;
             }
-            effort *= sign;
-            motor.set(effort);
+        }
+        effort *= sign;
+        motor.set(effort);
+        return effort;
+    }
+
+    public double getAlgaeArmPosition() {
+        return motor.getPivotPosition();
+    }
+
+    // Sets the desired position in the enum, not on the motors
+    public void setDesiredPosition(double position) {
+        if (position == Position.UP.position().in(Degrees)) {
+            armPosition = Position.UP;
+        } else if (position == Position.DOWN.position().in(Degrees)) {
+            armPosition = Position.DOWN;
+        } else if (position == Position.L2.position().in(Degrees)) {
+            armPosition = Position.L2;
+        } else if (position == Position.L3.position().in(Degrees)) {
+            armPosition = Position.L3;
+        }
     }
 
     public Trigger isAtTarget() {
