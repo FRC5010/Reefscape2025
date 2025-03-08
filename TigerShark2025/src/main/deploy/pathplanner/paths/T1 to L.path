@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.7403977272727267,
-        "y": 7.245
+        "x": 1.5224385245901637,
+        "y": 7.315624999999999
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.644973893291583,
-        "y": 6.21642103557391
+        "x": 2.4270146906090204,
+        "y": 6.287046035573908
       },
       "isLocked": false,
       "linkedName": "T1 Station"
@@ -34,7 +34,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.5,
-    "maxAcceleration": 5.5,
+    "maxAcceleration": 6.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 480.0,
     "nominalVoltage": 12.0,

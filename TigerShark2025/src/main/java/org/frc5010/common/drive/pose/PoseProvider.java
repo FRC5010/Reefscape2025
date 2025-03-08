@@ -15,6 +15,7 @@ public interface PoseProvider {
 
     public enum ProviderType {
         ALL,
+        NONE,
         FIELD_BASED,
         ENVIRONMENT_BASED,
         RELATIVE

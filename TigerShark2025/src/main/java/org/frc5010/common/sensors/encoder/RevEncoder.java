@@ -68,15 +68,17 @@ public class RevEncoder implements GenericEncoder {
   @Override
   public void setPositionConversion(double conversion) {
     positionConversion = conversion;
-    sparkMaxSim.getRelativeEncoderSim().setPositionConversionFactor(conversion);
     config.positionConversionFactor(conversion);
+    //sparkMaxSim.getRelativeEncoderSim().setPositionConversionFactor(conversion);
+    
   }
 
   @Override
   public void setVelocityConversion(double conversion) {
     velocityConversion = conversion;
-    sparkMaxSim.getRelativeEncoderSim().setVelocityConversionFactor(conversion);
     config.velocityConversionFactor(conversion);
+    //sparkMaxSim.getRelativeEncoderSim().setVelocityConversionFactor(conversion);
+    
   }
 
   @Override

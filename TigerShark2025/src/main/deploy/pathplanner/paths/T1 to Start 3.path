@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.7403977272727267,
-        "y": 7.245
+        "x": 1.5224385245901637,
+        "y": 7.315624999999999
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.661147727272726,
-        "y": 7.089
+        "x": 3.4431885245901634,
+        "y": 7.159624999999999
       },
       "isLocked": false,
       "linkedName": "T1 Station"
     },
     {
       "anchor": {
-        "x": 7.41,
-        "y": 5.0097499999999995
+        "x": 7.2165983606557385,
+        "y": 5.08775
       },
       "prevControl": {
-        "x": 6.318,
-        "y": 5.80925
+        "x": 6.124598360655738,
+        "y": 5.88725
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -114.78546428760724
   },
   "reversed": false,
   "folder": null,

@@ -8,54 +8,42 @@ import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.motors.PIDController5010;
 import org.frc5010.common.motors.SystemIdentification;
+import org.frc5010.common.motors.function.VelocityControlMotor;
+import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.motors.PIDController5010.PIDControlType;
 import org.frc5010.common.sensors.Controller;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.subsystems.ShooterSystem;
 
 
 
 public class ControlsBoard extends GenericRobot {
-    MotorController5010 kraken;
+    TestShooter testShooter;
     PIDController5010 pidController;
     TestBoard testBoard;
 
 
     public ControlsBoard(String directory) {
         super(directory);
-        kraken = MotorFactory.TalonFX(14, MotorConstants.Motor.KrakenX60);
+        testShooter = new TestShooter(mechVisual, new TestShooter.Config());
 
-        pidController = kraken.getPIDController5010();
-        pidController.setControlType(PIDControlType.PROFILED_VELOCITY);
-        pidController.setValues(new GenericPID(0.00014344, 0, 0));
-        pidController.setMotorFeedFwd(new MotorFeedFwdConstants(0.02728, 0.11622, 0.00094272));
-        pidController.setProfiledMaxVelocity(5000);
-        pidController.setProfiledMaxAcceleration(1000);
 
         testBoard = new TestBoard();
     }
 
     @Override
     public void configureButtonBindings(Controller driver, Controller operator) {
-        driver.createAButton().whileTrue(
-            SystemIdentification.getSysIdFullCommand(
-                SystemIdentification.angleSysIdRoutine(kraken, kraken.getMotorEncoder(), "Vertical Motor", testBoard),
-                4,
-                2,
-                3)
-        );
 
-        testBoard.setDefaultCommand(Commands.run(
-            () -> {
-                pidController.setReference(driver.getLeftYAxis()*10);
-            }, testBoard));
+
 
     }
 
     @Override
     public void setupDefaultCommands(Controller driver, Controller operator) {
-       
+       testShooter.setDefaultCommand(testShooter.runMotors(driver::getLeftYAxis));
     }
 
     @Override

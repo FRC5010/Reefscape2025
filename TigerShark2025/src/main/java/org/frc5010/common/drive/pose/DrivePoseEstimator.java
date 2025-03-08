@@ -56,7 +56,8 @@ public class DrivePoseEstimator extends GenericSubsystem {
 
   public static enum State {
     DISABLED_FIELD(ProviderType.FIELD_BASED), DISABLED_ENV(ProviderType.ENVIRONMENT_BASED),
-    ENABLED_FIELD(ProviderType.FIELD_BASED), ENABLED_ENV(ProviderType.ENVIRONMENT_BASED), ALL(ProviderType.ALL);
+    ENABLED_FIELD(ProviderType.FIELD_BASED), ENABLED_ENV(ProviderType.ENVIRONMENT_BASED), ALL(ProviderType.ALL),
+    ODOMETRY_ONLY(ProviderType.NONE);
 
     public ProviderType type;
 

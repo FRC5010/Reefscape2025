@@ -1,6 +1,6 @@
 {
-    "maxSpeed": 2.0,
-    "maxAngularSpeed": 1.5,
-    "maxAccelleration": 1.0,
-    "maxAngularAccelleration": 1.5
+    "maxSpeed": 4.5,
+    "maxAngularSpeed": 3.0,
+    "maxAccelleration": 4.0,
+    "maxAngularAccelleration": 2.5
 }

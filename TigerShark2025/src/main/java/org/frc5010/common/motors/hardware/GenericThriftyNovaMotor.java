@@ -237,6 +237,7 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
         checkErrors("Getting output current failed: ");
         return current;
     }
+    
 
     @Override
     public void setMotorSimulationType(DCMotor motorSimulationType) {
