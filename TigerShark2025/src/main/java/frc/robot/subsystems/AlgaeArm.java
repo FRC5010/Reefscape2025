@@ -22,7 +22,6 @@ import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.motors.PIDController5010.PIDControlType;
 import org.frc5010.common.motors.function.AngularControlMotor;
 import org.frc5010.common.motors.hardware.GenericTalonFXMotor;
-import org.frc5010.common.subsystems.LedSubsystem;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -40,12 +39,12 @@ public class AlgaeArm extends GenericSubsystem {
     protected AngularControlMotor motor;
     protected Angle safeDistance = Degrees.of(10);
     protected PIDControlType controlType = PIDControlType.NONE;
-    protected State state = State.RETRACTED;
+    protected AlgaeState algaeState = AlgaeState.RETRACTED;
     protected Position armPosition = Position.UP;
     private Trigger retracted, deploying, deployed, retracting;
 
     
-    public static enum State {
+    public static enum AlgaeState {
         RETRACTED,
         DEPLOYING,
         DEPLOYED,
@@ -93,7 +92,7 @@ public class AlgaeArm extends GenericSubsystem {
 
     private Config config = new Config();
 
-    public AlgaeArm(Mechanism2d mechanismSimulation, Config config, LedSubsystem leds) {
+    public AlgaeArm(Mechanism2d mechanismSimulation, Config config) {
         super(mechanismSimulation);
         if (config != null) this.config = config;
        
@@ -118,14 +117,9 @@ public class AlgaeArm extends GenericSubsystem {
         motor.getMotorEncoder().setPosition(config.startAngle);
 
         retracted = new Trigger(() -> getAlgaeArmPosition() - Position.UP.position().in(Degrees) < 2);
-        deploying = new Trigger(() -> driveToAngle(armPosition.position().in(Degrees)) < 0).and(retracted.negate()).and(deployed.negate());
-        deployed = new Trigger(() -> getAlgaeArmPosition() - armPosition.position().in(Degrees) < 2).and(retracted.negate());
-        retracting = new Trigger(() -> driveToAngle(armPosition.position().in(Degrees)) > 0).and(retracted.negate().and(deployed.negate()));
-
-        retracted.onTrue(Commands.runOnce(() -> leds.setSolidColor(0, 255, 0), leds)); // green
-        deploying.onTrue(Commands.runOnce(() -> leds.setSolidColor(255, 210, 0), leds)); // orange
-        deployed.onTrue(Commands.runOnce(() -> leds.setSolidColor(255, 0, 0), leds)); // red
-        retracting.onTrue(Commands.runOnce(() -> leds.setSolidColor(0, 0, 255), leds)); // blue
+        deploying = new Trigger(() -> driveToAngle(armPosition.position().in(Degrees)) < -0.05).and(retracted.negate()).and(deployed.negate());
+        deployed = new Trigger(() -> getAlgaeArmPosition() - armPosition.position().in(Degrees) < 2).and(retracted.negate()).and(deploying.negate()).and(retracting.negate());
+        retracting = new Trigger(() -> driveToAngle(armPosition.position().in(Degrees)) > 0.05).and(retracted.negate().and(deployed.negate()));
     }
 
     public static Trigger algaeSelected = new Trigger(() -> ReefscapeButtonBoard.getCurrentAlignment() == ReefscapeButtonBoard.ScoringAlignment.ALGAE);
@@ -207,6 +201,10 @@ public class AlgaeArm extends GenericSubsystem {
 
     public Trigger isAtTarget() {
         return new Trigger(() -> motor.isAtTarget());
+    }
+
+    public AlgaeState getAlgaeState() {
+        return algaeState;
     }
 
     @Override

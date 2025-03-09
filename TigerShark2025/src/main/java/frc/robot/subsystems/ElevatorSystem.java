@@ -352,11 +352,11 @@ public class ElevatorSystem extends GenericSubsystem {
         return new Trigger(() -> elevator.isAtTarget());
     }
 
-    public Boolean isAtLocation(Distance position) {
+    public boolean isAtLocation(Distance position) {
         return Math.abs(position.in(Meters) - elevator.getPosition()) < 0.02;
     }
 
-    public Boolean isAtLocationImproved(Distance position) {
+    public boolean isAtLocationImproved(Distance position) {
         if (Math.abs(position.in(Meters) - elevator.getPosition()) < 0.02) {
             elevatorAtReferenceCounter++;
             return elevatorAtReferenceCounter > 10;
@@ -421,9 +421,9 @@ public class ElevatorSystem extends GenericSubsystem {
     public double getCOMAcceleration(double x) {
         timeChange = (RobotController.getFPGATime() - lastTime) / 1E6;
         lastTime = RobotController.getFPGATime();
-        currentVelocity = (x - lastX) / timeChange;
+        currentVelocity = MathUtil.clamp((x - lastX) / timeChange, -2.5 , 2.5); // Note: temporary fix, add data smoothing later
         lastX = x;
-        currentAcceleration = (currentVelocity - lastVelocity) / timeChange;
+        currentAcceleration = MathUtil.clamp((currentVelocity - lastVelocity) / timeChange, 2.5, -2.5); // Note: temporary fix, add data smoothing later
         lastVelocity = currentVelocity;
         return (growFactor * exponent * (exponent - 1) * Math.pow(x, exponent - 2)
                 * Math.pow(currentVelocity, 2))
@@ -480,6 +480,14 @@ public class ElevatorSystem extends GenericSubsystem {
         this.growFactor = growFactor;
         this.exponent = exponent;
         this.initialValue = intialValue;
+    }
+
+    public boolean atLoading() {
+        return Math.abs(elevator.getPosition() - Position.LOAD.position().in(Meters)) < 0.02;
+    }
+
+    public Distance getElevatorPosition() {
+        return Meters.of(elevator.getPosition());
     }
 
     @Override

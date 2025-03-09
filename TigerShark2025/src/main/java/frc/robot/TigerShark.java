@@ -3,7 +3,10 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
+import edu.wpi.first.wpilibj.util.Color;
 import java.util.function.Consumer;
 
 import org.frc5010.common.arch.GenericRobot;
@@ -15,10 +18,10 @@ import org.frc5010.common.sensors.Controller;
 import org.frc5010.common.sensors.camera.QuestNav;
 import org.frc5010.common.sensors.gyro.GenericGyro;
 import org.frc5010.common.subsystems.LedSubsystem;
+import org.frc5010.common.subsystems.NewLEDSubsystem;
 import org.frc5010.common.subsystems.SegmentedLedSystem;
 import org.frc5010.common.utils.AllianceFlip;
 
-import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -29,6 +32,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -57,7 +61,7 @@ public class TigerShark extends GenericRobot {
     DigitalInput centerLineZero;
     Pose2d centerLineResetPose;
     SegmentedLedSystem segmentedLED;
-    LedSubsystem leds;
+    NewLEDSubsystem leds;
     private final Distance ROBOT_WIDTH = Inches.of(34.75);
     Pose2d startingPose1, startingPose2, startingPose3;
 
@@ -70,8 +74,7 @@ public class TigerShark extends GenericRobot {
         brainZero = new DigitalInput(0);
         brainOne = new DigitalInput(1);
 
-        leds = new LedSubsystem(0, 30);
-        leds.setRainbow();
+        leds = new NewLEDSubsystem(0, 30, Inches.of(27.0));
 
         gyro = (GenericGyro) subsystems.get(ConfigConstants.GYRO);
 
@@ -79,7 +82,7 @@ public class TigerShark extends GenericRobot {
         eleConfig.gearing = 72.0 / 12.0;
         elevatorSystem = new ElevatorSystem(mechVisual, eleConfig);
         shooter = new ShooterSystem(mechVisual, new ShooterSystem.Config());
-        algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config(), leds);
+        algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config());
 
         TargetingSystem.setupParameters((YAGSLSwerveDrivetrain) drivetrain, shooter, elevatorSystem, algaeArm);
 
@@ -228,10 +231,10 @@ public class TigerShark extends GenericRobot {
         operator.createLeftPovButton().onTrue(Commands.runOnce(() -> resetPosition(startingPose3)).ignoringDisable(true));
 
         driver.createBackButton().onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true));
-        new Trigger(brainZero::get).onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true).andThen(Commands.run(() -> leds.setRainbow(), leds)).withDeadline(Commands.waitSeconds(3)));
-        new Trigger(brainOne::get).onTrue(Commands.runOnce(() -> resetPositionToDiagonalStart()).ignoringDisable(true).andThen(Commands.run(() -> leds.setRainbow(), leds)).withDeadline(Commands.waitSeconds(3)));
-        QuestNav.isQuestOn().onTrue(Commands.runOnce(() -> leds.setSolidColor(0, 255, 0), leds).ignoringDisable(true)); 
-        QuestNav.isQuestOn().onFalse(Commands.runOnce(() -> leds.setSolidColor(255, 0, 0), leds).ignoringDisable(true));
+        new Trigger(brainZero::get).onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true).andThen(Commands.runOnce(() -> leds.setPattern(leds.getRainbowPattern(1.0)))).withTimeout(Seconds.of(3.0)));
+        new Trigger(brainOne::get).onTrue(Commands.runOnce(() -> resetPositionToDiagonalStart()).ignoringDisable(true).andThen(Commands.runOnce(() -> leds.setPattern(leds.getRainbowPattern(1.0)))).withTimeout(Seconds.of(3.0)));
+        QuestNav.isQuestOn().and(() -> DriverStation.isDisabled()).onTrue(Commands.runOnce(() -> leds.setPattern(leds.getSolidPattern(Color.kGreen))).ignoringDisable(true)); 
+        QuestNav.isQuestOn().and(() -> DriverStation.isDisabled()).onFalse(Commands.runOnce(() -> leds.setPattern(leds.getSolidPattern(Color.kRed))).ignoringDisable(true));
 
         climb.setDefaultCommand(climb.runClimb(operator::getRightYAxis));
     }
@@ -241,16 +244,12 @@ public class TigerShark extends GenericRobot {
         // JoystickToSwerve driveCmd = (JoystickToSwerve)drivetrain.createDefaultCommand(driver);
         Command driveCmd = ((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorOrientationConsidered(() -> ((YAGSLSwerveDrivetrain) drivetrain).getFieldVelocitiesFromJoystick(driver::getLeftYAxis, driver::getLeftXAxis, driver::getRightXAxis));
 
-
-
         drivetrain.setDefaultCommand(driveCmd);
 
-        shooter.setDefaultCommand(shooter.runMotors(() -> operator.getLeftTrigger()*0.5));
+        shooter.setDefaultCommand(shooter.runMotors(() -> operator.getLeftTrigger() * 0.5));
 
         elevatorSystem.setDefaultCommand(elevatorSystem.basicSuppliersMovement(operator::getLeftYAxis));
         algaeArm.setDefaultCommand(algaeArm.getInitialCommand(operator::getRightTrigger));
-
-
     }
 
     @Override

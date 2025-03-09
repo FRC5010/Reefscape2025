@@ -88,6 +88,10 @@ public class ClimbSubsystem extends GenericSubsystem {
     return climbMotorEncoder.getPosition();
   }
 
+  public boolean isClimbing() {
+    return Math.abs(climbMotorEncoder.getVelocity()) > 0.01;
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run

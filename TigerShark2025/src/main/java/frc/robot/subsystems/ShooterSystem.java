@@ -193,6 +193,10 @@ public class ShooterSystem extends GenericSubsystem {
     return Commands.runOnce(() -> coralState = state);
   }
 
+  public CoralState getCoralState() {
+    return coralState;
+  }
+
   public Command intakeCoral() {
     return runMotors(() -> 0.1).until(isEmpty.negate());
   }
@@ -203,6 +207,10 @@ public class ShooterSystem extends GenericSubsystem {
 
   public Trigger isFullyCaptured() {
     return isCoralFullyCaptured;
+  }
+
+  public double getAverageMotorSpeed() {
+    return (Math.abs(shooterLeft.get()) + Math.abs(shooterRight.get())) / 2;
   }
 
   @Override
