@@ -45,18 +45,6 @@
           "data": {
             "pathName": "T2 to L"
           }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "L to T2"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "T2 to A"
-          }
         }
       ]
     }

@@ -9,7 +9,10 @@ import static edu.wpi.first.units.Units.Degrees;
 import java.util.Optional;
 
 import org.frc5010.common.drive.GenericDrivetrain;
+import org.frc5010.common.drive.pose.DrivePoseEstimator;
 import org.frc5010.common.drive.pose.PoseProvider;
+import org.frc5010.common.drive.pose.DrivePoseEstimator.State;
+import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -329,6 +332,19 @@ public class QuestNav implements PoseProvider {
                 SmartDashboard.putNumberArray("Quest Calculated Offset to Robot Center", new double[] { _calculatedOffsetToRobotCenter.getX(), _calculatedOffsetToRobotCenter.getY() });
 
             }).onlyIf(() -> getRotation().getMeasureZ().in(Degrees) > 30));
+    }
+ 
+    public Command calibrateWheelOdometry(YAGSLSwerveDrivetrain drivetrain) {
+        DrivePoseEstimator poseEstimator = drivetrain.getPoseEstimator();
+        
+        return Commands.run(() -> {
+
+        }, drivetrain).beforeStarting(() -> {
+            poseEstimator.setState(State.ODOMETRY_ONLY);
+        }).finallyDo(() -> {
+            poseEstimator.setState(State.ALL);
+        });
+
     }
 
 }

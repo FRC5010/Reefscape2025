@@ -99,7 +99,7 @@ public class TargetingSystem {
         // elevator.pidControlCommand(level));
         return elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level))
                 .andThen(drivetrain.driveToPosePrecise(targetPose, StationOffset).get().alongWith(
-                        shooter.runMotors(() -> 1.0)).until(shooter.isFullyCaptured()).andThen(Commands.runOnce(() -> {
+                        shooter.runMotors(() -> 1.0)).withTimeout(5).until(shooter.isFullyCaptured()).andThen(Commands.runOnce(() -> {
                             shooter.shooterLeftSpeed(0);
                             shooter.shooterRightSpeed(0);
                         }, shooter)));

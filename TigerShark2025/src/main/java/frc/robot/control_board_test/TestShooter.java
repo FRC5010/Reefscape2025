@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems;
+package frc.robot.control_board_test;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Inches;
@@ -31,7 +31,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.ReefscapeButtonBoard.ScoringLevel;
 
 
-public class ShooterSystem extends GenericSubsystem {
+public class TestShooter extends GenericSubsystem {
   Beambreak alignmentBeambreak;
   Beambreak entryBeambreak;
 
@@ -51,7 +51,7 @@ public class ShooterSystem extends GenericSubsystem {
   }
 
   public static class Config {
-    private final Current INTAKE_CURRENT_THRESHOLD = Amps.of(3);
+    private final Current INTAKE_CURRENT_THRESHOLD = Amps.of(10);
     int alignmentBeambreakCanID = 8;
     int entryBeambreakCanID = 7;
     int shooterLeftCanID = 11;
@@ -77,7 +77,7 @@ public class ShooterSystem extends GenericSubsystem {
   private Config config = new Config();
 
   /** Creates a new Shooter. */
-  public ShooterSystem(Mechanism2d mechanismSimulation, Config config) {
+  public TestShooter(Mechanism2d mechanismSimulation, Config config) {
     if (config != null) this.config = config;
     
     alignmentBeambreak = new Beambreak(config.alignmentBeambreakCanID);
@@ -111,8 +111,8 @@ public class ShooterSystem extends GenericSubsystem {
   }
 
   private void setupMotors(Mechanism2d mechanismSimulation) {
-    shooterLeft = new VelocityControlMotor(MotorFactory.Thrifty(config.shooterLeftCanID, Motor.Neo), "shooterLeft", displayValues);
-    shooterRight = new VelocityControlMotor(MotorFactory.Thrifty(config.shooterRightCanID, Motor.Neo), "shooterRight",
+    shooterLeft = new VelocityControlMotor(MotorFactory.Thrifty(12, Motor.Neo), "shooterLeft", displayValues);
+    shooterRight = new VelocityControlMotor(MotorFactory.Thrifty(11, Motor.Neo), "shooterRight",
             displayValues);
     shooterLeft.invert(config.shooterLeftInverted);
     shooterRight.invert(config.shooterRightInverted);
@@ -193,10 +193,6 @@ public class ShooterSystem extends GenericSubsystem {
     return Commands.runOnce(() -> coralState = state);
   }
 
-  public CoralState getCoralState() {
-    return coralState;
-  }
-
   public Command intakeCoral() {
     return runMotors(() -> 0.1).until(isEmpty.negate());
   }
@@ -207,10 +203,6 @@ public class ShooterSystem extends GenericSubsystem {
 
   public Trigger isFullyCaptured() {
     return isCoralFullyCaptured;
-  }
-
-  public double getAverageMotorSpeed() {
-    return (Math.abs(shooterLeft.get()) + Math.abs(shooterRight.get())) / 2;
   }
 
   @Override

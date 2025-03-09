@@ -33,6 +33,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.LEDPattern;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -62,6 +63,7 @@ public class TigerShark extends GenericRobot {
     Pose2d centerLineResetPose;
     SegmentedLedSystem segmentedLED;
     NewLEDSubsystem leds;
+    Servo climbServo;
     private final Distance ROBOT_WIDTH = Inches.of(34.75);
     Pose2d startingPose1, startingPose2, startingPose3;
 
@@ -87,6 +89,7 @@ public class TigerShark extends GenericRobot {
         TargetingSystem.setupParameters((YAGSLSwerveDrivetrain) drivetrain, shooter, elevatorSystem, algaeArm);
 
         reefscapeButtonBoard = new ReefscapeButtonBoard(2, 3);
+
 
         climb = new ClimbSubsystem();
 
@@ -245,6 +248,7 @@ public class TigerShark extends GenericRobot {
         Command driveCmd = ((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorOrientationConsidered(() -> ((YAGSLSwerveDrivetrain) drivetrain).getFieldVelocitiesFromJoystick(driver::getLeftYAxis, driver::getLeftXAxis, driver::getRightXAxis));
 
         drivetrain.setDefaultCommand(driveCmd);
+
 
         shooter.setDefaultCommand(shooter.runMotors(() -> operator.getLeftTrigger() * 0.5));
 
