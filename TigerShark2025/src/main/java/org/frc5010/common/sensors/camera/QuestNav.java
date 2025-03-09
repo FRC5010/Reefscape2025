@@ -6,14 +6,17 @@ package org.frc5010.common.sensors.camera;
 
 import static edu.wpi.first.units.Units.Degrees;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.drive.pose.DrivePoseEstimator;
-import org.frc5010.common.drive.pose.PoseProvider;
 import org.frc5010.common.drive.pose.DrivePoseEstimator.State;
+import org.frc5010.common.drive.pose.PoseProvider;
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -104,7 +107,6 @@ public class QuestNav implements PoseProvider {
         startTimestamp = timestamp.get();
     }
 
-
     private void setupNetworkTables(String root) {
         networkTable = networkTableInstance.getTable(root);
         miso = networkTable.getIntegerTopic("miso").getEntry(0);
@@ -118,7 +120,7 @@ public class QuestNav implements PoseProvider {
     }
 
     public Translation3d getRawPosition() {
-        return new Translation3d(position.get()[2], -position.get()[0]*xScale, position.get()[1]);
+        return new Translation3d(position.get()[2], -position.get()[0] * xScale, position.get()[1]);
     }
 
     private Translation3d rotateAxes(Translation3d raw, Rotation3d rotation) {
@@ -143,30 +145,42 @@ public class QuestNav implements PoseProvider {
         }
     }
 
+    @Override
+    public List<PoseObservation> getObservations() {
+        List<PoseObservation> observations = new ArrayList<>();
+        double calib = getConfidence();
+        if (isActive) {
+            observations.add(new PoseObservation(timestamp.get(), 0, 0, VecBuilder.fill(calib, calib, calib),
+                    new Pose3d(getPosition(), getRotation())));
+        }
+        return observations;
+    }
+
     public Translation3d getProcessedPosition() {
         Translation3d correctedWorldAxis = correctWorldAxis(getRawPosition());
         Translation3d offsetCorrection = correctedWorldAxis
-        .plus(robotToQuest.getTranslation())
-        .plus(robotToQuest.getTranslation().times(-1).rotateBy(new Rotation3d(0, 0, getRawRotation().getZ())));
+                .plus(robotToQuest.getTranslation())
+                .plus(robotToQuest.getTranslation().times(-1).rotateBy(new Rotation3d(0, 0, getRawRotation().getZ())));
         Translation3d rotatedAxis = rotateAxes(offsetCorrection, initPose.getRotation());
         Translation3d hardResetTransformation = rotatedAxis.plus(initPose.getTranslation());
         return hardResetTransformation;
-        
+
     }
 
     public Translation3d getPosition() {
         Translation3d hardResetTransform = getProcessedPosition();
-        Translation3d softResetTransformation = rotateAxes(hardResetTransform.minus(softResetPose.getTranslation()), softResetTransform.getRotation()).plus(softResetPose.getTranslation()).plus(softResetTransform.getTranslation());
+        Translation3d softResetTransformation = rotateAxes(hardResetTransform.minus(softResetPose.getTranslation()),
+                softResetTransform.getRotation()).plus(softResetPose.getTranslation())
+                .plus(softResetTransform.getTranslation());
         return softResetTransformation;
     }
-
 
     public Rotation3d getProcessedRotation() {
         return getRawRotation().plus(initPose.getRotation());
     }
 
     public Rotation3d getRotation() {
-       return getProcessedRotation().plus(softResetTransform.getRotation());
+        return getProcessedRotation().plus(softResetTransform.getRotation());
     }
 
     public double getConfidence() {
@@ -191,8 +205,8 @@ public class QuestNav implements PoseProvider {
         double frame = frameCount.get();
         double previousFrame = previousFrameCount;
         if (t == 0 || simulation || previousFrame == frame) {
-        isActive = false;
-        return false;
+            isActive = false;
+            return false;
         }
         isActive = true;
         return initializedPosition;
@@ -215,7 +229,8 @@ public class QuestNav implements PoseProvider {
     }
 
     public void softReset(Pose3d pose) {
-        softResetTransform = new Transform3d(pose.getTranslation().minus(getProcessedPosition()), pose.getRotation().minus(getProcessedRotation()));
+        softResetTransform = new Transform3d(pose.getTranslation().minus(getProcessedPosition()),
+                pose.getRotation().minus(getProcessedRotation()));
         softResetPose = new Pose3d(getProcessedPosition(), getProcessedRotation());
     }
 
@@ -233,8 +248,6 @@ public class QuestNav implements PoseProvider {
         initializedPosition = true;
         hardReset(pose);
     }
-
-    
 
     @Override
     public ProviderType getType() {
@@ -292,7 +305,7 @@ public class QuestNav implements PoseProvider {
 
             Pose2d currPose = getRobotPose().get().toPose2d();
             SmartDashboard.putNumberArray("Quest POSE", new double[] {
-                currPose.getX(), currPose.getY(), currPose.getRotation().getDegrees()
+                    currPose.getX(), currPose.getY(), currPose.getRotation().getDegrees()
             });
 
             ChassisSpeeds velocity = getVelocity();
@@ -308,35 +321,39 @@ public class QuestNav implements PoseProvider {
         Rotation2d angle = currentPose2d.getRotation();
         Translation2d displacement = currentPose2d.getTranslation();
 
-        double x = ((angle.getCos() - 1) * displacement.getX() + angle.getSin() * displacement.getY()) / (2 * (1 - angle.getCos()));
-        double y = ((-1 * angle.getSin()) * displacement.getX() + (angle.getCos() - 1) * displacement.getY()) / (2 * (1 - angle.getCos()));
+        double x = ((angle.getCos() - 1) * displacement.getX() + angle.getSin() * displacement.getY())
+                / (2 * (1 - angle.getCos()));
+        double y = ((-1 * angle.getSin()) * displacement.getX() + (angle.getCos() - 1) * displacement.getY())
+                / (2 * (1 - angle.getCos()));
 
         return new Translation2d(x, y);
     }
 
-
     public Command determineOffsetToRobotCenter(GenericDrivetrain drivetrain) {
         return Commands.repeatingSequence(
-            Commands.run(
-            () -> {
-                drivetrain.drive(new ChassisSpeeds(0, 0, 0.314), null);
-            }, drivetrain).withTimeout(0.5),
-            Commands.runOnce(() -> {
-                // Update current offset
-                Translation2d offset = calculateOffsetToRobotCenter();
-                
-                _calculatedOffsetToRobotCenter = _calculatedOffsetToRobotCenter.times((double)_calculatedOffsetToRobotCenterCount / (_calculatedOffsetToRobotCenterCount + 1))
-                    .plus(offset.div(_calculatedOffsetToRobotCenterCount + 1));
-                _calculatedOffsetToRobotCenterCount++;
+                Commands.run(
+                        () -> {
+                            drivetrain.drive(new ChassisSpeeds(0, 0, 0.314), null);
+                        }, drivetrain).withTimeout(0.5),
+                Commands.runOnce(() -> {
+                    // Update current offset
+                    Translation2d offset = calculateOffsetToRobotCenter();
 
-                SmartDashboard.putNumberArray("Quest Calculated Offset to Robot Center", new double[] { _calculatedOffsetToRobotCenter.getX(), _calculatedOffsetToRobotCenter.getY() });
+                    _calculatedOffsetToRobotCenter = _calculatedOffsetToRobotCenter
+                            .times((double) _calculatedOffsetToRobotCenterCount
+                                    / (_calculatedOffsetToRobotCenterCount + 1))
+                            .plus(offset.div(_calculatedOffsetToRobotCenterCount + 1));
+                    _calculatedOffsetToRobotCenterCount++;
 
-            }).onlyIf(() -> getRotation().getMeasureZ().in(Degrees) > 30));
+                    SmartDashboard.putNumberArray("Quest Calculated Offset to Robot Center", new double[] {
+                            _calculatedOffsetToRobotCenter.getX(), _calculatedOffsetToRobotCenter.getY() });
+
+                }).onlyIf(() -> getRotation().getMeasureZ().in(Degrees) > 30));
     }
- 
+
     public Command calibrateWheelOdometry(YAGSLSwerveDrivetrain drivetrain) {
         DrivePoseEstimator poseEstimator = drivetrain.getPoseEstimator();
-        
+
         return Commands.run(() -> {
 
         }, drivetrain).beforeStarting(() -> {

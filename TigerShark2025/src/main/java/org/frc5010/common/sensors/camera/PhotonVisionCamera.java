@@ -115,6 +115,11 @@ public class PhotonVisionCamera extends GenericCamera {
     return Optional.empty();
   }
 
+  @Override
+  public List<PoseObservation> getObservations() {
+    return List.of();
+  }
+
   /**
    * Get the target pose estimate relative to the robot.
    *

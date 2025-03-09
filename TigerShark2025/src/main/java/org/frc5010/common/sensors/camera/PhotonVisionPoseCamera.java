@@ -5,15 +5,20 @@
 package org.frc5010.common.sensors.camera;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
+import org.frc5010.common.vision.VisionConstants;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.targeting.PhotonPipelineResult;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -28,6 +33,10 @@ public class PhotonVisionPoseCamera extends PhotonVisionCamera {
   protected Supplier<Pose2d> poseSupplier;
   /** The current list of fiducial IDs */
   protected List<Integer> fiducialIds = new ArrayList<>();
+
+  protected List<PoseObservation> observations = new ArrayList<>();
+  protected int tagCount = 0;
+  protected double averageDistance = 0;
 
   /**
    * Constructor
@@ -66,22 +75,66 @@ public class PhotonVisionPoseCamera extends PhotonVisionCamera {
     this.poseSupplier = poseSupplier;
     this.fieldLayout = fieldLayout;
     this.fiducialIds = fiducialIds;
+    visionLayout.addDouble("Observations", () -> observations.size());
     poseEstimator = new PhotonPoseEstimator(fieldLayout, strategy, cameraToRobot);
   }
 
   /** Update the camera and target with the latest result */
   @Override
   public void updateCameraInfo() {
+    observations.clear();
+
     super.updateCameraInfo();
-    if (camResult.hasTargets()) {
-      if (fiducialIds.size() > 0) {
-        target = camResult.getTargets().stream()
-            .filter(it -> fiducialIds.contains(it.getFiducialId()))
-            .findFirst();
-      } else {
-        target = Optional.ofNullable(camResult.getBestTarget());
+
+    for (PhotonPipelineResult camResult : camResults) {
+      if (camResult.hasTargets()) {
+        if (camResult.getMultiTagResult().isPresent()) {
+          var multitagResult = camResult.multitagResult.get();
+
+          // Calculate robot pose
+          Transform3d fieldToCamera = multitagResult.estimatedPose.best;
+          Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
+          Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
+
+          // Calculate average tag distance
+          double totalTagDistance = 0.0;
+          for (var target : camResult.targets) {
+            totalTagDistance += target.bestCameraToTarget.getTranslation().getNorm();
+          }
+          // Compute the average tag distance
+          int tagCount = multitagResult.fiducialIDsUsed.size();
+          double averageDistance = 0.0;
+          if (camResult.targets.size() > 0) {
+            averageDistance = totalTagDistance / camResult.targets.size();
+          }
+
+          double stdDevFactor = Math.pow(averageDistance, 2.0) / tagCount;
+          double linearStdDev = VisionConstants.linearStdDevBaseline * stdDevFactor;
+          double angularStdDev = VisionConstants.angularStdDevBaseline * stdDevFactor;
+          
+          observations.add(
+              new PoseObservation(
+                  camResult.getTimestampSeconds(), // Timestamp
+                  multitagResult.estimatedPose.ambiguity,
+                  tagCount,
+                  VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev),
+                  robotPose // 3D pose estimate
+              ));
+        }
+        if (fiducialIds.size() > 0) {
+          target = camResult.getTargets().stream()
+              .filter(it -> fiducialIds.contains(it.getFiducialId()))
+              .findFirst();
+        } else {
+          target = Optional.ofNullable(camResult.getBestTarget());
+        }
       }
     }
+  }
+
+  @Override
+  public List<PoseObservation> getObservations() {
+    return observations;
   }
 
   /**

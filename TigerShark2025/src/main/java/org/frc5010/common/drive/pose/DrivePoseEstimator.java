@@ -10,10 +10,12 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import org.frc5010.common.arch.GenericSubsystem;
+import org.frc5010.common.drive.pose.PoseProvider.PoseObservation;
 import org.frc5010.common.drive.pose.PoseProvider.ProviderType;
 import org.frc5010.common.subsystems.AprilTagPoseSystem;
 import org.frc5010.common.subsystems.LEDStripSegment;
 import org.frc5010.common.vision.AprilTags;
+import org.frc5010.common.vision.VisionConstants;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -283,7 +285,7 @@ public class DrivePoseEstimator extends GenericSubsystem {
   @Override
   public void periodic() {
     poseProviders.forEach(it -> it.update());
-    updatePoseFromProviders();
+    updatePoseObservationFromProviders();
   }
 
   private void resetProviderPoses(Pose2d pose) {
@@ -326,6 +328,74 @@ public class DrivePoseEstimator extends GenericSubsystem {
                 && provider.getType() == ProviderType.FIELD_BASED && state == State.ENABLED_FIELD
                 && confidence < CONFIDENCE_RESET_THRESHOLD
                 && robotPose.get().getTranslation().getDistance(getCurrentPose3d().getTranslation()) < 0.08;
+          }
+        }
+      }
+
+      // Accept poses after estimation integration
+      if (activateAcceptorUpdates && (poseAcceptable || state == State.DISABLED_FIELD)) {
+        for (PoseProvider provider2 : poseProviders) {
+          if (provider2.getType() == ProviderType.ENVIRONMENT_BASED) {
+            provider2.resetPose(getCurrentPose3d());
+            accepterUpdating = true;
+          }
+        }
+      }
+    }
+    SmartDashboard.putBoolean("April Tag Pose Updating", visionUpdated);
+    SmartDashboard.putBoolean("Acceptor Pose Updating", accepterUpdating);
+    aprilTagVisible = visionUpdated;
+    updatingPoseAcceptor = accepterUpdating;
+  }
+
+    /**
+   * Creates a command that updates the pose estimator using the pose providers.
+   *
+   * <p>
+   * DISABLED_FIELD - reads pose from AT camera providers and updates the Env providers with low ambiguity poses from a distance
+   * DISABLED_ENV - reads pose from Env providers, expecting a pose reset to be provided
+   * ENABLED_FIELD - reads pose from the AT camera providers and updates the Env providers if the pose is high caliber and close
+   * ENABLED_ENV - reads the pose from the Env providers and expects given pose to be correct
+   * ALL - reads and fuses poses from both Env and Field sources, resetting Env pose based on update
+   *
+   * @return the command that updates the pose estimator
+   */
+  protected void updatePoseObservationFromProviders() {
+    poseTracker.updateLocalMeasurements();
+    boolean visionUpdated = false;
+    boolean accepterUpdating = false;
+    poseAcceptable = false;
+    if (!disableVisionUpdateCommand) {
+      for (PoseProvider provider : poseProviders) {
+        if (provider.isActive()
+            && (state.type == ProviderType.ALL || provider.getType() == state.type)) {
+          List<PoseObservation> observations = provider.getObservations();
+          for (PoseObservation observation : observations) {
+            boolean rejectPose = (provider.getType() != ProviderType.ENVIRONMENT_BASED) &&
+            observation.tagCount == 0 // Must have at least one tag
+                || (observation.tagCount == 1
+                    && observation.ambiguity > VisionConstants.maxAmbiguity) // Cannot be high ambiguity
+                || Math.abs(observation.pose.getZ())
+                    > VisionConstants.maxZError // Must have realistic Z coordinate
+
+                // Must be within the field boundaries
+                || observation.pose.getX() < 0.0
+                || observation.pose.getX() > AprilTags.aprilTagFieldLayout.getFieldLength()
+                || observation.pose.getY() < 0.0
+                || observation.pose.getY() > AprilTags.aprilTagFieldLayout.getFieldWidth();
+            visionUpdated |= provider.fiducialId() != 0;
+
+            Pose3d robotPose = observation.pose;
+            if (!rejectPose) {
+              poseTracker.updateVisionMeasurements(
+                robotPose.toPose2d(), observation.timestamp, observation.stdDeviations);
+            }
+
+            // Decides if pose would be good to update
+            poseAcceptable = activateAcceptorUpdates
+                && provider.getType() == ProviderType.FIELD_BASED && state == State.ENABLED_FIELD
+                && provider.getConfidence() < CONFIDENCE_RESET_THRESHOLD
+                && robotPose.getTranslation().getDistance(getCurrentPose3d().getTranslation()) < 0.08;
           }
         }
       }

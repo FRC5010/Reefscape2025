@@ -82,6 +82,7 @@
       "/SmartDashboard/JSON": "Alerts",
       "/SmartDashboard/Left2Coral": "Command",
       "/SmartDashboard/Motors": "Alerts",
+      "/SmartDashboard/PathPlanner": "Alerts",
       "/SmartDashboard/Pigeon 2 (v6) [13]": "Gyro",
       "/SmartDashboard/Pigeon 2 (v6) [15]": "Gyro",
       "/SmartDashboard/Pigeon 2 (v6) [50]": "Gyro",
@@ -743,9 +744,6 @@
         "open": true
       }
     }
-  },
-  "NetworkTables Info": {
-    "visible": true
   },
   "NetworkTables View": {
     "visible": false

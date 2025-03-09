@@ -4,11 +4,14 @@
 
 package org.frc5010.common.drive.pose;
 
+import java.util.List;
 import java.util.Optional;
 
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.numbers.N3;
 
 /** Add your docs here. */
 public interface PoseProvider {
@@ -21,6 +24,22 @@ public interface PoseProvider {
         RELATIVE
     }
     
+    public static class PoseObservation {
+        public double timestamp;
+        public Vector<N3> stdDeviations;
+        public Pose3d pose;
+        public double ambiguity;
+        public int tagCount;
+
+        public PoseObservation(double timestamp, double ambiguity, int tagCount, Vector<N3> stdDeviations, Pose3d pose) {
+            this.timestamp = timestamp; 
+            this.ambiguity = ambiguity;
+            this.tagCount = tagCount;
+            this.stdDeviations = stdDeviations;
+            this.pose = pose;
+        }
+    }
+
     /*
      * Returns the current pose of the robot.
      * 
@@ -28,6 +47,13 @@ public interface PoseProvider {
      */
     public Optional<Pose3d> getRobotPose();
 
+    /*
+     * Returns the current observations of the robot.
+     * 
+     * @return The current observations of the robot.
+     */
+    public List<PoseObservation> getObservations();
+    
     /*
      * Returns the confidence of the current pose measurement. Used in order to merge multiple pose measurements. Lower values are better.
      *

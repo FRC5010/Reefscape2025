@@ -41,9 +41,11 @@ public class AlgaeArm extends GenericSubsystem {
     protected PIDControlType controlType = PIDControlType.NONE;
     protected AlgaeState algaeState = AlgaeState.RETRACTED;
     protected Position armPosition = Position.UP;
-    private Trigger retracted, deploying, deployed, retracting;
+    private Trigger retracted = new Trigger(() -> true),
+            deploying = new Trigger(() -> false),
+            deployed = new Trigger(() -> false),
+            retracting = new Trigger(() -> false);
 
-    
     public static enum AlgaeState {
         RETRACTED,
         DEPLOYING,
@@ -94,13 +96,17 @@ public class AlgaeArm extends GenericSubsystem {
 
     public AlgaeArm(Mechanism2d mechanismSimulation, Config config) {
         super(mechanismSimulation);
-        if (config != null) this.config = config;
-       
-        motor = new AngularControlMotor(MotorFactory.TalonFX(config.canId, Motor.KrakenX60), "Algae Arm", displayValues);
-        motor.setupSimulatedMotor(config.gearing, Pounds.of(config.mass).in(Kilograms), Inches.of(config.length), Degrees.of(config.maxAngle), Degrees.of(config.minAngle),
+        if (config != null)
+            this.config = config;
+
+        motor = new AngularControlMotor(MotorFactory.TalonFX(config.canId, Motor.KrakenX60), "Algae Arm",
+                displayValues);
+        motor.setupSimulatedMotor(config.gearing, Pounds.of(config.mass).in(Kilograms), Inches.of(config.length),
+                Degrees.of(config.maxAngle), Degrees.of(config.minAngle),
                 true, config.kG, Degrees.of(config.startAngle), false, config.conversion);
         motor.setVisualizer(mechanismSimulation, new Pose3d(
-                new Translation3d(Inches.of(config.xPos).in(Meters), Inches.of(config.yPos).in(Meters), Inches.of(config.zPos).in(Meters)),
+                new Translation3d(Inches.of(config.xPos).in(Meters), Inches.of(config.yPos).in(Meters),
+                        Inches.of(config.zPos).in(Meters)),
                 new Rotation3d()));
 
         motor.setMotorBrake(true);
@@ -117,12 +123,16 @@ public class AlgaeArm extends GenericSubsystem {
         motor.getMotorEncoder().setPosition(config.startAngle);
 
         retracted = new Trigger(() -> getAlgaeArmPosition() - Position.UP.position().in(Degrees) < 2);
-        deploying = new Trigger(() -> driveToAngle(armPosition.position().in(Degrees)) < -0.05).and(retracted.negate()).and(deployed.negate());
-        deployed = new Trigger(() -> getAlgaeArmPosition() - armPosition.position().in(Degrees) < 2).and(retracted.negate()).and(deploying.negate()).and(retracting.negate());
-        retracting = new Trigger(() -> driveToAngle(armPosition.position().in(Degrees)) > 0.05).and(retracted.negate().and(deployed.negate()));
+        deploying = new Trigger(() -> driveToAngle(armPosition.position().in(Degrees)) < -0.05).and(retracted.negate())
+                .and(deployed.negate());
+        deployed = new Trigger(() -> getAlgaeArmPosition() - armPosition.position().in(Degrees) < 2)
+                .and(retracted.negate()).and(deploying.negate()).and(retracting.negate());
+        retracting = new Trigger(() -> driveToAngle(armPosition.position().in(Degrees)) > 0.05)
+                .and(retracted.negate().and(deployed.negate()));
     }
 
-    public static Trigger algaeSelected = new Trigger(() -> ReefscapeButtonBoard.getCurrentAlignment() == ReefscapeButtonBoard.ScoringAlignment.ALGAE);
+    public static Trigger algaeSelected = new Trigger(
+            () -> ReefscapeButtonBoard.getCurrentAlignment() == ReefscapeButtonBoard.ScoringAlignment.ALGAE);
 
     public Command getDeployCommand() {
         return driveToAngleCommand(-10.0);
@@ -151,11 +161,11 @@ public class AlgaeArm extends GenericSubsystem {
         }
     }
 
-    public Command getInitialCommand(DoubleSupplier inputSpeedDoubleSupplier){
-        return Commands.run(()->{
+    public Command getInitialCommand(DoubleSupplier inputSpeedDoubleSupplier) {
+        return Commands.run(() -> {
             double armPosition = 90 - inputSpeedDoubleSupplier.getAsDouble() * 120;
             driveToAngle(armPosition);
-            //motor.setReference(armPosition/60);
+            // motor.setReference(armPosition/60);
         }, this);
     }
 
@@ -165,7 +175,7 @@ public class AlgaeArm extends GenericSubsystem {
         }, this);
     }
 
-    public double driveToAngle(double position){
+    public double driveToAngle(double position) {
         setDesiredPosition(position);
         double difference = position - motor.getPivotPosition();
         double sign = Math.signum(difference);

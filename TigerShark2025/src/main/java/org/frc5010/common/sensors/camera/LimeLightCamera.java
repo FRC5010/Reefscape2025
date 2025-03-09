@@ -4,16 +4,8 @@
 
 package org.frc5010.common.sensors.camera;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -23,6 +15,14 @@ import org.frc5010.common.sensors.gyro.GenericGyro;
 import org.frc5010.common.vision.LimelightHelpers;
 import org.frc5010.common.vision.LimelightHelpers.PoseEstimate;
 import org.frc5010.common.vision.LimelightHelpers.RawFiducial;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /** Limelight Camera */
 public class LimeLightCamera extends GenericCamera {
@@ -266,8 +266,10 @@ public class LimeLightCamera extends GenericCamera {
     return confidence;
   }
 
-
-
+  @Override
+  public List<PoseObservation> getObservations() {
+    return List.of();
+  }
 
   @Override
   public boolean isActive() {
