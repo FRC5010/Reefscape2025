@@ -24,7 +24,7 @@ import edu.wpi.first.wpilibj.util.Color;
 public class NewLEDSubsystem extends SubsystemBase {
   private int kPort = 0, kLength = 0;
   private Distance kLEDSpacing = Meters.of(0.0);
-  private LEDPattern pattern = LEDPattern.solid(Color.kBlack);
+  private LEDPattern pattern = LEDPattern.solid(Color.kOrange);
 
   private final AddressableLED m_led;
   private final AddressableLEDBuffer m_buffer;

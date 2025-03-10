@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
@@ -188,5 +189,11 @@ public class RobotModel {
             }
         }
         return false;
+    }
+
+    // TODO: Finish Function
+    public static double percentWidthPoleIntersection(Pose2d robotPose, Distance robotRadius) {
+        Pose2d frontLeftCorner = robotPose.transformBy(new Transform2d(new Translation2d(robotRadius, Meters.of(0.0)), new Rotation2d(Degrees.of(-45))));
+        return 0.0;
     }
 }

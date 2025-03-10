@@ -3,10 +3,8 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
-import edu.wpi.first.wpilibj.util.Color;
 import java.util.function.Consumer;
 
 import org.frc5010.common.arch.GenericRobot;
@@ -17,9 +15,7 @@ import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 import org.frc5010.common.sensors.Controller;
 import org.frc5010.common.sensors.camera.QuestNav;
 import org.frc5010.common.sensors.gyro.GenericGyro;
-import org.frc5010.common.subsystems.LedSubsystem;
 import org.frc5010.common.subsystems.NewLEDSubsystem;
-import org.frc5010.common.subsystems.SegmentedLedSystem;
 import org.frc5010.common.utils.AllianceFlip;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -32,8 +28,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -61,11 +57,11 @@ public class TigerShark extends GenericRobot {
     DigitalInput brainZero, brainOne;
     DigitalInput centerLineZero;
     Pose2d centerLineResetPose;
-    SegmentedLedSystem segmentedLED;
     NewLEDSubsystem leds;
     Servo climbServo;
     private final Distance ROBOT_WIDTH = Inches.of(34.75);
     Pose2d startingPose1, startingPose2, startingPose3;
+    RobotStates robotStates;
 
     public TigerShark(String directory) {
         super(directory);
@@ -76,7 +72,7 @@ public class TigerShark extends GenericRobot {
         brainZero = new DigitalInput(0);
         brainOne = new DigitalInput(1);
 
-        leds = new NewLEDSubsystem(0, 30, Inches.of(27.0));
+        leds = new NewLEDSubsystem(4, 30, Inches.of(27.0));
 
         gyro = (GenericGyro) subsystems.get(ConfigConstants.GYRO);
 
@@ -120,6 +116,8 @@ public class TigerShark extends GenericRobot {
         startingPose1 = new Pose2d(FieldConstants.innerStartingLineX.plus(Inches.of(1.0)).minus(Inches.of(17.875)).in(Meters), FieldConstants.fieldDimensions.fieldWidth.minus(Inches.of(17.875)).in(Meters), new Rotation2d(Degrees.of(180)));
         startingPose2 = new Pose2d(FieldConstants.innerStartingLineX.plus(Inches.of(1.0)).minus(Inches.of(17.875)).in(Meters), FieldConstants.fieldDimensions.fieldWidth.in(Meters) / 2, new Rotation2d(Degrees.of(180)));
         startingPose3 = new Pose2d(FieldConstants.innerStartingLineX.plus(Inches.of(1.0)).minus(Inches.of(17.875)).in(Meters), Inches.of(17.875).in(Meters), new Rotation2d(Degrees.of(180)));
+
+        robotStates = new RobotStates(shooter, algaeArm, elevatorSystem, climb, leds, () -> drivetrain.getPoseEstimator().getCurrentPose());
     }
 
     public void resetPositionToStart() {

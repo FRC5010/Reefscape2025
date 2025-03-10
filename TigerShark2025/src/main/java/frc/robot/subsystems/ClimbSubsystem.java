@@ -21,6 +21,7 @@ import org.frc5010.common.telemetry.DisplayValuesHelper;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
@@ -70,6 +71,7 @@ public class ClimbSubsystem extends GenericSubsystem {
     climbMotor = new PositionControlMotor(MotorFactory.TalonFX(13, Motor.KrakenX60), "Climb Motor", new DisplayValuesHelper("Motors", "Climb Motor"));
     climbMotorEncoder = climbMotor.getMotorEncoder();
     climbMotorEncoder.setPositionConversion((1 / GEAR_RATIO));
+    climbMotorEncoder.setPosition(0.0);
   }
 
   public Command retractClimb() {
@@ -95,5 +97,6 @@ public class ClimbSubsystem extends GenericSubsystem {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    SmartDashboard.putNumber("Climb Motor Position", getRotation());
   }
 }
