@@ -211,9 +211,9 @@ public class CameraConfigurationJson {
         if (drivetrain != null) {
           drivetrain.getPoseEstimator().registerPoseProvider(camera);
         }
-        if (targetFiducialIds.length > 0) {
-          robot.addSubsystem(name, new VisibleTargetSystem(camera, targetHeight));
-        }
+        // if (targetFiducialIds.length > 0) {
+        //   robot.addSubsystem(name, new VisibleTargetSystem(camera, targetHeight));
+        // }
         // atSystem.addCamera(camera);
         break;
       }

@@ -90,6 +90,7 @@ public class PhotonVisionPoseCamera extends PhotonVisionCamera {
       if (camResult.hasTargets()) {
         if (camResult.getMultiTagResult().isPresent()) {
           var multitagResult = camResult.multitagResult.get();
+          
 
           // Calculate robot pose
           Transform3d fieldToCamera = multitagResult.estimatedPose.best;
@@ -130,6 +131,11 @@ public class PhotonVisionPoseCamera extends PhotonVisionCamera {
         }
       }
     }
+  }
+
+  @Override
+  public void update() {
+    updateCameraInfo();
   }
 
   @Override

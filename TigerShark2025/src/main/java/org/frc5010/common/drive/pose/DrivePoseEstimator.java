@@ -138,6 +138,7 @@ public class DrivePoseEstimator extends GenericSubsystem {
     tab.addBoolean("Acceptor Updating", () -> updatingPoseAcceptor).withPosition(8, 5);
     tab.addNumber("Distance X to AB Reef", () -> Reef.Side.AB.getCenterFace().getX() - getCurrentPose().getX());
     tab.addNumber("Distance Y to AB Reef", () -> Reef.Side.AB.getCenterFace().getY() - getCurrentPose().getY());
+    tab.addString("Estimator State", () -> state.name());
 
     for (AprilTag at : AprilTags.aprilTagFieldLayout.getTags()) {
       if (at.pose.getX() != 0 && at.pose.getY() != 0 && at.pose.getZ() != 0) {
@@ -148,9 +149,11 @@ public class DrivePoseEstimator extends GenericSubsystem {
     }
 
     // Switches from field to environment based estimation
-    new Trigger(() -> DriverStation.isDisabled())
-        .onFalse(Commands.runOnce(() -> this.setState(State.ENABLED_ENV)))
-        .onTrue(Commands.runOnce(() -> this.setState(State.DISABLED_ENV)));
+    // new Trigger(() -> DriverStation.isDisabled())
+    //     .onFalse(Commands.runOnce(() -> this.setState(State.ENABLED_ENV)));
+
+    // new Trigger(() -> DriverStation.isDisabled())
+    //     .onTrue(Commands.runOnce(() -> this.setState(State.DISABLED_FIELD)));
   }
 
   public Function<Integer, Color8Bit> displayProviderStatuses(int length) {
