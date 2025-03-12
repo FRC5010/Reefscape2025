@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 
@@ -69,7 +70,7 @@ public class RobotStates {
     coralLoading = new Trigger(() -> coralState == CoralState.ENTRY); // Change logic when beambreaks are back
     coralLoaded = new Trigger(() -> coralState == CoralState.FULLY_CAPTURED); // Change logic when beambreaks are back
     algaeLoaded = new Trigger(() -> algaeState == AlgaeState.DEPLOYED);
-    scoringCoral = new Trigger(() -> shooter.getAverageMotorSpeed() > 0.05 && !elevator.atLoading());
+    scoringCoral = new Trigger(() -> shooter.getAverageMotorSpeed() > 0.01 && !elevator.atLoading());
     scoringProcessor = new Trigger(
         () -> elevator.isAtLocation(Position.PROCESSOR.position()) && algaeState != AlgaeState.RETRACTED);
     scoringBarge = new Trigger(
@@ -78,7 +79,7 @@ public class RobotStates {
         && elevator.getElevatorPosition().in(Meters) < Position.L4.position().in(Meters)
         && (algaeState == AlgaeState.DEPLOYING || algaeState == AlgaeState.RETRACTING));
     climbing = new Trigger(() -> climb.isClimbing());
-    // poleAlignment = new Trigger().and(coralLoaded);
+    poleAlignment = new Trigger(() -> RobotModel.percentWidthPoleIntersection(robotPose, Inches.of(24.22)) != -1.0).and(coralLoaded);
 
     empty.and(climbing.negate()).onTrue(Commands.runOnce(() -> {
       state = RobotState.EMPTY;

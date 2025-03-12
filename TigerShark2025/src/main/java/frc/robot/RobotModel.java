@@ -99,7 +99,8 @@ public class RobotModel {
                 .in(MetersPerSecondPerSecond) * getAccelerationDampener();
     }
 
-    public static boolean circularObstacleWillBeAvoided(Pose2d obstaclePosition, Supplier<Pose2d> robotPose, Pose2d targetPose,
+    public static boolean circularObstacleWillBeAvoided(Pose2d obstaclePosition, Supplier<Pose2d> robotPose,
+            Pose2d targetPose,
             Pose2d[] unavoidableVertices, double obstacleRadius, double robotRadius, double maxRobotDimensionDeviation,
             double maxObstacleDimensionDeviation, int resolution) {
         Transform2d translationVector = new Transform2d(robotPose.get(), targetPose);
@@ -138,15 +139,19 @@ public class RobotModel {
 
     private static Translation2d[] constructCornerPoints(Pose2d pose, Distance width, Distance length) {
         Translation2d[] cornerPoints = new Translation2d[4];
-        cornerPoints[0] = pose.transformBy(new Transform2d(width.div(2), length.div(2), new Rotation2d())).getTranslation();
-        cornerPoints[1] = pose.transformBy(new Transform2d(width.div(2), length.div(-2), new Rotation2d())).getTranslation();
-        cornerPoints[2] = pose.transformBy(new Transform2d(width.div(-2), length.div(-2), new Rotation2d())).getTranslation();
-        cornerPoints[3] = pose.transformBy(new Transform2d(width.div(-2), length.div(2), new Rotation2d())).getTranslation();
+        cornerPoints[0] = pose.transformBy(new Transform2d(width.div(2), length.div(2), new Rotation2d()))
+                .getTranslation();
+        cornerPoints[1] = pose.transformBy(new Transform2d(width.div(2), length.div(-2), new Rotation2d()))
+                .getTranslation();
+        cornerPoints[2] = pose.transformBy(new Transform2d(width.div(-2), length.div(-2), new Rotation2d()))
+                .getTranslation();
+        cornerPoints[3] = pose.transformBy(new Transform2d(width.div(-2), length.div(2), new Rotation2d()))
+                .getTranslation();
         return cornerPoints;
     }
 
-
-    private static Translation2d[][] optimizeEdgeChecks(Translation2d[] convexPolygon, Pose2d startPose, Pose2d endPose, Distance robotRadius) {
+    private static Translation2d[][] optimizeEdgeChecks(Translation2d[] convexPolygon, Pose2d startPose, Pose2d endPose,
+            Distance robotRadius) {
 
         // TODO: Don't return edges which are impossble to intersect with the robot
         Translation2d[][] edges = new Translation2d[convexPolygon.length][2];
@@ -155,13 +160,14 @@ public class RobotModel {
             edges[i][1] = convexPolygon[(i + 1) % convexPolygon.length];
         }
         return edges;
-        
+
     }
 
-    public static boolean robotHasLinearPath(Pose2d robotPose, Pose2d targetPose, Translation2d[] convexPolygon, Distance robotWidth, Distance robotLength) {
+    public static boolean robotHasLinearPath(Pose2d robotPose, Pose2d targetPose, Translation2d[] convexPolygon,
+            Distance robotWidth, Distance robotLength) {
         Translation2d[] robotCornerPoints = constructCornerPoints(robotPose, robotWidth, robotLength);
         Translation2d[] targetCornerPoints = constructCornerPoints(targetPose, robotWidth, robotLength);
-        
+
         Translation2d[][] obstacleEdges = optimizeEdgeChecks(convexPolygon, robotPose, targetPose, robotWidth);
 
         for (Translation2d[] edge : obstacleEdges) {
@@ -174,7 +180,8 @@ public class RobotModel {
         return true;
     }
 
-    public static boolean robotHasLinearPath(Pose2d robotPose, Pose2d targetPose, Pose2d[] convexPolygon, Distance robotWidth, Distance robotLength) {
+    public static boolean robotHasLinearPath(Pose2d robotPose, Pose2d targetPose, Pose2d[] convexPolygon,
+            Distance robotWidth, Distance robotLength) {
         Translation2d[] vertices = new Translation2d[convexPolygon.length];
         for (int i = 0; i < convexPolygon.length; i++) {
             vertices[i] = convexPolygon[i].getTranslation();
@@ -192,8 +199,17 @@ public class RobotModel {
     }
 
     // TODO: Finish Function
-    public static double percentWidthPoleIntersection(Pose2d robotPose, Distance robotRadius) {
-        Pose2d frontLeftCorner = robotPose.transformBy(new Transform2d(new Translation2d(robotRadius, Meters.of(0.0)), new Rotation2d(Degrees.of(-45))));
-        return 0.0;
+    public static double percentWidthPoleIntersection(Supplier<Pose2d> robotPose, Distance robotRadius) {
+        Pose2d frontLeftCorner = robotPose.get().transformBy(new Transform2d(new Translation2d(robotRadius, Meters.of(0.0)), new Rotation2d(Degrees.of(45)))); // Point 1
+        Pose2d frontRightCorner = robotPose.get().transformBy(new Transform2d(new Translation2d(robotRadius, Meters.of(0.0)), new Rotation2d(Degrees.of(-45)))); // Point 2
+        Pose2d coralRayEnd = ReefscapeButtonBoard.getScoringPose().transformBy(new Transform2d(new Translation2d(Meters.of(0.4), Inches.of(0.0)), new Rotation2d())); // Point 4
+        Pose2d coralRayStart = coralRayEnd.transformBy(new Transform2d(new Translation2d(Meters.of(-1.0), Meters.of(0.0)), new Rotation2d())); // Point 3
+        double numerator = (coralRayStart.getX() - frontLeftCorner.getX()) * (coralRayEnd.getY() - coralRayStart.getY()) - (coralRayStart.getY() - frontLeftCorner.getY()) * (coralRayEnd.getX() - coralRayStart.getX());
+        double denominator = (frontRightCorner.getX() - frontLeftCorner.getX()) * (coralRayEnd.getY() - coralRayStart.getY()) - (frontRightCorner.getY() - frontLeftCorner.getY()) * (coralRayEnd.getX() - coralRayStart.getX());
+        double percentIntersect = numerator / denominator;
+        if (percentIntersect > 1.0 || percentIntersect < 0.0 || denominator == 0) {
+            return -1.0;
+        }
+        return percentIntersect;
     }
 }

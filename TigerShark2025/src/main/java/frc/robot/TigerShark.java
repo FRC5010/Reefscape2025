@@ -233,7 +233,7 @@ public class TigerShark extends GenericRobot {
         new Trigger(brainZero::get).onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true).andThen(Commands.runOnce(() -> leds.setPattern(leds.getRainbowPattern(1.0)))).withTimeout(Seconds.of(3.0)));
         new Trigger(brainOne::get).onTrue(Commands.runOnce(() -> resetPositionToDiagonalStart()).ignoringDisable(true).andThen(Commands.runOnce(() -> leds.setPattern(leds.getRainbowPattern(1.0)))).withTimeout(Seconds.of(3.0)));
         QuestNav.isQuestOn().and(() -> DriverStation.isDisabled()).onTrue(Commands.runOnce(() -> leds.setPattern(leds.getSolidPattern(Color.kGreen))).ignoringDisable(true)); 
-        QuestNav.isQuestOn().and(() -> DriverStation.isDisabled()).onFalse(Commands.runOnce(() -> leds.setPattern(leds.getSolidPattern(Color.kRed))).ignoringDisable(true));
+        QuestNav.isQuestOn().negate().and(() -> DriverStation.isDisabled()).onTrue(Commands.runOnce(() -> leds.setPattern(leds.getSolidPattern(Color.kRed))).ignoringDisable(true));
 
         climb.setDefaultCommand(climb.runClimb(operator::getRightYAxis));
     }
