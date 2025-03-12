@@ -1,0 +1,230 @@
+// // Copyright (c) FIRST and other WPILib contributors.
+// // Open Source Software; you can modify and/or share it under the terms of
+// // the WPILib BSD license file in the root directory of this project.
+
+// package org.frc5010.common.commands;
+
+// import edu.wpi.first.math.MathUtil;
+// import edu.wpi.first.math.controller.ProfiledPIDController;
+// import edu.wpi.first.math.geometry.Pose2d;
+// import edu.wpi.first.math.geometry.Pose3d;
+// import edu.wpi.first.math.geometry.Transform2d;
+// import edu.wpi.first.math.kinematics.ChassisSpeeds;
+// import edu.wpi.first.math.trajectory.TrapezoidProfile;
+// import edu.wpi.first.math.util.Units;
+// import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+// import java.util.function.Supplier;
+// import org.frc5010.common.arch.GenericCommand;
+// import org.frc5010.common.constants.GenericPID;
+// import org.frc5010.common.drive.swerve.SwerveDrivetrain;
+// import org.frc5010.common.telemetry.DisplayDouble;
+// import org.frc5010.common.telemetry.DisplayValuesHelper;
+
+// /**
+//  * A command that will automatically drive the robot to a particular position
+//  */
+// public class DriveToPoseSupplier extends GenericCommand {
+//   /** The subsystem that this command will run on */
+//   private SwerveDrivetrain swerveSubsystem;
+//   /** The PID constants for translation */
+
+//   private DisplayValuesHelper displayValuesHelper = new DisplayValuesHelper("PID Values", logPrefix);
+//   private DisplayDouble translationkP;
+//   private DisplayDouble translationkD;
+//   private DisplayDouble rotationkP;
+//   private DisplayDouble rotationkD;
+
+//   private final GenericPID pidTranslation = new GenericPID(0.8, 0, 0);
+//   /** The PID constants for rotation */
+//   private final GenericPID pidRotation = new GenericPID(2.0, 0, 0);
+
+//   private int onTargetCounter = 0;
+
+//   /** The constraints for translation in the Y direction */
+//   private final TrapezoidProfile.Constraints translationConstraints;
+//   /** The constraints for rotation */
+//   private final TrapezoidProfile.Constraints thetaConstraints;
+
+//   /** The PID controller for translation in the X direction */
+//   private final ProfiledPIDController distanceController;
+//   /** The PID controller for rotation */
+//   private final ProfiledPIDController thetaController;
+
+//   /** The target pose */
+//   private Pose2d targetPose;
+//   /** The target transform */
+//   private Transform2d targetTransform;
+
+//   /** The robot pose provider */
+//   private Supplier<Pose2d> poseProvider;
+//   /** The target pose provider */
+//   private Supplier<Pose2d> targetPoseProvider;
+
+//   private Supplier<ChassisSpeeds> initialVelocity = () -> new ChassisSpeeds();
+
+//   /** The speed that the robot will drive at in the X direction */
+//   private double translationalSpeed;
+//   /** The speed that the robot will rotate at */
+//   private double thetaSpeed;
+
+//   /**
+//    * Creates a new DriveToPosition command.
+//    *
+//    * @param swerveSubsystem    The drivetrain subsystem
+//    * @param poseProvider       The pose provider
+//    * @param targetPoseProvider The target pose provider
+//    * @param offset             The offset of the target pose
+//    */
+//   public DriveToPoseSupplier(
+//       SwerveDrivetrain swerveSubsystem,
+//       Supplier<Pose2d> poseProvider,
+//       Supplier<Pose2d> targetPoseProvider,
+//       Transform2d offset) {
+//     translationConstraints = new TrapezoidProfile.Constraints(
+//         swerveSubsystem.getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond()/Math.sqrt(2),
+//         swerveSubsystem.getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond()/Math.sqrt(2));
+  
+//     thetaConstraints = new TrapezoidProfile.Constraints(
+//         swerveSubsystem.getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond(),
+//         swerveSubsystem
+//             .getSwerveConstants()
+//             .getkTeleDriveMaxAngularAccelerationUnitsPerSecond());
+
+//     distanceController = new ProfiledPIDController(
+//         pidTranslation.getkP(), pidTranslation.getkI(), pidTranslation.getkD(), translationConstraints);
+//     thetaController = new ProfiledPIDController(
+//         pidRotation.getkP(), pidRotation.getkI(), pidRotation.getkD(), thetaConstraints);
+
+//     // Use addRequirements() here to declare subsystem dependencies.
+//     this.swerveSubsystem = (SwerveDrivetrain) swerveSubsystem;
+//     this.poseProvider = poseProvider;
+//     this.targetPoseProvider = targetPoseProvider;
+
+//     distanceController.setTolerance(0.03);
+//     thetaController.setTolerance(Units.degreesToRadians(5));
+//     thetaController.enableContinuousInput(-Math.PI, Math.PI);
+
+//     targetTransform = offset;
+
+//     translationkP = displayValuesHelper.makeConfigDouble("Translation kP");
+//     translationkD = displayValuesHelper.makeConfigDouble("Translation kD");
+//     rotationkP = displayValuesHelper.makeConfigDouble("Rotation kP");
+//     rotationkD = displayValuesHelper.makeConfigDouble("Rotation kD");
+
+//     if (translationkP.getValue() == 0) {
+//       translationkP.setValue(pidTranslation.getkP());
+//     }
+//     if (translationkD.getValue() == 0) {
+//       translationkD.setValue(pidTranslation.getkD());
+//     }
+//     if (rotationkP.getValue() == 0) {
+//       rotationkP.setValue(pidRotation.getkP());
+//     }
+//     if (rotationkD.getValue() == 0) {
+//       rotationkD.setValue(pidRotation.getkD());
+//     }
+
+//     addRequirements(swerveSubsystem);
+//   }
+
+//   public double getDistanceToTarget() {
+//     return targetPoseProvider.get().getTranslation().getDistance(poseProvider.get().getTranslation());
+//   }
+
+//   public DriveToPoseSupplier withInitialVelocity(Supplier<ChassisSpeeds> speedSupplier) {
+//     initialVelocity = speedSupplier;
+//     return this;
+//   }
+ 
+//   private void updateTargetPose(Pose2d pose) {
+//     targetPose = pose;
+
+//     distanceController.setGoal(0);
+//     thetaController.setGoal(targetPose.getRotation().getRadians());
+//     swerveSubsystem.getPoseEstimator().setTargetPoseOnField(targetPose, "Target Pose");
+//   }
+
+//   // Called when the command is initially scheduled.
+//   @Override
+//   public void init() {
+//     distanceController.setP(translationkP.getValue());
+//     distanceController.setD(translationkD.getValue());
+
+//     thetaController.setP(rotationkP.getValue());
+//     thetaController.setD(rotationkD.getValue()); 
+
+//     Pose2d robotPose = poseProvider.get();
+//     onTargetCounter = 0;
+
+//     thetaController.reset(robotPose.getRotation().getRadians(), initialVelocity.get().omegaRadiansPerSecond);
+//     distanceController.reset(robotPose.getX(), initialVelocity.get().vxMetersPerSecond);
+  
+
+//     if (null != targetPoseProvider.get()) {
+//       updateTargetPose(targetPoseProvider.get().toPose2d().transformBy(targetTransform));
+//     }
+//   }
+
+
+
+//   // Called every time the scheduler runs while the command is scheduled.
+//   @Override
+//   public void execute() {
+//     var robotPose2d = poseProvider.get();
+
+//     Pose2d providedTargetPose = targetPoseProvider.get();
+//     if (null != providedTargetPose) {
+//       Pose2d target = providedTargetPose;
+//       if (target.getTranslation().getDistance(targetPose.getTranslation()) < 1.0) {
+//         updateTargetPose(target);
+//       }
+//     }
+
+//     // System.out.println(robotPose2d);
+
+//     // System.out.println(robotPose);
+    
+//     translationalSpeed = distanceController.calculate(robotPose2d.getX())
+//         * swerveSubsystem.getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond();
+//     thetaSpeed = thetaController.calculate(robotPose2d.getRotation().getRadians())
+//         * swerveSubsystem.getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond();
+
+ 
+//     ySpeed = ySpeed + yController.getSetpoint().velocity*0.8;
+//     double ySign = Math.signum(ySpeed);
+//     double minFFRadius = 0.05;
+//     double maxFFRadius = 1.0;
+//     double distanceToGoal = robotPose2d.getTranslation().getDistance(targetPose.getTranslation());
+//     double ffInclusionFactor = MathUtil.clamp((distanceToGoal - minFFRadius) / (maxFFRadius - minFFRadius), 0.0, 1.0);
+//     ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+//         xSpeed + xController.getSetpoint().velocity*ffInclusionFactor, ySpeed + yController.getSetpoint().velocity*ffInclusionFactor, thetaSpeed + thetaController.getSetpoint().velocity*ffInclusionFactor, swerveSubsystem.getHeading());
+
+//     SmartDashboard.putNumber("X Speed", chassisSpeeds.vxMetersPerSecond);
+//     SmartDashboard.putNumber("Y Speed", chassisSpeeds.vyMetersPerSecond);
+//     SmartDashboard.putNumber("Theta Speed", chassisSpeeds.omegaRadiansPerSecond);
+//     SmartDashboard.putBoolean("X Controller at Setpoins", xController.atGoal());
+//     SmartDashboard.putBoolean("Y Controller at Setpoins", yController.atGoal());
+//     SmartDashboard.putBoolean("Theta Controller at Setpoins", thetaController.atGoal());
+//     swerveSubsystem.drive(chassisSpeeds, null);
+//   }
+
+//   // Called once the command ends or is interrupted.
+//   @Override
+//   public void stop(boolean interrupted) {
+//     onTargetCounter = 0;
+//     SmartDashboard.putBoolean("DriveToPositionInterrupted", interrupted);
+//     swerveSubsystem.drive(
+//         new ChassisSpeeds(0, 0, 0), null);
+//   }
+
+//   // Returns true when the command should end.
+//   @Override
+//   public boolean isFinished() {
+
+//     if (distanceController.atGoal() && thetaController.atGoal()){
+//       onTargetCounter++;
+//     }
+
+//     return onTargetCounter > 20;
+//   }
+// }

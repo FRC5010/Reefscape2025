@@ -9,13 +9,19 @@ import java.util.function.BooleanSupplier;
 import edu.wpi.first.wpilibj.DigitalInput;
 
 /** Add your docs here. */
-public class Beambreak extends DigitalInput {
+public class Beambreak {
+    BooleanSupplier valueSupplier;
+
     public Beambreak(int channel) {
-        super(channel);
+        valueSupplier = () -> false;
+    }
+
+    public Beambreak(BooleanSupplier supplier) {
+        valueSupplier = supplier;
     }
 
     public boolean isBroken() {
-        return !get();
+        return !valueSupplier.getAsBoolean();
     }
 
     public BooleanSupplier isBrokenSupplier() {

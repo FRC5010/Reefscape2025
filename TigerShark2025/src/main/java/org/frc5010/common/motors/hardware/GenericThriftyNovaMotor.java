@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Amps;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 
 import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.motors.MotorController5010;
@@ -189,6 +190,8 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
     public DCMotor getMotorSimulationType() {
         return motorSim;
     }
+
+
 
     @Override
     public AngularVelocity getMaxRPM() {

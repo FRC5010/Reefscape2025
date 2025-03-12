@@ -15,8 +15,11 @@ import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.motors.function.VelocityControlMotor;
 import org.frc5010.common.sensors.Beambreak;
+import org.frc5010.common.sensors.SparkLimit;
 import org.frc5010.common.sensors.ValueSwitch;
 import org.frc5010.common.telemetry.DisplayBoolean;
+
+import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -38,6 +41,7 @@ public class ShooterSystem extends GenericSubsystem {
   protected ValueSwitch currentSwitch;
   protected VelocityControlMotor shooterLeft;
   protected VelocityControlMotor shooterRight;
+  protected SparkLimit beambreakLimit;
   private Trigger entryBroken, alignmentBroken;
   private Trigger isEmpty, isEntryActive, isCoralFullyCaptured, isAligned;
   private CoralState coralState;
@@ -80,7 +84,11 @@ public class ShooterSystem extends GenericSubsystem {
   public ShooterSystem(Mechanism2d mechanismSimulation, Config config) {
     if (config != null) this.config = config;
     
-    alignmentBeambreak = new Beambreak(config.alignmentBeambreakCanID);
+    
+    setupMotors(mechanismSimulation);
+
+    beambreakLimit = new SparkLimit((SparkMax)shooterLeft.getMotor());
+    alignmentBeambreak = new Beambreak(() -> beambreakLimit.getForwardLimit());
     entryBeambreak = new Beambreak(config.entryBeambreakCanID);
 
     entryBeamBreakDisplay = displayValues.makeDisplayBoolean("Entry Beam Break");
@@ -100,7 +108,7 @@ public class ShooterSystem extends GenericSubsystem {
     isAligned = new Trigger(() -> coralState == CoralState.ALIGNED);
 
     
-    setupMotors(mechanismSimulation);
+    
 
     currentSwitch = new ValueSwitch(config.INTAKE_CURRENT_THRESHOLD.in(Amps), shooterLeft::getOutputCurrent, config.currentSwitchTriggerThreshold);
     
@@ -111,8 +119,8 @@ public class ShooterSystem extends GenericSubsystem {
   }
 
   private void setupMotors(Mechanism2d mechanismSimulation) {
-    shooterLeft = new VelocityControlMotor(MotorFactory.Thrifty(config.shooterLeftCanID, Motor.Neo), "shooterLeft", displayValues);
-    shooterRight = new VelocityControlMotor(MotorFactory.Thrifty(config.shooterRightCanID, Motor.Neo), "shooterRight",
+    shooterLeft = new VelocityControlMotor(MotorFactory.Spark(config.shooterLeftCanID, Motor.Neo), "shooterLeft", displayValues);
+    shooterRight = new VelocityControlMotor(MotorFactory.Spark(config.shooterRightCanID, Motor.Neo), "shooterRight",
             displayValues);
     shooterLeft.invert(config.shooterLeftInverted);
     shooterRight.invert(config.shooterRightInverted);
@@ -226,6 +234,8 @@ public class ShooterSystem extends GenericSubsystem {
       SmartDashboard.putString("Coral State", coralState.name());
       SmartDashboard.putNumber("Shooter Left Current", shooterLeft.getOutputCurrent());
       SmartDashboard.putNumber("Shooter Right Current", shooterRight.getOutputCurrent());
+      SmartDashboard.putBoolean("Spark Limit Forward", beambreakLimit.getForwardLimit());
+      SmartDashboard.putBoolean("Spark Limit Reverse", beambreakLimit.getReverseLimit());
   }
 
   @Override

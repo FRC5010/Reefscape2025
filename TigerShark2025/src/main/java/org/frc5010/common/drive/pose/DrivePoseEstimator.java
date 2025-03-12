@@ -409,7 +409,7 @@ public class DrivePoseEstimator extends GenericSubsystem {
                 && observation.ambiguity < CONFIDENCE_RESET_THRESHOLD
                 && (DriverStation.isDisabled() ||
                     (!DriverStation.isDisabled()
-                        && robotPose.getTranslation().getDistance(getCurrentPose3d().getTranslation()) < 0.08));
+                        && robotPose.getTranslation().getDistance(getCurrentPose3d().getTranslation()) < 0.1));
           }
         }
       }
