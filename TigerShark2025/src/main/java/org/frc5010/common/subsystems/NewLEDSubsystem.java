@@ -73,6 +73,12 @@ public class NewLEDSubsystem extends SubsystemBase {
     return basePattern.mask(mask);
   }
 
+  public LEDPattern getBand(LEDPattern basePattern, double bandCenter, double percentWidth, double percentScrollingSpeed) {
+    Map<Double, Color> maskSteps = Map.of(0.0, Color.kBlack, bandCenter - (percentWidth / 2), Color.kWhite, bandCenter - (percentWidth / 2), Color.kBlack);
+    LEDPattern mask = LEDPattern.steps(maskSteps).scrollAtRelativeSpeed(Percent.per(Second).of(percentScrollingSpeed));
+    return basePattern.mask(mask);
+  }
+
   public LEDPattern getBlinkingPattern(LEDPattern basePattern, Time blinkInterval) {
     return basePattern.blink(blinkInterval);
   }

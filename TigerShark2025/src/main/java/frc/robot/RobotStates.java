@@ -118,6 +118,10 @@ public class RobotStates {
       state = RobotState.CLIMBING;
       leds.setPattern(leds.getMaskedPattern(leds.getSolidPattern(Color.kViolet), 0.5, 100));
     })); // TODO: Eventually add progress bar
+    poleAlignment.and(scoringCoral.negate()).and(descoringAlgae.negate()).and(algaeLoaded.negate()).onTrue(Commands.runOnce(() -> {
+      state = RobotState.POLE_ALIGNMENT;
+      leds.setPattern(leds.getBand(leds.getRainbowPattern(0.0), RobotModel.percentWidthPoleIntersection(robotPose, Inches.of(24.22)), 0.2, 0.0));
+    }));
   }
 
   public RobotState getRobotState() {
