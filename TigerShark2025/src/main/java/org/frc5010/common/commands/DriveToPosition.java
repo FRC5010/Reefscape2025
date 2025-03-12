@@ -4,6 +4,7 @@
 
 package org.frc5010.common.commands;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -33,9 +34,9 @@ public class DriveToPosition extends GenericCommand {
   private DisplayDouble rotationkP;
   private DisplayDouble rotationkD;
 
-  private final GenericPID pidTranslation = new GenericPID(2.5, 0, 0);
+  private final GenericPID pidTranslation = new GenericPID(0.8, 0, 0);
   /** The PID constants for rotation */
-  private final GenericPID pidRotation = new GenericPID(0.5, 0, 0);
+  private final GenericPID pidRotation = new GenericPID(2.0, 0, 0);
 
   private int onTargetCounter = 0;
 
@@ -86,11 +87,11 @@ public class DriveToPosition extends GenericCommand {
       Supplier<Pose3d> targetPoseProvider,
       Transform2d offset) {
     xConstraints = new TrapezoidProfile.Constraints(
-        swerveSubsystem.getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond(),
-        swerveSubsystem.getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond());
+        swerveSubsystem.getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond()/Math.sqrt(2),
+        swerveSubsystem.getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond()/Math.sqrt(2));
     yConstraints = new TrapezoidProfile.Constraints(
-        swerveSubsystem.getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond(),
-        swerveSubsystem.getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond());
+        swerveSubsystem.getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond()/Math.sqrt(2),
+        swerveSubsystem.getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond()/Math.sqrt(2));
     thetaConstraints = new TrapezoidProfile.Constraints(
         swerveSubsystem.getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond(),
         swerveSubsystem
@@ -231,8 +232,12 @@ public class DriveToPosition extends GenericCommand {
     // ,0));
     ySpeed = ySpeed + yController.getSetpoint().velocity*0.8;
     double ySign = Math.signum(ySpeed);
+    double minFFRadius = 0.05;
+    double maxFFRadius = 1.0;
+    double distanceToGoal = robotPose2d.getTranslation().getDistance(targetPose.getTranslation());
+    double ffInclusionFactor = MathUtil.clamp((distanceToGoal - minFFRadius) / (maxFFRadius - minFFRadius), 0.0, 1.0);
     ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-        xSpeed + xController.getSetpoint().velocity*0.8, Math.max(Math.abs(ySpeed), 0.1) * ySign, thetaSpeed + thetaController.getSetpoint().velocity*0.8, swerveSubsystem.getHeading());
+        xSpeed + xController.getSetpoint().velocity*ffInclusionFactor, ySpeed + yController.getSetpoint().velocity*ffInclusionFactor, thetaSpeed + thetaController.getSetpoint().velocity*ffInclusionFactor, swerveSubsystem.getHeading());
 
     SmartDashboard.putNumber("X Speed", chassisSpeeds.vxMetersPerSecond);
     SmartDashboard.putNumber("Y Speed", chassisSpeeds.vyMetersPerSecond);
@@ -241,7 +246,6 @@ public class DriveToPosition extends GenericCommand {
     SmartDashboard.putBoolean("Y Controller at Setpoins", yController.atGoal());
     SmartDashboard.putBoolean("Theta Controller at Setpoins", thetaController.atGoal());
     swerveSubsystem.drive(chassisSpeeds, null);
-
   }
 
   // Called once the command ends or is interrupted.

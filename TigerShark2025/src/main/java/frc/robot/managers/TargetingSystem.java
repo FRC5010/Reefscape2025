@@ -35,8 +35,8 @@ public class TargetingSystem {
     public static Supplier<Distance> maxHeight;
 
     private static Distance MAX_NO_TIPPY_HEIGHT = Meters.of(0.5);
-    private static Transform2d CoralOffset = new Transform2d(-0.5, 0.0, new Rotation2d());
-    private static Transform2d StationOffset = new Transform2d(0.5, 0.0, new Rotation2d());
+    private static Transform2d CoralOffset = new Transform2d(-0.3, 0.0, new Rotation2d());
+    private static Transform2d StationOffset = new Transform2d(0.3, 0.0, new Rotation2d());
 
     public static void setupParameters(YAGSLSwerveDrivetrain drivetrain, ShooterSystem shooter, ElevatorSystem elevator,
             AlgaeArm arm) {

@@ -483,7 +483,7 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public boolean atLoading() {
-        return Math.abs(elevator.getPosition() - Position.LOAD.position().in(Meters)) < 0.02;
+        return Math.abs(elevator.getPosition() - Position.LOAD.position().in(Meters)) < 0.05;
     }
 
     public Distance getElevatorPosition() {

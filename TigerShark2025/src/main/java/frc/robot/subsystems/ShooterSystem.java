@@ -155,8 +155,8 @@ public class ShooterSystem extends GenericSubsystem {
 
   public Command runMotors(DoubleSupplier speed) {
     return Commands.run(() -> {
-      shooterLeftSpeed(speed.getAsDouble() * config.runMotorsSpeedMultiplier);
-      shooterRightSpeed(speed.getAsDouble() * config.runMotorsSpeedMultiplier);
+      shooterLeftSpeed(speed.getAsDouble());
+      shooterRightSpeed(speed.getAsDouble());
     }, this);
   }
 
@@ -178,7 +178,8 @@ public class ShooterSystem extends GenericSubsystem {
     if (ScoringLevel.L1 == level) {
       return shootL1();
     } 
-    return runMotors(() -> 1.0).until(isEmpty());
+    //return runMotors(() -> 1.0).until(isEmpty());
+    return runMotors(() -> 1.0).withTimeout(0.4);
   }
 
   public Command captureCoral() {

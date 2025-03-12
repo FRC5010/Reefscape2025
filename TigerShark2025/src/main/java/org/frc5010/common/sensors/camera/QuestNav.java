@@ -150,7 +150,7 @@ public class QuestNav implements PoseProvider {
         List<PoseObservation> observations = new ArrayList<>();
         double calib = getConfidence();
         if (isActive) {
-            observations.add(new PoseObservation(timestamp.get(), 0, 0, VecBuilder.fill(calib, calib, calib),
+            observations.add(new PoseObservation(getCaptureTime(), 0, 0, VecBuilder.fill(calib, calib, calib*0.01),
                     new Pose3d(getPosition(), getRotation())));
         }
         return observations;
@@ -185,7 +185,7 @@ public class QuestNav implements PoseProvider {
 
     public double getConfidence() {
         if (RobotBase.isReal()) {
-            return 0.0001;
+            return 0.01;
         } else {
             return Double.MAX_VALUE;
         }
@@ -246,7 +246,7 @@ public class QuestNav implements PoseProvider {
     public void resetPose(Pose3d pose) {
         SmartDashboard.putBoolean("Reset Pose", true);
         initializedPosition = true;
-        hardReset(pose);
+        softReset(pose);
     }
 
     @Override

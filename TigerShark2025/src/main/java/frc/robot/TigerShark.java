@@ -11,6 +11,7 @@ import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.auto.RelayPIDAutoTuner;
 import org.frc5010.common.config.ConfigConstants;
 import org.frc5010.common.drive.GenericDrivetrain;
+import org.frc5010.common.drive.pose.DrivePoseEstimator.State;
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 import org.frc5010.common.sensors.Controller;
 import org.frc5010.common.sensors.camera.QuestNav;
@@ -72,7 +73,7 @@ public class TigerShark extends GenericRobot {
         brainZero = new DigitalInput(0);
         brainOne = new DigitalInput(1);
 
-        leds = new NewLEDSubsystem(4, 30, Inches.of(27.0));
+        leds = new NewLEDSubsystem(4, 28, Inches.of(27.0));
 
         gyro = (GenericGyro) subsystems.get(ConfigConstants.GYRO);
 
@@ -179,18 +180,10 @@ public class TigerShark extends GenericRobot {
 
         
 
-        // driver.createXButton().whileTrue(
-        // Commands.deferredProxy(() ->
-        // TargetingSystem.createCoralScoringSequence(ReefscapeButtonBoard.getScoringPose(), ReefscapeButtonBoard.getScoringLevel())));
-        driver.createXButton().whileTrue(
-            Commands.deferredProxy(() -> {
-                try {
-                    return new ReefLineupDrive((YAGSLSwerveDrivetrain)drivetrain, driver::getLeftXAxis, driver::getLeftYAxis, ReefscapeButtonBoard.getScoringLocation());
-                } catch (Exception e) {
-                    return Commands.none();
-                } 
-            }
-        ));
+         driver.createXButton().whileTrue(
+        Commands.deferredProxy(() ->
+        TargetingSystem.createCoralScoringSequence(ReefscapeButtonBoard.getScoringPose(), ReefscapeButtonBoard.getScoringLevel())));
+        
 
         driver.createYButton().whileTrue(
             Commands.deferredProxy( () ->
@@ -226,10 +219,15 @@ public class TigerShark extends GenericRobot {
 
         reefscapeButtonBoard.getFireButton().whileTrue(shooter.runMotors(() -> 0.5));
 
-        operator.createUpPovButton().onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true));
-        operator.createRightPovButton().onTrue(Commands.runOnce(() -> resetPosition(startingPose1)).ignoringDisable(true));
-        operator.createDownPovButton().onTrue(Commands.runOnce(() -> resetPosition(startingPose2)).ignoringDisable(true));
-        operator.createLeftPovButton().onTrue(Commands.runOnce(() -> resetPosition(startingPose3)).ignoringDisable(true));
+        // operator.createUpPovButton().onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true));
+        // operator.createRightPovButton().onTrue(Commands.runOnce(() -> resetPosition(startingPose1)).ignoringDisable(true));
+        // operator.createDownPovButton().onTrue(Commands.runOnce(() -> resetPosition(startingPose2)).ignoringDisable(true));
+        // operator.createLeftPovButton().onTrue(Commands.runOnce(() -> resetPosition(startingPose3)).ignoringDisable(true));
+
+        YAGSLSwerveDrivetrain yagsl = (YAGSLSwerveDrivetrain) drivetrain;
+        Trigger disabled = new Trigger(() -> DriverStation.isDisabled());
+        operator.createLeftPovButton().and(disabled).onTrue(Commands.runOnce(()->yagsl.getPoseEstimator().setState(State.DISABLED_FIELD)).ignoringDisable(true));
+        operator.createRightPovButton().and(disabled).onTrue(Commands.runOnce(()->yagsl.getPoseEstimator().setState(State.ALL)).ignoringDisable(true));
 
         driver.createBackButton().onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true));
         new Trigger(brainZero::get).onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true).andThen(Commands.runOnce(() -> leds.setPattern(leds.getRainbowPattern(1.0)))).withTimeout(Seconds.of(3.0)));
@@ -248,7 +246,9 @@ public class TigerShark extends GenericRobot {
         drivetrain.setDefaultCommand(driveCmd);
 
 
-        shooter.setDefaultCommand(shooter.runMotors(() -> operator.getLeftTrigger() * 0.5));
+
+
+        shooter.setDefaultCommand(shooter.runMotors(() -> operator.getLeftTrigger()));
 
         elevatorSystem.setDefaultCommand(elevatorSystem.basicSuppliersMovement(operator::getLeftYAxis));
         algaeArm.setDefaultCommand(algaeArm.getInitialCommand(operator::getRightTrigger));

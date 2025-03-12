@@ -106,6 +106,8 @@ public class DrivePoseEstimator extends GenericSubsystem {
         tagPoses.add(at.pose.toPose2d());
       }
     }
+
+    
   }
 
   /**
@@ -148,12 +150,8 @@ public class DrivePoseEstimator extends GenericSubsystem {
       }
     }
 
-    // Switches from field to environment based estimation
-    // new Trigger(() -> DriverStation.isDisabled())
-    //     .onFalse(Commands.runOnce(() -> this.setState(State.ENABLED_ENV)));
+    new Trigger(() -> DriverStation.isDisabled()).onFalse(Commands.runOnce(() -> setState(State.ALL)));
 
-    // new Trigger(() -> DriverStation.isDisabled())
-    //     .onTrue(Commands.runOnce(() -> this.setState(State.DISABLED_FIELD)));
   }
 
   public Function<Integer, Color8Bit> displayProviderStatuses(int length) {
@@ -301,11 +299,16 @@ public class DrivePoseEstimator extends GenericSubsystem {
    * Creates a command that updates the pose estimator using the pose providers.
    *
    * <p>
-   * DISABLED_FIELD - reads pose from AT camera providers and updates the Env providers with low ambiguity poses from a distance
-   * DISABLED_ENV - reads pose from Env providers, expecting a pose reset to be provided
-   * ENABLED_FIELD - reads pose from the AT camera providers and updates the Env providers if the pose is high caliber and close
-   * ENABLED_ENV - reads the pose from the Env providers and expects given pose to be correct
-   * ALL - reads and fuses poses from both Env and Field sources, resetting Env pose based on update
+   * DISABLED_FIELD - reads pose from AT camera providers and updates the Env
+   * providers with low ambiguity poses from a distance
+   * DISABLED_ENV - reads pose from Env providers, expecting a pose reset to be
+   * provided
+   * ENABLED_FIELD - reads pose from the AT camera providers and updates the Env
+   * providers if the pose is high caliber and close
+   * ENABLED_ENV - reads the pose from the Env providers and expects given pose to
+   * be correct
+   * ALL - reads and fuses poses from both Env and Field sources, resetting Env
+   * pose based on update
    *
    * @return the command that updates the pose estimator
    */
@@ -328,7 +331,8 @@ public class DrivePoseEstimator extends GenericSubsystem {
 
             // Decides if pose would be good to update
             poseAcceptable = activateAcceptorUpdates
-                && provider.getType() == ProviderType.FIELD_BASED && state == State.ENABLED_FIELD
+                && provider.getType() == ProviderType.FIELD_BASED
+                && (state == State.ENABLED_FIELD || state == State.ALL)
                 && confidence < CONFIDENCE_RESET_THRESHOLD
                 && robotPose.get().getTranslation().getDistance(getCurrentPose3d().getTranslation()) < 0.08;
           }
@@ -351,15 +355,20 @@ public class DrivePoseEstimator extends GenericSubsystem {
     updatingPoseAcceptor = accepterUpdating;
   }
 
-    /**
+  /**
    * Creates a command that updates the pose estimator using the pose providers.
    *
    * <p>
-   * DISABLED_FIELD - reads pose from AT camera providers and updates the Env providers with low ambiguity poses from a distance
-   * DISABLED_ENV - reads pose from Env providers, expecting a pose reset to be provided
-   * ENABLED_FIELD - reads pose from the AT camera providers and updates the Env providers if the pose is high caliber and close
-   * ENABLED_ENV - reads the pose from the Env providers and expects given pose to be correct
-   * ALL - reads and fuses poses from both Env and Field sources, resetting Env pose based on update
+   * DISABLED_FIELD - reads pose from AT camera providers and updates the Env
+   * providers with low ambiguity poses from a distance
+   * DISABLED_ENV - reads pose from Env providers, expecting a pose reset to be
+   * provided
+   * ENABLED_FIELD - reads pose from the AT camera providers and updates the Env
+   * providers if the pose is high caliber and close
+   * ENABLED_ENV - reads the pose from the Env providers and expects given pose to
+   * be correct
+   * ALL - reads and fuses poses from both Env and Field sources, resetting Env
+   * pose based on update
    *
    * @return the command that updates the pose estimator
    */
@@ -375,30 +384,32 @@ public class DrivePoseEstimator extends GenericSubsystem {
           List<PoseObservation> observations = provider.getObservations();
           for (PoseObservation observation : observations) {
             boolean rejectPose = (provider.getType() != ProviderType.ENVIRONMENT_BASED) &&
-            observation.tagCount == 0 // Must have at least one tag
+                observation.tagCount == 0 // Must have at least one tag
                 || (observation.tagCount == 1
                     && observation.ambiguity > VisionConstants.maxAmbiguity) // Cannot be high ambiguity
-                || Math.abs(observation.pose.getZ())
-                    > VisionConstants.maxZError // Must have realistic Z coordinate
+                || Math.abs(observation.pose.getZ()) > VisionConstants.maxZError // Must have realistic Z coordinate
 
                 // Must be within the field boundaries
                 || observation.pose.getX() < 0.0
                 || observation.pose.getX() > AprilTags.aprilTagFieldLayout.getFieldLength()
                 || observation.pose.getY() < 0.0
                 || observation.pose.getY() > AprilTags.aprilTagFieldLayout.getFieldWidth();
-            visionUpdated |= provider.fiducialId() != 0;
 
             Pose3d robotPose = observation.pose;
             if (!rejectPose) {
+              visionUpdated |= true;
               poseTracker.updateVisionMeasurements(
-                robotPose.toPose2d(), observation.timestamp, observation.stdDeviations);
+                  robotPose.toPose2d(), observation.timestamp, observation.stdDeviations);
             }
 
             // Decides if pose would be good to update
-            poseAcceptable = activateAcceptorUpdates
-                && provider.getType() == ProviderType.FIELD_BASED && state == State.ENABLED_FIELD
-                && provider.getConfidence() < CONFIDENCE_RESET_THRESHOLD
-                && robotPose.getTranslation().getDistance(getCurrentPose3d().getTranslation()) < 0.08;
+            poseAcceptable |= activateAcceptorUpdates
+                && provider.getType() == ProviderType.FIELD_BASED
+                && (state == State.ENABLED_FIELD || state == State.ALL)
+                && observation.ambiguity < CONFIDENCE_RESET_THRESHOLD
+                && (DriverStation.isDisabled() ||
+                    (!DriverStation.isDisabled()
+                        && robotPose.getTranslation().getDistance(getCurrentPose3d().getTranslation()) < 0.08));
           }
         }
       }

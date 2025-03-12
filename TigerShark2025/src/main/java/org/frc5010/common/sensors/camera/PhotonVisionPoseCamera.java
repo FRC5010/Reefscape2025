@@ -4,6 +4,7 @@
 
 package org.frc5010.common.sensors.camera;
 
+import java.lang.StackWalker.Option;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -22,6 +23,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /** A camera using the PhotonVision library. */
 public class PhotonVisionPoseCamera extends PhotonVisionCamera {
@@ -85,51 +87,85 @@ public class PhotonVisionPoseCamera extends PhotonVisionCamera {
     observations.clear();
 
     super.updateCameraInfo();
-
     for (PhotonPipelineResult camResult : camResults) {
-      if (camResult.hasTargets()) {
-        if (camResult.getMultiTagResult().isPresent()) {
-          var multitagResult = camResult.multitagResult.get();
-          
-
-          // Calculate robot pose
-          Transform3d fieldToCamera = multitagResult.estimatedPose.best;
-          Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
-          Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
-
-          // Calculate average tag distance
-          double totalTagDistance = 0.0;
-          for (var target : camResult.targets) {
-            totalTagDistance += target.bestCameraToTarget.getTranslation().getNorm();
-          }
-          // Compute the average tag distance
-          int tagCount = multitagResult.fiducialIDsUsed.size();
-          double averageDistance = 0.0;
-          if (camResult.targets.size() > 0) {
-            averageDistance = totalTagDistance / camResult.targets.size();
-          }
-
-          double stdDevFactor = Math.pow(averageDistance, 2.0) / tagCount;
-          double linearStdDev = VisionConstants.linearStdDevBaseline * stdDevFactor;
-          double angularStdDev = VisionConstants.angularStdDevBaseline * stdDevFactor;
-          
-          observations.add(
-              new PoseObservation(
-                  camResult.getTimestampSeconds(), // Timestamp
-                  multitagResult.estimatedPose.ambiguity,
-                  tagCount,
-                  VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev),
-                  robotPose // 3D pose estimate
-              ));
+      Optional<EstimatedRobotPose> estimate = poseEstimator.update(camResult);
+      if (estimate.isPresent()) {
+        EstimatedRobotPose estimatedRobotPose = estimate.get();
+        Pose3d robotPose = estimatedRobotPose.estimatedPose;
+        
+        double totalTagDistance = 0.0;
+        for (var target : camResult.targets) {
+          totalTagDistance += target.bestCameraToTarget.getTranslation().getNorm();
         }
-        if (fiducialIds.size() > 0) {
-          target = camResult.getTargets().stream()
-              .filter(it -> fiducialIds.contains(it.getFiducialId()))
-              .findFirst();
-        } else {
-          target = Optional.ofNullable(camResult.getBestTarget());
+        // Compute the average tag distance
+        int tagCount = estimatedRobotPose.targetsUsed.size();
+        double averageDistance = 0.0;
+        if (camResult.targets.size() > 0) {
+          averageDistance = totalTagDistance / camResult.targets.size();
         }
+
+        double stdDevFactor = Math.pow(averageDistance, 2.0) / tagCount;
+        double linearStdDev = VisionConstants.linearStdDevBaseline * stdDevFactor;
+        double angularStdDev = VisionConstants.angularStdDevBaseline * stdDevFactor;
+        SmartDashboard.putNumber("Photon Ambiguity "+name,  camResult.getBestTarget().poseAmbiguity);
+        SmartDashboard.putNumberArray("Photon Camera "+name+" POSE", new double[] {
+                  robotPose.getX(), robotPose.getY(), robotPose.getRotation().toRotation2d().getDegrees()
+          });
+        observations.add(
+            new PoseObservation(
+                camResult.getTimestampSeconds(), // Timestamp
+                camResult.getBestTarget().poseAmbiguity,
+                tagCount,
+                VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev),
+                robotPose // 3D pose estimate
+            ));
       }
+      // if (camResult.hasTargets()) {
+        
+      //   if (camResult.getMultiTagResult().isPresent()) {
+      //     var multitagResult = camResult.multitagResult.get();
+          
+
+      //     // Calculate robot pose
+      //     Transform3d fieldToCamera = multitagResult.estimatedPose.best;
+      //     Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
+      //     Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
+
+      //     // Calculate average tag distance
+      //     double totalTagDistance = 0.0;
+      //     for (var target : camResult.targets) {
+      //       totalTagDistance += target.bestCameraToTarget.getTranslation().getNorm();
+      //     }
+      //     // Compute the average tag distance
+      //     int tagCount = multitagResult.fiducialIDsUsed.size();
+      //     double averageDistance = 0.0;
+      //     if (camResult.targets.size() > 0) {
+      //       averageDistance = totalTagDistance / camResult.targets.size();
+      //     }
+
+      //     double stdDevFactor = Math.pow(averageDistance, 2.0) / tagCount;
+      //     double linearStdDev = VisionConstants.linearStdDevBaseline * stdDevFactor;
+      //     double angularStdDev = VisionConstants.angularStdDevBaseline * stdDevFactor;
+      //     SmartDashboard.putNumberArray("Photon Camera "+name+" POSE", new double[] {
+      //               robotPose.getX(), robotPose.getY(), robotPose.getRotation().toRotation2d().getDegrees()
+      //       });
+      //     observations.add(
+      //         new PoseObservation(
+      //             camResult.getTimestampSeconds(), // Timestamp
+      //             multitagResult.estimatedPose.ambiguity,
+      //             tagCount,
+      //             VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev),
+      //             robotPose // 3D pose estimate
+      //         ));
+      //   }
+      //   if (fiducialIds.size() > 0) {
+      //     target = camResult.getTargets().stream()
+      //         .filter(it -> fiducialIds.contains(it.getFiducialId()))
+      //         .findFirst();
+      //   } else {
+      //     target = Optional.ofNullable(camResult.getBestTarget());
+      //   }
+      // }
     }
   }
 

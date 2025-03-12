@@ -37,7 +37,7 @@ public class ReefscapeButtonBoard {
         public int getButton();
     }
 
-    private static Distance reefGap = Inches.of(0.5);
+    private static Distance reefGap = Inches.of(1);
     private static Transform2d robotOffset = new Transform2d(RobotModel.HALF_ROBOT_SIZE.plus(reefGap), Meters.zero(), Rotation2d.fromDegrees(180)); // Move to more appropriate, common, location
 
     private static Distance stationGap = Inches.of(0.5);
