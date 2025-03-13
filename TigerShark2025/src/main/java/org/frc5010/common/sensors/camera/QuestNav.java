@@ -186,7 +186,7 @@ public class QuestNav implements PoseProvider {
 
     public double getConfidence() {
         if (RobotBase.isReal()) {
-            return 0.01;
+            return 0.05;
         } else {
             return Double.MAX_VALUE;
         }

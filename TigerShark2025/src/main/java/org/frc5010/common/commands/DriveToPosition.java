@@ -230,8 +230,6 @@ public class DriveToPosition extends GenericCommand {
     // yController.calculate(robotPose.getY()) *
     // swerveSubsystem.getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond()
     // ,0));
-    ySpeed = ySpeed + yController.getSetpoint().velocity*0.8;
-    double ySign = Math.signum(ySpeed);
     double minFFRadius = 0.05;
     double maxFFRadius = 1.0;
     double distanceToGoal = robotPose2d.getTranslation().getDistance(targetPose.getTranslation());

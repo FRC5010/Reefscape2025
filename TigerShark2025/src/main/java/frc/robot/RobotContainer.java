@@ -21,8 +21,8 @@ public class RobotContainer implements WpiHelperInterface {
 
     //robot = new Elphaba("elphaba");
     // robot = new Pancake("pancake_bot");
-    robot = new TigerShark("tigershark");
-    //robot = new ControlsBoard("controls_board");
+    //robot = new TigerShark("tigershark");
+    robot = new ControlsBoard("controls_board");
     initAutoCommands();
     configureButtonBindings();
     WpiNetworkTableValuesHelper.loadRegisteredToNetworkTables();

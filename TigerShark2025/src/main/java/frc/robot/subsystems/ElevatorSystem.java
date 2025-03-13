@@ -77,12 +77,12 @@ public class ElevatorSystem extends GenericSubsystem {
         L1(Meters.of(0.72)),
         L2Algae(Meters.of(0.11)),
         L2Shoot(Meters.of(0.87)),
-        L2(Meters.of(1.0)),
+        L2(Meters.of(0.85)),
         L3Algae(Meters.of(1.1)),
         L3Shoot(Meters.of(1.27)),
         L3(Meters.of(1.297)),
-        L4Shoot(Meters.of(1.83)),
-        L4(Meters.of(1.84)),
+        L4Shoot(Meters.of(1.78)),
+        L4(Meters.of(1.89)),
         NET(Meters.of(1.9));
 
         private final Distance position;
@@ -171,8 +171,8 @@ public class ElevatorSystem extends GenericSubsystem {
                 new Rotation3d()));
 
         elevator.setMotorFeedFwd(new MotorFeedFwdConstants(0.26329, 0.38506, 0.04261));
-        elevator.setProfiledMaxVelocity(2.5);
-        elevator.setProfiledMaxAcceleration(15);
+        elevator.setProfiledMaxVelocity(6);
+        elevator.setProfiledMaxAcceleration(20);
         elevator.setValues(new GenericPID(3, 0.0, 0.0));
         elevator.setOutputRange(-1, 1);
 

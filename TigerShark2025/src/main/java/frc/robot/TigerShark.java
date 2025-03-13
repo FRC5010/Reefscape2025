@@ -19,6 +19,7 @@ import org.frc5010.common.sensors.gyro.GenericGyro;
 import org.frc5010.common.subsystems.NewLEDSubsystem;
 import org.frc5010.common.utils.AllianceFlip;
 
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -69,7 +70,7 @@ public class TigerShark extends GenericRobot {
         super(directory);
         AllianceFlip.configure(FieldConstants.fieldDimensions);
 
-        // CameraServer.startAutomaticCapture();
+        CameraServer.startAutomaticCapture(); 
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
         brainZero = new DigitalInput(0);
         brainOne = new DigitalInput(1);
