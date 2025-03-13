@@ -301,6 +301,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         0.0 // Goal end velocity in meters/sec
     );
   }
+
   public Supplier<Command> driveToPosePrecise(Supplier<Pose2d> pose, Transform2d PathPlanOffset) {
     return driveToPosePrecise(pose, PathPlanOffset, Seconds.of(100));
   }
@@ -336,14 +337,20 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
           poseEstimator.setTargetPoseOnField(pose.get().transformBy(PathPlanOffset), "Auto Drive Pose");
           SmartDashboard.putBoolean("Running AutoDrive", true);
         })
-        .until(() -> getPose().getTranslation().getDistance(pose.get().getTranslation()) < 3.0)
+        .until(() -> getPose().getTranslation().getDistance(pose.get().getTranslation()) < 3.0
+            || RobotModel.circularObstacleWillBeAvoided(obstaclePosition,
+                poseEstimator::getCurrentPose,
+                pose.get(), unavoidableVertices, obstacleRadius, robotRadius,
+                maxRobotDimensionDeviation,
+                maxObstacleDimensionDeviation, obstacleAvoidanceResolution))
         // .until(() -> RobotModel.circularObstacleWillBeAvoided(obstaclePosition,
         // poseEstimator::getCurrentPose,
         // pose.get(), unavoidableVertices, obstacleRadius, robotRadius,
         // maxRobotDimensionDeviation,
         // maxObstacleDimensionDeviation, obstacleAvoidanceResolution))
-        // .until(() -> RobotModel.robotHasLinearPath(getPose(), pose.get(), unavoidableVertices,
-        //     getSwerveConstants().getTrackWidth(), getSwerveConstants().getWheelBase()))
+        // .until(() -> RobotModel.robotHasLinearPath(getPose(), pose.get(),
+        // unavoidableVertices,
+        // getSwerveConstants().getTrackWidth(), getSwerveConstants().getWheelBase()))
         .andThen(finishDriving.get().beforeStarting(() -> {
           // poseEstimator.setState(State.ENABLED_FIELD);
           poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose");
@@ -362,7 +369,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   }
 
   public ChassisSpeeds getFieldVelocitiesFromJoystick(DoubleSupplier xSpdFunction, DoubleSupplier ySpdFunction,
-    DoubleSupplier turnSpdFunction) {
+      DoubleSupplier turnSpdFunction) {
     double xInput = (xSpdFunction.getAsDouble());
     double yInput = (ySpdFunction.getAsDouble());
 
@@ -515,7 +522,9 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   public Command driveWithSetpointGeneratorOrientationConsidered(Supplier<ChassisSpeeds> inputSpeeds) {
     try {
       return driveWithSetpointGenerator(() -> {
-        ChassisSpeeds speeds = isFieldOrientedDrive.getValue() ? ChassisSpeeds.fromFieldRelativeSpeeds(inputSpeeds.get(), getHeading()) : inputSpeeds.get();
+        ChassisSpeeds speeds = isFieldOrientedDrive.getValue()
+            ? ChassisSpeeds.fromFieldRelativeSpeeds(inputSpeeds.get(), getHeading())
+            : inputSpeeds.get();
         return speeds;
 
       });

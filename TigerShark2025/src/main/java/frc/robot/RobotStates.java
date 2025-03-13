@@ -54,7 +54,8 @@ public class RobotStates {
   }
 
   // TODO: Add pole positioning leds
-  public RobotStates(ShooterSystem shooter, AlgaeArm algaeArm, ElevatorSystem elevator, ClimbSubsystem climb, NewLEDSubsystem leds, Supplier<Pose2d> robotPose) {
+  public RobotStates(ShooterSystem shooter, AlgaeArm algaeArm, ElevatorSystem elevator, ClimbSubsystem climb,
+      NewLEDSubsystem leds, Supplier<Pose2d> robotPose) {
     this.shooter = shooter;
     this.algaeArm = algaeArm;
     this.elevator = elevator;
@@ -79,17 +80,20 @@ public class RobotStates {
         && elevator.getElevatorPosition().in(Meters) < Position.L4.position().in(Meters)
         && (algaeState == AlgaeState.DEPLOYING || algaeState == AlgaeState.RETRACTING));
     climbing = new Trigger(() -> climb.isClimbing());
-    poleAlignment = new Trigger(() -> RobotModel.percentWidthPoleIntersection(robotPose, Inches.of(24.22)) != -1.0).and(coralLoaded);
+    poleAlignment = new Trigger(() -> RobotModel.percentWidthPoleIntersection(robotPose, Inches.of(24.22)) != -1.0)
+        .and(coralLoaded);
 
-    empty.and(climbing.negate()).onTrue(Commands.runOnce(() -> {
-      state = RobotState.EMPTY;
-      leds.setPattern(leds.getMaskedPattern(leds.getSolidPattern(Color.kWhite), 0.5, 50));
-    }));
+    empty.and(climbing.negate()).and(algaeLoaded.negate()).and(scoringCoral.negate()).and(scoringProcessor.negate())
+        .and(scoringBarge.negate()).and(descoringAlgae.negate()).and(poleAlignment.negate())
+        .onTrue(Commands.runOnce(() -> {
+          state = RobotState.EMPTY;
+          leds.setPattern(leds.getMaskedPattern(leds.getSolidPattern(Color.kWhite), 0.5, 50));
+        }));
     coralLoading.onTrue(Commands.runOnce(() -> {
       state = RobotState.CORAL_LOADING;
       leds.setPattern(leds.getBlinkingPattern(leds.getSolidPattern(Color.kYellow), Seconds.of(0.1)));
     }));
-    coralLoaded.and(scoringCoral.negate()).onTrue(Commands.runOnce(() -> {
+    coralLoaded.and(scoringCoral.negate()).and(poleAlignment.negate()).onTrue(Commands.runOnce(() -> {
       state = RobotState.CORAL_LOADED;
       leds.setPattern(leds.getSolidPattern(Color.kGreen));
     }));
@@ -118,10 +122,12 @@ public class RobotStates {
       state = RobotState.CLIMBING;
       leds.setPattern(leds.getMaskedPattern(leds.getSolidPattern(Color.kViolet), 0.5, 100));
     })); // TODO: Eventually add progress bar
-    poleAlignment.and(scoringCoral.negate()).and(descoringAlgae.negate()).and(algaeLoaded.negate()).onTrue(Commands.runOnce(() -> {
-      state = RobotState.POLE_ALIGNMENT;
-      leds.setPattern(leds.getBand(leds.getRainbowPattern(0.0), RobotModel.percentWidthPoleIntersection(robotPose, Inches.of(24.22)), 0.2, 0.0));
-    }));
+    poleAlignment.and(scoringCoral.negate()).and(descoringAlgae.negate()).and(algaeLoaded.negate())
+        .onTrue(Commands.runOnce(() -> {
+          state = RobotState.POLE_ALIGNMENT;
+          leds.setPattern(leds.getBand(leds.getRainbowPattern(0.0),
+              RobotModel.percentWidthPoleIntersection(robotPose, Inches.of(24.22)), 0.2, 0.0));
+        }));
   }
 
   public RobotState getRobotState() {

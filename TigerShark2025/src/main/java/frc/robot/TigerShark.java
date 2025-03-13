@@ -29,6 +29,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -68,7 +69,7 @@ public class TigerShark extends GenericRobot {
         super(directory);
         AllianceFlip.configure(FieldConstants.fieldDimensions);
 
-        //CameraServer.startAutomaticCapture(); 
+        // CameraServer.startAutomaticCapture();
         drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
         brainZero = new DigitalInput(0);
         brainOne = new DigitalInput(1);
@@ -87,48 +88,77 @@ public class TigerShark extends GenericRobot {
 
         reefscapeButtonBoard = new ReefscapeButtonBoard(2, 3);
 
-
         climb = new ClimbSubsystem();
 
-        elevatorSystem.setRobotParameters(Meters.of(0.0059182), Meters.of(0.0141478), Meters.of(0.56), 0.167775, 0.822008, 0.210722);
+        elevatorSystem.setRobotParameters(Meters.of(0.0059182), Meters.of(0.0141478), Meters.of(0.56), 0.167775,
+                0.822008, 0.210722);
         autoChoosers = new AutoChoosers(shuffleTab);
 
-        ((YAGSLSwerveDrivetrain) drivetrain).setAccelerationSuppliers(() -> elevatorSystem.getMaxForwardAcceleration(), () -> elevatorSystem.getMaxBackwardAcceleration(), () -> elevatorSystem.getMaxLeftAcceleration(), () -> elevatorSystem.getMaxRightAcceleration());
+        ((YAGSLSwerveDrivetrain) drivetrain).setAccelerationSuppliers(() -> elevatorSystem.getMaxForwardAcceleration(),
+                () -> elevatorSystem.getMaxBackwardAcceleration(), () -> elevatorSystem.getMaxLeftAcceleration(),
+                () -> elevatorSystem.getMaxRightAcceleration());
 
-        ((YAGSLSwerveDrivetrain) drivetrain).setVelocitySuppliers(() -> elevatorSystem.getMaxForwardVelocity(), () -> elevatorSystem.getMaxBackwardVelocity(), () -> elevatorSystem.getMaxRightVelocity(), () -> elevatorSystem.getMaxLeftVelocity());
+        ((YAGSLSwerveDrivetrain) drivetrain).setVelocitySuppliers(() -> elevatorSystem.getMaxForwardVelocity(),
+                () -> elevatorSystem.getMaxBackwardVelocity(), () -> elevatorSystem.getMaxRightVelocity(),
+                () -> elevatorSystem.getMaxLeftVelocity());
 
-
-        centerLineResetPose = new Pose2d(FieldConstants.Reef.Side.GH.getCenterFace().getTranslation().getMeasureX().plus(Inches.of(113).minus(ROBOT_WIDTH.div(2))), Inches.of(146.5).minus(ROBOT_WIDTH.div(2)), Rotation2d.fromDegrees(180));
+        centerLineResetPose = new Pose2d(
+                FieldConstants.Reef.Side.GH.getCenterFace().getTranslation().getMeasureX()
+                        .plus(Inches.of(113).minus(ROBOT_WIDTH.div(2))),
+                Inches.of(146.5).minus(ROBOT_WIDTH.div(2)), Rotation2d.fromDegrees(180));
         resetPositionToCenterLine();
 
         // segmentedLED = new SegmentedLedSystem(0, 30, mechVisual);
-        // LEDStripSegment providerSegment = segmentedLED.addLedSegment("Pose Providers", 0, 10, Color.WHITE);
+        // LEDStripSegment providerSegment = segmentedLED.addLedSegment("Pose
+        // Providers", 0, 10, Color.WHITE);
 
-        // ((YAGSLSwerveDrivetrain) drivetrain).getPoseEstimator().displayOnLEDSegment(providerSegment, 10);
+        // ((YAGSLSwerveDrivetrain)
+        // drivetrain).getPoseEstimator().displayOnLEDSegment(providerSegment, 10);
 
-        // Pose2d obstaclePosition = DriverStation.getAlliance().get() == Alliance.Blue ? new Pose2d(4.48945, 4.0259, new Rotation2d()) : new Pose2d(13.065, 4.0259, new Rotation2d());
-        // Pose2d[] blueVertices = new Pose2d[] {new Pose2d(3.325, 3.313, new Rotation2d()), new Pose2d(3.325, 4.698, new Rotation2d()), new Pose2d(4.490, 5.332, new Rotation2d()), new Pose2d(5.655, 4.689, new Rotation2d()), new Pose2d(5.655, 3.332, new Rotation2d()), new Pose2d(4.490, 2.700, new Rotation2d())};
-        // Pose2d[] redVertices = new Pose2d[] {new Pose2d(11.905, 3.313, new Rotation2d()), new Pose2d(11.905, 4.698, new Rotation2d()), new Pose2d(13.07, 5.332, new Rotation2d()), new Pose2d(14.235, 4.689, new Rotation2d()), new Pose2d(14.235, 3.332, new Rotation2d()), new Pose2d(13.07, 2.700, new Rotation2d())};
-        // Pose2d[] vertices = DriverStation.getAlliance().get() == Alliance.Blue ? blueVertices : redVertices;
-        // Distance obstacleRadius = Inches.of(37.621), maximumObstacleDimensionDeviation = Inches.of(4.8755), robotRadius = Inches.of(24.22), maximumRobotDimensionDeviation = Inches.of(7.0934);
+        Pose2d obstaclePosition = DriverStation.getAlliance().get() == Alliance.Blue
+                ? new Pose2d(4.48945, 4.0259, new Rotation2d())
+                : new Pose2d(13.065, 4.0259, new Rotation2d());
+        Pose2d[] blueVertices = new Pose2d[] { new Pose2d(3.325, 3.313, new Rotation2d()),
+                new Pose2d(3.325, 4.698, new Rotation2d()), new Pose2d(4.490, 5.332, new Rotation2d()),
+                new Pose2d(5.655, 4.689, new Rotation2d()), new Pose2d(5.655, 3.332, new Rotation2d()),
+                new Pose2d(4.490, 2.700, new Rotation2d()) };
+        Pose2d[] redVertices = new Pose2d[] { new Pose2d(11.905, 3.313, new Rotation2d()),
+                new Pose2d(11.905, 4.698, new Rotation2d()), new Pose2d(13.07, 5.332, new Rotation2d()),
+                new Pose2d(14.235, 4.689, new Rotation2d()), new Pose2d(14.235, 3.332, new Rotation2d()),
+                new Pose2d(13.07, 2.700, new Rotation2d()) };
+        Pose2d[] vertices = DriverStation.getAlliance().get() == Alliance.Blue ? blueVertices : redVertices;
+        Distance obstacleRadius = Inches.of(37.621), maximumObstacleDimensionDeviation = Inches.of(4.8755),
+                robotRadius = Inches.of(24.22), maximumRobotDimensionDeviation = Inches.of(7.0934);
 
+        ((YAGSLSwerveDrivetrain) drivetrain).setUpCircularObstacle(obstaclePosition, vertices,
+                obstacleRadius.in(Meters), robotRadius.in(Meters), maximumRobotDimensionDeviation.in(Meters),
+                maximumObstacleDimensionDeviation.in(Meters), 100);
+        startingPose1 = new Pose2d(
+                FieldConstants.innerStartingLineX.plus(Inches.of(1.0)).minus(Inches.of(17.875)).in(Meters),
+                FieldConstants.fieldDimensions.fieldWidth.minus(Inches.of(17.875)).in(Meters),
+                new Rotation2d(Degrees.of(180)));
+        startingPose2 = new Pose2d(
+                FieldConstants.innerStartingLineX.plus(Inches.of(1.0)).minus(Inches.of(17.875)).in(Meters),
+                FieldConstants.fieldDimensions.fieldWidth.in(Meters) / 2, new Rotation2d(Degrees.of(180)));
+        startingPose3 = new Pose2d(
+                FieldConstants.innerStartingLineX.plus(Inches.of(1.0)).minus(Inches.of(17.875)).in(Meters),
+                Inches.of(17.875).in(Meters), new Rotation2d(Degrees.of(180)));
 
-        // ((YAGSLSwerveDrivetrain) drivetrain).setUpCircularObstacle(obstaclePosition, vertices, obstacleRadius.in(Meters), robotRadius.in(Meters), maximumRobotDimensionDeviation.in(Meters), maximumObstacleDimensionDeviation.in(Meters), 100);
-        startingPose1 = new Pose2d(FieldConstants.innerStartingLineX.plus(Inches.of(1.0)).minus(Inches.of(17.875)).in(Meters), FieldConstants.fieldDimensions.fieldWidth.minus(Inches.of(17.875)).in(Meters), new Rotation2d(Degrees.of(180)));
-        startingPose2 = new Pose2d(FieldConstants.innerStartingLineX.plus(Inches.of(1.0)).minus(Inches.of(17.875)).in(Meters), FieldConstants.fieldDimensions.fieldWidth.in(Meters) / 2, new Rotation2d(Degrees.of(180)));
-        startingPose3 = new Pose2d(FieldConstants.innerStartingLineX.plus(Inches.of(1.0)).minus(Inches.of(17.875)).in(Meters), Inches.of(17.875).in(Meters), new Rotation2d(Degrees.of(180)));
-
-        robotStates = new RobotStates(shooter, algaeArm, elevatorSystem, climb, leds, () -> drivetrain.getPoseEstimator().getCurrentPose());
+        robotStates = new RobotStates(shooter, algaeArm, elevatorSystem, climb, leds,
+                () -> drivetrain.getPoseEstimator().getCurrentPose());
     }
 
     public void resetPositionToStart() {
-        ((YAGSLSwerveDrivetrain) drivetrain).resetPose(AllianceFlip.apply(new Pose2d(new Translation2d(RobotModel.HALF_ROBOT_SIZE.plus(FieldConstants.Reef.Side.GH.centerFace.getMeasureX()), FieldConstants.Reef.Side.GH.centerFace.getMeasureY()),
-              Rotation2d.fromDegrees(180))));
+        ((YAGSLSwerveDrivetrain) drivetrain).resetPose(AllianceFlip.apply(new Pose2d(
+                new Translation2d(RobotModel.HALF_ROBOT_SIZE.plus(FieldConstants.Reef.Side.GH.centerFace.getMeasureX()),
+                        FieldConstants.Reef.Side.GH.centerFace.getMeasureY()),
+                Rotation2d.fromDegrees(180))));
     }
 
     public void resetPositionToDiagonalStart() {
-        ((YAGSLSwerveDrivetrain) drivetrain).resetPose(AllianceFlip.apply(new Pose2d(new Translation2d(Meters.of(7.585), Meters.of(6.160)),
-              Rotation2d.fromDegrees(-135))));
+        ((YAGSLSwerveDrivetrain) drivetrain)
+                .resetPose(AllianceFlip.apply(new Pose2d(new Translation2d(Meters.of(7.585), Meters.of(6.160)),
+                        Rotation2d.fromDegrees(-135))));
     }
 
     public void resetPositionToCenterLine() {
@@ -139,8 +169,6 @@ public class TigerShark extends GenericRobot {
         ((YAGSLSwerveDrivetrain) drivetrain).resetPose(AllianceFlip.apply(position));
     }
 
-    
-
     @Override
     public void configureButtonBindings(Controller driver, Controller operator) {
         drivetrain.configureButtonBindings(driver, operator);
@@ -149,12 +177,14 @@ public class TigerShark extends GenericRobot {
             driver.createBButton().whileTrue(((YAGSLSwerveDrivetrain) drivetrain).sysIdAngleMotorCommand());
             operator.createYButton().whileTrue(elevatorSystem.elevatorSysIdCommand());
 
-            QuestNav calibrationQuest = new QuestNav(new Transform3d(new Translation3d(), new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(-90))));
+            QuestNav calibrationQuest = new QuestNav(new Transform3d(new Translation3d(),
+                    new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(-90))));
             driver.createXButton().whileTrue(calibrationQuest.determineOffsetToRobotCenter(drivetrain));
 
             driver.createYButton().whileTrue(shooter.getSysIdCommand());
 
-            driver.createUpPovButton().whileTrue(Commands.run(() -> ((YAGSLSwerveDrivetrain) drivetrain).drive(new ChassisSpeeds(0.1, 0, 0)), drivetrain));
+            driver.createUpPovButton().whileTrue(Commands
+                    .run(() -> ((YAGSLSwerveDrivetrain) drivetrain).drive(new ChassisSpeeds(0.1, 0, 0)), drivetrain));
             operator.createXButton().whileTrue(algaeArm.getSysIdCommand());
 
             operator.createAButton().whileTrue(
@@ -178,75 +208,81 @@ public class TigerShark extends GenericRobot {
         }
         reefscapeButtonBoard.configureOperatorButtonBindings(operator);
 
-        
-
-         driver.createXButton().whileTrue(
-        Commands.deferredProxy(() ->
-        TargetingSystem.createCoralScoringSequence(ReefscapeButtonBoard.getScoringPose(), ReefscapeButtonBoard.getScoringLevel())));
-        
+        driver.createXButton().whileTrue(
+                Commands.deferredProxy(() -> TargetingSystem.createCoralScoringSequence(
+                        ReefscapeButtonBoard.getScoringPose(), ReefscapeButtonBoard.getScoringLevel())));
 
         driver.createYButton().whileTrue(
-            Commands.deferredProxy( () ->
-        TargetingSystem.createLoadingSequence(ReefscapeButtonBoard.getStationPose()) 
-        ));
-        
-        
+                Commands.deferredProxy(
+                        () -> TargetingSystem.createLoadingSequence(ReefscapeButtonBoard.getStationPose())));
 
-        //driver.createLeftBumper().whileTrue(Commands.run(() -> elevatorSystem.setElevatorPosition(elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel())), elevatorSystem));
+        // driver.createLeftBumper().whileTrue(Commands.run(() ->
+        // elevatorSystem.setElevatorPosition(elevatorSystem.selectElevatorLevel(() ->
+        // ReefscapeButtonBoard.getScoringLevel())), elevatorSystem));
         driver.createLeftBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
                 .pidControlCommand(
                         elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()))));
 
         driver.LEFT_BUMPER.and(AlgaeArm.algaeSelected).and(ReefscapeButtonBoard.algaeLevelIsSelected)
-            .whileTrue(algaeArm.getDeployCommand());
+                .whileTrue(algaeArm.getDeployCommand());
 
-       driver.createBButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
+        driver.createBButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
 
-
-
-
-       driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
+        driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
                 .pidControlCommand(
                         elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.ScoringLevel.INTAKE))));
 
         driver.createRightPovButton().onTrue(elevatorSystem.zeroElevator());
         driver.createDownPovButton().whileTrue(elevatorSystem.elevatorPositionZeroSequence());
-        driver.createUpPovButton().whileTrue(Commands.run(()->{
+        driver.createUpPovButton().whileTrue(Commands.run(() -> {
             shooter.shooterLeftSpeed(0.25);
             shooter.shooterRightSpeed(0.1);
         }, shooter));
 
-
         reefscapeButtonBoard.getFireButton().whileTrue(shooter.runMotors(() -> 0.5));
 
-        // operator.createUpPovButton().onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true));
-        // operator.createRightPovButton().onTrue(Commands.runOnce(() -> resetPosition(startingPose1)).ignoringDisable(true));
-        // operator.createDownPovButton().onTrue(Commands.runOnce(() -> resetPosition(startingPose2)).ignoringDisable(true));
-        // operator.createLeftPovButton().onTrue(Commands.runOnce(() -> resetPosition(startingPose3)).ignoringDisable(true));
+        // operator.createUpPovButton().onTrue(Commands.runOnce(() ->
+        // resetPositionToStart()).ignoringDisable(true));
+        // operator.createRightPovButton().onTrue(Commands.runOnce(() ->
+        // resetPosition(startingPose1)).ignoringDisable(true));
+        // operator.createDownPovButton().onTrue(Commands.runOnce(() ->
+        // resetPosition(startingPose2)).ignoringDisable(true));
+        // operator.createLeftPovButton().onTrue(Commands.runOnce(() ->
+        // resetPosition(startingPose3)).ignoringDisable(true));
 
         YAGSLSwerveDrivetrain yagsl = (YAGSLSwerveDrivetrain) drivetrain;
         Trigger disabled = new Trigger(() -> DriverStation.isDisabled());
-        operator.createLeftPovButton().and(disabled).onTrue(Commands.runOnce(()->yagsl.getPoseEstimator().setState(State.DISABLED_FIELD)).ignoringDisable(true));
-        operator.createRightPovButton().and(disabled).onTrue(Commands.runOnce(()->yagsl.getPoseEstimator().setState(State.ALL)).ignoringDisable(true));
+        operator.createLeftPovButton().and(disabled).onTrue(
+                Commands.runOnce(() -> yagsl.getPoseEstimator().setState(State.DISABLED_FIELD)).ignoringDisable(true));
+        operator.createRightPovButton().and(disabled)
+                .onTrue(Commands.runOnce(() -> yagsl.getPoseEstimator().setState(State.ALL)).ignoringDisable(true));
 
         driver.createBackButton().onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true));
-        new Trigger(brainZero::get).onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true).andThen(Commands.runOnce(() -> leds.setPattern(leds.getRainbowPattern(1.0)))).withTimeout(Seconds.of(3.0)));
-        new Trigger(brainOne::get).onTrue(Commands.runOnce(() -> resetPositionToDiagonalStart()).ignoringDisable(true).andThen(Commands.runOnce(() -> leds.setPattern(leds.getRainbowPattern(1.0)))).withTimeout(Seconds.of(3.0)));
-        QuestNav.isQuestOn().and(() -> DriverStation.isDisabled()).onTrue(Commands.runOnce(() -> leds.setPattern(leds.getSolidPattern(Color.kGreen))).ignoringDisable(true)); 
-        QuestNav.isQuestOn().negate().and(() -> DriverStation.isDisabled()).onTrue(Commands.runOnce(() -> leds.setPattern(leds.getSolidPattern(Color.kRed))).ignoringDisable(true));
+        new Trigger(brainZero::get).onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true)
+                .andThen(Commands.runOnce(() -> leds.setPattern(leds.getRainbowPattern(1.0))))
+                .withTimeout(Seconds.of(3.0)));
+        new Trigger(brainOne::get).onTrue(Commands.runOnce(() -> resetPositionToDiagonalStart()).ignoringDisable(true)
+                .andThen(Commands.runOnce(() -> leds.setPattern(leds.getRainbowPattern(1.0))))
+                .withTimeout(Seconds.of(3.0)));
+        QuestNav.isQuestOn().and(() -> DriverStation.isDisabled()).onTrue(
+                Commands.runOnce(() -> leds.setPattern(leds.getSolidPattern(Color.kGreen))).ignoringDisable(true));
+        QuestNav.isQuestOn().negate().and(() -> DriverStation.isDisabled()).onTrue(
+                Commands.runOnce(() -> leds.setPattern(leds.getSolidPattern(Color.kRed))).ignoringDisable(true));
+        QuestNav.hasHardReset().onTrue(
+                Commands.runOnce(() -> leds.setPattern(leds.getMaskedPattern(leds.getCurrentPattern(), 0.5, 50.0)), leds));
 
         climb.setDefaultCommand(climb.runClimb(operator::getRightYAxis));
     }
 
     @Override
     public void setupDefaultCommands(Controller driver, Controller operator) {
-        // JoystickToSwerve driveCmd = (JoystickToSwerve)drivetrain.createDefaultCommand(driver);
-        Command driveCmd = ((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorOrientationConsidered(() -> ((YAGSLSwerveDrivetrain) drivetrain).getFieldVelocitiesFromJoystick(driver::getLeftYAxis, driver::getLeftXAxis, driver::getRightXAxis));
+        // JoystickToSwerve driveCmd =
+        // (JoystickToSwerve)drivetrain.createDefaultCommand(driver);
+        Command driveCmd = ((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorOrientationConsidered(
+                () -> ((YAGSLSwerveDrivetrain) drivetrain).getFieldVelocitiesFromJoystick(driver::getLeftYAxis,
+                        driver::getLeftXAxis, driver::getRightXAxis));
 
         drivetrain.setDefaultCommand(driveCmd);
-
-
-
 
         shooter.setDefaultCommand(shooter.runMotors(() -> operator.getLeftTrigger()));
 
@@ -273,9 +309,10 @@ public class TigerShark extends GenericRobot {
     public void buildAutoCommands() {
         super.buildAutoCommands();
         addAutoToChooser("Right 4 Coral", new Right4Coral());
-        addAutoToChooser("Right 1 Coral", new Right1Coral(((YAGSLSwerveDrivetrain)drivetrain), shooter, elevatorSystem));
-        addAutoToChooser("2 Piece Coral", new Coral2(((YAGSLSwerveDrivetrain)drivetrain), shooter, elevatorSystem));
+        addAutoToChooser("Right 1 Coral",
+                new Right1Coral(((YAGSLSwerveDrivetrain) drivetrain), shooter, elevatorSystem));
+        addAutoToChooser("2 Piece Coral", new Coral2(((YAGSLSwerveDrivetrain) drivetrain), shooter, elevatorSystem));
         addAutoToChooser("Custom Auto", new CustomAuto());
-        
+
     }
 }

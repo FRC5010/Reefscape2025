@@ -68,6 +68,7 @@ public class QuestNav implements PoseProvider {
     private Pose3d previousPose;
     private double previousTime;
     private final double TIMESTAMP_DELAY = 0.002;
+    private static boolean hasHardReset = false;
 
     private long previousFrameCount;
 
@@ -237,6 +238,11 @@ public class QuestNav implements PoseProvider {
     public void hardReset(Pose3d pose) {
         initPose = pose;
         resetQuestPose();
+        hasHardReset = true;
+    }
+
+    public static Trigger hasHardReset() {
+        return new Trigger(() -> hasHardReset);
     }
 
     public static Trigger isQuestOn() {

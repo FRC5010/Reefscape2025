@@ -20,6 +20,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /** Add your docs here. */
 public class RobotModel {
@@ -112,13 +113,24 @@ public class RobotModel {
             newRobotPose = robotPose.get().plus(iterativeTranslation);
             distance = obstaclePosition.minus(newRobotPose).getTranslation().getNorm();
             if (distance < allowableDistance) {
-                if (distance < allowableDistance + maxObstacleDimensionDeviation + maxRobotDimensionDeviation
+                if (distance < allowableDistance + maxObstacleDimensionDeviation + maxRobotDimensionDeviation + 0.05
                         || isToCloseToVertices(newRobotPose, unavoidableVertices, robotRadius)) {
+                    SmartDashboard.putBoolean("Has Linear Path", false);
                     return false;
                 }
             }
         }
+        SmartDashboard.putBoolean("Has Linear Path", true);
         return true;
+    }
+
+    public static boolean isToCloseToVertices(Pose2d robotPose, Pose2d[] vertices, double robotRadius) {
+        for (Pose2d vertice : vertices) {
+            if (vertice.minus(robotPose).getTranslation().getNorm() < robotRadius) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean linesIntersect(Translation2d line1Start, Translation2d line1End, Translation2d line2Start,
@@ -187,15 +199,6 @@ public class RobotModel {
             vertices[i] = convexPolygon[i].getTranslation();
         }
         return robotHasLinearPath(robotPose, targetPose, vertices, robotWidth, robotLength);
-    }
-
-    public static boolean isToCloseToVertices(Pose2d robotPose, Pose2d[] vertices, double robotRadius) {
-        for (Pose2d vertice : vertices) {
-            if (vertice.minus(robotPose).getTranslation().getNorm() < robotRadius) {
-                return true;
-            }
-        }
-        return false;
     }
 
     // TODO: Finish Function

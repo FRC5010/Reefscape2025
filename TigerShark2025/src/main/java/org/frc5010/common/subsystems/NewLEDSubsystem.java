@@ -83,6 +83,10 @@ public class NewLEDSubsystem extends SubsystemBase {
     return basePattern.blink(blinkInterval);
   }
 
+  public LEDPattern getCurrentPattern() {
+    return pattern;
+  }
+
   @Override
   public void periodic() {
     // Periodically send the latest LED color data to the LED strip for it to display
