@@ -5,10 +5,7 @@ import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 
-import java.util.function.Consumer;
-
 import org.frc5010.common.arch.GenericRobot;
-import org.frc5010.common.auto.RelayPIDAutoTuner;
 import org.frc5010.common.config.ConfigConstants;
 import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.drive.pose.DrivePoseEstimator.State;
@@ -41,7 +38,6 @@ import frc.robot.auto_routines.Coral2;
 import frc.robot.auto_routines.CustomAuto;
 import frc.robot.auto_routines.Right1Coral;
 import frc.robot.auto_routines.Right4Coral;
-import frc.robot.commands.ReefLineupDrive;
 import frc.robot.managers.TargetingSystem;
 import frc.robot.subsystems.AlgaeArm;
 import frc.robot.subsystems.ClimbSubsystem;
@@ -182,27 +178,15 @@ public class TigerShark extends GenericRobot {
                     new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(-90))));
             driver.createXButton().whileTrue(calibrationQuest.determineOffsetToRobotCenter(drivetrain));
 
+            operator.createAButton().whileTrue(drivetrain.getPoseEstimator().getCalibrationCommand(drivetrain, 1));
+
             driver.createYButton().whileTrue(shooter.getSysIdCommand());
 
             driver.createUpPovButton().whileTrue(Commands
                     .run(() -> ((YAGSLSwerveDrivetrain) drivetrain).drive(new ChassisSpeeds(0.1, 0, 0)), drivetrain));
             operator.createXButton().whileTrue(algaeArm.getSysIdCommand());
 
-            operator.createAButton().whileTrue(
-                    new RelayPIDAutoTuner(
-                            (Consumer<Double>) ((Double value) -> ((YAGSLSwerveDrivetrain) drivetrain)
-                                    .driveFieldOriented(new ChassisSpeeds(value, 0, 0))),
-                            () -> ((YAGSLSwerveDrivetrain) drivetrain).getPose().getTranslation().getX(),
-                            3.5,
-                            drivetrain));
-
-            operator.createBButton().whileTrue(
-                    new RelayPIDAutoTuner(
-                            (Consumer<Double>) ((Double value) -> ((YAGSLSwerveDrivetrain) drivetrain)
-                                    .drive(new ChassisSpeeds(0, 0, value))),
-                            () -> ((YAGSLSwerveDrivetrain) drivetrain).getPose().getRotation().getRadians(),
-                            3.14 * 5,
-                            drivetrain));
+         
 
             operator.createYButton().onTrue(TargetingSystem.driveXMetersQuest(Meters.of(1.0)));
             return;
@@ -265,9 +249,9 @@ public class TigerShark extends GenericRobot {
         new Trigger(brainOne::get).onTrue(Commands.runOnce(() -> resetPositionToDiagonalStart()).ignoringDisable(true)
                 .andThen(Commands.runOnce(() -> leds.setPattern(leds.getRainbowPattern(1.0))))
                 .withTimeout(Seconds.of(3.0)));
-        QuestNav.isQuestOn().and(() -> DriverStation.isDisabled()).onTrue(
+        QuestNav.isQuestOn().and(() -> DriverStation.isDisabled()).and(QuestNav.hasHardReset().negate()).whileTrue(
                 Commands.runOnce(() -> leds.setPattern(leds.getSolidPattern(Color.kGreen))).ignoringDisable(true));
-        QuestNav.isQuestOn().negate().and(() -> DriverStation.isDisabled()).onTrue(
+        QuestNav.isQuestOn().negate().and(() -> DriverStation.isDisabled()).and(QuestNav.hasHardReset().negate()).whileTrue(
                 Commands.runOnce(() -> leds.setPattern(leds.getSolidPattern(Color.kRed))).ignoringDisable(true));
         QuestNav.hasHardReset().onTrue(
                 Commands.runOnce(() -> leds.setPattern(leds.getMaskedPattern(leds.getCurrentPattern(), 0.5, 50.0)), leds));

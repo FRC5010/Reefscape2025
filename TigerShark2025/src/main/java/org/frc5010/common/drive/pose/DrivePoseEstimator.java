@@ -10,6 +10,8 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import org.frc5010.common.arch.GenericSubsystem;
+import org.frc5010.common.commands.PoseProviderAutoOffset;
+import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.drive.pose.PoseProvider.PoseObservation;
 import org.frc5010.common.drive.pose.PoseProvider.ProviderType;
 import org.frc5010.common.subsystems.AprilTagPoseSystem;
@@ -29,6 +31,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.FieldConstants.Reef;
@@ -197,6 +200,13 @@ public class DrivePoseEstimator extends GenericSubsystem {
   private String getFormattedPose() {
     var pose = getCurrentPose();
     return String.format("(%.2f, %.2f)", pose.getX(), pose.getY());
+  }
+
+
+  public Command getCalibrationCommand(GenericDrivetrain drivetrain, int cameraIndex) {
+    return new PoseProviderAutoOffset(
+      this::getCurrentPose, drivetrain, new Rotation2d()
+    );
   }
 
   /**
@@ -433,6 +443,7 @@ public class DrivePoseEstimator extends GenericSubsystem {
   public void setState(State type) {
     state = type;
   }
+
 
   /**
    * Force the pose estimator to a particular pose. This is useful for indicating

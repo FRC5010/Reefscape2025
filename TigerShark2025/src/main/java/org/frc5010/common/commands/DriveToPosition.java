@@ -110,9 +110,9 @@ public class DriveToPosition extends GenericCommand {
     this.poseProvider = poseProvider;
     this.targetPoseProvider = targetPoseProvider;
 
-    xController.setTolerance(0.025);
-    yController.setTolerance(0.025);
-    thetaController.setTolerance(Units.degreesToRadians(5));
+    xController.setTolerance(0.02);
+    yController.setTolerance(0.02);
+    thetaController.setTolerance(Units.degreesToRadians(3));
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
     targetTransform = offset;
@@ -231,7 +231,7 @@ public class DriveToPosition extends GenericCommand {
     // swerveSubsystem.getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond()
     // ,0));
     double minFFRadius = 0.05;
-    double maxFFRadius = 1.0;
+    double maxFFRadius = 0.15;
     double distanceToGoal = robotPose2d.getTranslation().getDistance(targetPose.getTranslation());
     double ffInclusionFactor = MathUtil.clamp((distanceToGoal - minFFRadius) / (maxFFRadius - minFFRadius), 0.0, 1.0);
     ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(

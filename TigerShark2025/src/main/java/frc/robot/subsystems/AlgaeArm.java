@@ -72,7 +72,7 @@ public class AlgaeArm extends GenericSubsystem {
 
     public static class Config {
         public int canId = 14;
-        public int gearing = 6;
+        public double gearing = (68.0 / 24.0) * 9.0;
         public double mass = 0.25;
         public double length = 18.0;
         public double maxAngle = -45.0;
@@ -179,7 +179,7 @@ public class AlgaeArm extends GenericSubsystem {
         setDesiredPosition(position);
         double difference = position - motor.getPivotPosition();
         double sign = Math.signum(difference);
-        double effort = 0.05;
+        double effort = 0.20;
         if (Math.abs(difference) < safeDistance.in(Degrees)) {
             effort *= Math.max(Math.abs(difference) / safeDistance.in(Degrees), 0.05);
 

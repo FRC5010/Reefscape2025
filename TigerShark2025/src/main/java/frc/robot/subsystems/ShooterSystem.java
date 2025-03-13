@@ -46,6 +46,8 @@ public class ShooterSystem extends GenericSubsystem {
   private Trigger isEmpty, isEntryActive, isCoralFullyCaptured, isAligned;
   private CoralState coralState;
   private DisplayBoolean entryBeamBreakDisplay, alignmentBeamBreakDisplay;
+  double captureEncoderCount = 0.0;
+
 
   public enum CoralState{
     EMPTY,
@@ -107,8 +109,9 @@ public class ShooterSystem extends GenericSubsystem {
     isCoralFullyCaptured = new Trigger(() -> coralState == CoralState.FULLY_CAPTURED);
     isAligned = new Trigger(() -> coralState == CoralState.ALIGNED);
 
-    
-    
+    isCoralFullyCaptured.onTrue(Commands.runOnce(() -> captureEncoderCount = shooterLeft.getMotorEncoder().getPosition()));
+
+    isCoralFullyCaptured.and(() -> Math.abs(captureEncoderCount - shooterLeft.getMotorEncoder().getPosition()) > 4).onTrue(setCoralState(CoralState.EMPTY));
 
     currentSwitch = new ValueSwitch(config.INTAKE_CURRENT_THRESHOLD.in(Amps), shooterLeft::getOutputCurrent, config.currentSwitchTriggerThreshold);
     
@@ -122,6 +125,9 @@ public class ShooterSystem extends GenericSubsystem {
     shooterLeft = new VelocityControlMotor(MotorFactory.Spark(config.shooterLeftCanID, Motor.Neo), "shooterLeft", displayValues);
     shooterRight = new VelocityControlMotor(MotorFactory.Spark(config.shooterRightCanID, Motor.Neo), "shooterRight",
             displayValues);
+
+    shooterLeft.setCurrentLimit(Amps.of(100));
+    shooterRight.setCurrentLimit(Amps.of(100));
     shooterLeft.invert(config.shooterLeftInverted);
     shooterRight.invert(config.shooterRightInverted);
 
@@ -158,7 +164,7 @@ public class ShooterSystem extends GenericSubsystem {
   }
 
   public void shooterRightSpeed(double speed) {
-      shooterRight.set(speed);
+      shooterRight.set(-speed);
   }
 
   public Command runMotors(DoubleSupplier speed) {

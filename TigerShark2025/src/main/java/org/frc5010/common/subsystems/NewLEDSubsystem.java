@@ -43,7 +43,7 @@ public class NewLEDSubsystem extends SubsystemBase {
     // written by
     // the last command to run will continue to be displayed.
     // Note: Other default patterns could be used instead!
-    setDefaultCommand(runPattern(() -> pattern).ignoringDisable(true));
+    setDefaultCommand(runPattern(() -> getCurrentPattern()).ignoringDisable(true));
   }
 
   public void setPattern(LEDPattern pattern) {

@@ -69,6 +69,7 @@ public class QuestNav implements PoseProvider {
     private double previousTime;
     private final double TIMESTAMP_DELAY = 0.002;
     private static boolean hasHardReset = false;
+    private static boolean initialReset = false;
 
     private long previousFrameCount;
 
@@ -193,7 +194,7 @@ public class QuestNav implements PoseProvider {
     }
 
     public double getCaptureTime() {
-        double t = RobotController.getFPGATime() / 1E6 - TIMESTAMP_DELAY;
+        double t = timestamp.get();
         SmartDashboard.putNumber("Quest Timestamp", t);
         updateFrameCount();
         return t;
@@ -238,7 +239,8 @@ public class QuestNav implements PoseProvider {
     public void hardReset(Pose3d pose) {
         initPose = pose;
         resetQuestPose();
-        hasHardReset = true;
+        hasHardReset = initialReset;
+        initialReset = true;
     }
 
     public static Trigger hasHardReset() {
