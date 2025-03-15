@@ -174,7 +174,7 @@ public abstract class GenericRobot extends GenericMechanism implements GenericDe
   @Override
   protected void initRealOrSim() {
     if (RobotBase.isReal() ) {
-      WpiDataLogging.start(false);
+      WpiDataLogging.start(true);
     } else {
       WpiDataLogging.start(false);
       // NetworkTableInstance instance = NetworkTableInstance.getDefault();

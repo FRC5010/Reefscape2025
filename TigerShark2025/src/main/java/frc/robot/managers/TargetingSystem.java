@@ -76,9 +76,9 @@ public class TargetingSystem {
     public static Command createAutoCoralScoringSequence(Pose2d targetPose, ScoringLevel scoringLevel) {
         Distance level = elevator.selectElevatorLevel(() -> scoringLevel);
         Distance intakeLevel = elevator.selectElevatorLevel(() -> ScoringLevel.INTAKE);
-        return drivetrain.driveToPosePrecise(() -> targetPose, CoralOffset, Seconds.of(3)).get()
+        return drivetrain.driveToPosePrecise(() -> targetPose, CoralOffset, Seconds.of(5)).get()
                 .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level))
-                .andThen(shooter.getShootCommand(scoringLevel)))
+                .andThen(shooter.getShootCommand(scoringLevel)).until(shooter.isEmpty()))
                 .andThen(elevator.pidControlCommand(intakeLevel).until(() -> elevator.isAtLocation(intakeLevel)));
     }
 
@@ -99,10 +99,10 @@ public class TargetingSystem {
         // elevator.pidControlCommand(level));
         return elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level))
                 .andThen(drivetrain.driveToPosePrecise(targetPose, StationOffset).get().alongWith(
-                        shooter.runMotors(() -> 1.0)).withTimeout(5).until(shooter.isFullyCaptured()).andThen(Commands.runOnce(() -> {
+                        shooter.runMotors(() -> 0.65)).until(shooter.isFullyCaptured()).andThen(Commands.runOnce(() -> {
                             shooter.shooterLeftSpeed(0);
                             shooter.shooterRightSpeed(0);
-                        }, shooter)));
+                        }, shooter)).alongWith(elevator.elevatorPositionZeroSequence()));
     }
 
     public static Command driveXMetersQuest(Distance distance) {

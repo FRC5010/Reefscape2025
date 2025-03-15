@@ -337,12 +337,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
           poseEstimator.setTargetPoseOnField(pose.get().transformBy(PathPlanOffset), "Auto Drive Pose");
           SmartDashboard.putBoolean("Running AutoDrive", true);
         })
-        .until(() -> getPose().getTranslation().getDistance(pose.get().getTranslation()) < 3.0
-            || RobotModel.circularObstacleWillBeAvoided(obstaclePosition,
-                poseEstimator::getCurrentPose,
-                pose.get(), unavoidableVertices, obstacleRadius, robotRadius,
-                maxRobotDimensionDeviation,
-                maxObstacleDimensionDeviation, obstacleAvoidanceResolution))
+        .until(() -> getPose().getTranslation().getDistance(pose.get().getTranslation()) < 3.0)
         // .until(() -> RobotModel.circularObstacleWillBeAvoided(obstaclePosition,
         // poseEstimator::getCurrentPose,
         // pose.get(), unavoidableVertices, obstacleRadius, robotRadius,
@@ -351,10 +346,10 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         // .until(() -> RobotModel.robotHasLinearPath(getPose(), pose.get(),
         // unavoidableVertices,
         // getSwerveConstants().getTrackWidth(), getSwerveConstants().getWheelBase()))
-        .andThen(finishDriving.get().beforeStarting(() -> {
+        .andThen(finishDriving.get().withTimeout(timeout).beforeStarting(() -> {
           // poseEstimator.setState(State.ENABLED_FIELD);
           poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose");
-        }).withTimeout(timeout)).finallyDo(() -> {
+        })).finallyDo(() -> {
           // poseEstimator.setState(State.ENABLED_ENV);
           SmartDashboard.putBoolean("Running AutoDrive", false);
         });

@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 import org.frc5010.common.subsystems.NewLEDSubsystem;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -33,12 +34,12 @@ public class RobotStates {
   private ClimbSubsystem climb;
 
   private RobotState state;
-  private CoralState coralState;
-  private AlgaeState algaeState;
+  private Supplier<CoralState> coralState;
+  private Supplier<AlgaeState> algaeState;
   private Supplier<Pose2d> robotPose;
 
   private Trigger empty, coralLoading, coralLoaded, algaeLoaded, scoringCoral, scoringProcessor, scoringBarge,
-      descoringAlgae, climbing, poleAlignment;
+      descoringAlgae, climbing, poleAlignment, isEnabled;
 
   public enum RobotState {
     EMPTY,
@@ -62,27 +63,33 @@ public class RobotStates {
     this.climb = climb;
     this.robotPose = robotPose;
 
-    coralState = shooter.getCoralState();
-    algaeState = algaeArm.getAlgaeState();
+    coralState = () -> shooter.getCoralState();
+    algaeState = () -> algaeArm.getAlgaeState();
 
     state = RobotState.EMPTY;
 
-    empty = new Trigger(() -> coralState == CoralState.EMPTY && algaeState == AlgaeState.RETRACTED);
-    coralLoading = new Trigger(() -> coralState == CoralState.ENTRY); // Change logic when beambreaks are back
-    coralLoaded = new Trigger(() -> coralState == CoralState.FULLY_CAPTURED); // Change logic when beambreaks are back
-    algaeLoaded = new Trigger(() -> algaeState == AlgaeState.DEPLOYED);
-    scoringCoral = new Trigger(() -> shooter.getAverageMotorSpeed() > 0.01 && !elevator.atLoading());
+    empty = new Trigger(() -> coralState.get() == CoralState.EMPTY);
+    coralLoading = new Trigger(() -> coralState.get() == CoralState.ENTRY); // Change logic when beambreaks are back
+    coralLoaded = new Trigger(() -> coralState.get() == CoralState.FULLY_CAPTURED); // Change logic when beambreaks are
+                                                                                    // back
+    algaeLoaded = new Trigger(() -> algaeState.get() == AlgaeState.DEPLOYED);
+    scoringCoral = new Trigger(() -> shooter.getAverageMotorSpeed() > 60 && !elevator.atLoading()).and(coralLoaded); // TODO: Fix Threshold
     scoringProcessor = new Trigger(
-        () -> elevator.isAtLocation(Position.PROCESSOR.position()) && algaeState != AlgaeState.RETRACTED);
+        () -> elevator.isAtLocation(Position.PROCESSOR.position()) && algaeState.get() != AlgaeState.RETRACTED);
     scoringBarge = new Trigger(
-        () -> elevator.isAtLocation(Position.NET.position()) && algaeState != AlgaeState.RETRACTED);
+        () -> elevator.isAtLocation(Position.NET.position()) && algaeState.get() != AlgaeState.RETRACTED);
     descoringAlgae = new Trigger(() -> elevator.getElevatorPosition().in(Meters) > Position.L1.position().in(Meters)
         && elevator.getElevatorPosition().in(Meters) < Position.L4.position().in(Meters)
-        && (algaeState == AlgaeState.DEPLOYING || algaeState == AlgaeState.RETRACTING));
+        && (algaeState.get() == AlgaeState.DEPLOYING || algaeState.get() == AlgaeState.RETRACTING));
     climbing = new Trigger(() -> climb.isClimbing());
     poleAlignment = new Trigger(() -> RobotModel.percentWidthPoleIntersection(robotPose, Inches.of(24.22)) != -1.0)
         .and(coralLoaded);
+    isEnabled = new Trigger(() -> DriverStation.isEnabled());
 
+    isEnabled.onTrue(Commands.runOnce(() -> {
+      state = RobotState.CORAL_LOADED;
+      leds.setPattern(leds.getMaskedPattern(leds.getSolidPattern(Color.kGreen), 0.5, 50));
+    }));
     empty.and(climbing.negate()).and(algaeLoaded.negate()).and(scoringCoral.negate()).and(scoringProcessor.negate())
         .and(scoringBarge.negate()).and(descoringAlgae.negate()).and(poleAlignment.negate())
         .onTrue(Commands.runOnce(() -> {
@@ -95,7 +102,7 @@ public class RobotStates {
     }));
     coralLoaded.and(scoringCoral.negate()).and(poleAlignment.negate()).onTrue(Commands.runOnce(() -> {
       state = RobotState.CORAL_LOADED;
-      leds.setPattern(leds.getSolidPattern(Color.kGreen));
+      leds.getMaskedPattern(leds.getSolidPattern(Color.kGreen), 0.5, 50);
     }));
     algaeLoaded.and(scoringProcessor.negate()).and(scoringBarge.negate()).and(descoringAlgae.negate())
         .onTrue(Commands.runOnce(() -> {
@@ -123,7 +130,7 @@ public class RobotStates {
       leds.setPattern(leds.getMaskedPattern(leds.getSolidPattern(Color.kViolet), 0.5, 100));
     })); // TODO: Eventually add progress bar
     poleAlignment.and(scoringCoral.negate()).and(descoringAlgae.negate()).and(algaeLoaded.negate())
-        .onTrue(Commands.runOnce(() -> {
+        .whileTrue(Commands.runOnce(() -> {
           state = RobotState.POLE_ALIGNMENT;
           leds.setPattern(leds.getBand(leds.getRainbowPattern(0.0),
               RobotModel.percentWidthPoleIntersection(robotPose, Inches.of(24.22)), 0.2, 0.0));

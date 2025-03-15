@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -40,7 +41,7 @@ public class ReefscapeButtonBoard {
     private static Distance reefGap = Inches.of(0.5);
     private static Transform2d robotOffset = new Transform2d(RobotModel.HALF_ROBOT_SIZE.plus(reefGap), Meters.zero(), Rotation2d.fromDegrees(180)); // Move to more appropriate, common, location
 
-    private static Distance stationGap = Inches.of(1.5);
+    private static Distance stationGap = Inches.of(0.5);
     private static Transform2d robotStationOffset = new Transform2d(RobotModel.HALF_ROBOT_SIZE.plus(stationGap), Meters.zero(), Rotation2d.fromDegrees(0));
     
 
@@ -90,6 +91,57 @@ public class ReefscapeButtonBoard {
             return transform;
         }
     }
+
+    public static Map<ScoringLocation, Map<ScoringAlignment, Transform2d>> branchOffsets = Map.ofEntries(
+        Map.entry(
+            ScoringLocation.FRONT_AB,
+            Map.ofEntries(
+                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d()),
+                Map.entry(ScoringAlignment.ALGAE, new Transform2d()),
+                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d())
+            )
+        ),
+        Map.entry(
+            ScoringLocation.FRONT_RIGHT_CD,
+            Map.ofEntries(
+                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d()),
+                Map.entry(ScoringAlignment.ALGAE, new Transform2d()),
+                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d())
+            )
+        ),
+        Map.entry(
+            ScoringLocation.BACK_RIGHT_EF,
+            Map.ofEntries(
+                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d()),
+                Map.entry(ScoringAlignment.ALGAE, new Transform2d()),
+                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d())
+            )
+        ),
+        Map.entry(
+            ScoringLocation.BACK_GH,
+            Map.ofEntries(
+                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d()),
+                Map.entry(ScoringAlignment.ALGAE, new Transform2d()),
+                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d())
+            )
+        ),
+        Map.entry(
+            ScoringLocation.BACK_LEFT_IJ,
+            Map.ofEntries(
+                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d()),
+                Map.entry(ScoringAlignment.ALGAE, new Transform2d()),
+                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d())
+            )
+        ),
+        Map.entry(
+            ScoringLocation.FRONT_LEFT_KL,
+            Map.ofEntries(
+                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d()),
+                Map.entry(ScoringAlignment.ALGAE, new Transform2d()),
+                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d())
+            )
+        )
+    );
 
     public static enum ScoringLevel implements ButtonStateSetting{
         INTAKE(17),
@@ -314,7 +366,8 @@ public class ReefscapeButtonBoard {
     }
 
     public static Pose2d getScoringPose() {
-        return AllianceFlip.apply(scoringLocation.getPose().transformBy(scoringAlignment.getTransform2d()));
+        Transform2d branchOffset = branchOffsets.get(scoringLocation).get(scoringAlignment);
+        return AllianceFlip.apply(scoringLocation.getPose().transformBy(scoringAlignment.getTransform2d()).transformBy(branchOffset));
     }
 
     public static Pose2d getScoringPose(ScoringLocation location, ScoringAlignment alignment) {

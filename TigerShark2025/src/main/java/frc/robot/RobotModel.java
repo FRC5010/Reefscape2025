@@ -204,15 +204,24 @@ public class RobotModel {
     // TODO: Finish Function
     public static double percentWidthPoleIntersection(Supplier<Pose2d> robotPose, Distance robotRadius) {
         Pose2d frontLeftCorner = robotPose.get().transformBy(new Transform2d(new Translation2d(robotRadius, Meters.of(0.0)), new Rotation2d(Degrees.of(45)))); // Point 1
-        Pose2d frontRightCorner = robotPose.get().transformBy(new Transform2d(new Translation2d(robotRadius, Meters.of(0.0)), new Rotation2d(Degrees.of(-45)))); // Point 2
-        Pose2d coralRayEnd = ReefscapeButtonBoard.getScoringPose().transformBy(new Transform2d(new Translation2d(Meters.of(0.4), Inches.of(0.0)), new Rotation2d())); // Point 4
-        Pose2d coralRayStart = coralRayEnd.transformBy(new Transform2d(new Translation2d(Meters.of(-1.0), Meters.of(0.0)), new Rotation2d())); // Point 3
+        Pose2d frontRightCorner = robotPose.get().transformBy(new Transform2d(new Translation2d(robotRadius, Meters.of(0.0)), new Rotation2d(Degrees.of(315)))); // Point 2
+        Pose2d coralRayEnd = ReefscapeButtonBoard.getScoringPose().transformBy(new Transform2d(new Translation2d(Meters.of(-0.4), Inches.of(0.0)), new Rotation2d())); // Point 4
+        Pose2d coralRayStart = coralRayEnd.transformBy(new Transform2d(new Translation2d(Meters.of(1.0), Meters.of(0.0)), new Rotation2d())); // Point 3
         double numerator = (coralRayStart.getX() - frontLeftCorner.getX()) * (coralRayEnd.getY() - coralRayStart.getY()) - (coralRayStart.getY() - frontLeftCorner.getY()) * (coralRayEnd.getX() - coralRayStart.getX());
         double denominator = (frontRightCorner.getX() - frontLeftCorner.getX()) * (coralRayEnd.getY() - coralRayStart.getY()) - (frontRightCorner.getY() - frontLeftCorner.getY()) * (coralRayEnd.getX() - coralRayStart.getX());
-        double percentIntersect = numerator / denominator;
-        if (percentIntersect > 1.0 || percentIntersect < 0.0 || denominator == 0) {
+        SmartDashboard.putNumber("Percentage Intersect Numerator", numerator);
+        SmartDashboard.putNumber("Percentage Intersect Denominator", denominator);
+        SmartDashboard.putNumberArray("Percentage Intersect Front Left", new double[] {frontLeftCorner.getX(), frontLeftCorner.getY()});
+        SmartDashboard.putNumberArray("Percentage Intersect Front Right", new double[] {frontRightCorner.getX(), frontRightCorner.getY()});
+        SmartDashboard.putNumberArray("Percentage Intersect Coral Ray Start", new double[] {coralRayStart.getX(), coralRayStart.getY()});
+        SmartDashboard.putNumberArray("Percentage Intersect Coral Ray End", new double[] {coralRayEnd.getX(), coralRayEnd.getY()});
+        
+        SmartDashboard.putNumber("Percentage Intersect Denominator", denominator);
+        if (denominator == 0 || numerator / denominator > 1.0 || numerator / denominator < 0.0) {
+            SmartDashboard.putNumber("Percentage Intersect", -1.0);
             return -1.0;
         }
-        return percentIntersect;
+        SmartDashboard.putNumber("Percentage Intersect", numerator / denominator);
+        return numerator / denominator;
     }
 }

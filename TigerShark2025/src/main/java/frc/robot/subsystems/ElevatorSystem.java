@@ -77,10 +77,10 @@ public class ElevatorSystem extends GenericSubsystem {
         L1(Meters.of(0.72)),
         L2Algae(Meters.of(0.11)),
         L2Shoot(Meters.of(0.87)),
-        L2(Meters.of(0.85)),
+        L2(Meters.of(0.83)),
         L3Algae(Meters.of(1.1)),
         L3Shoot(Meters.of(1.27)),
-        L3(Meters.of(1.297)),
+        L3(Meters.of(1.25)),
         L4Shoot(Meters.of(1.78)),
         L4(Meters.of(1.89)),
         NET(Meters.of(1.9));
@@ -101,6 +101,7 @@ public class ElevatorSystem extends GenericSubsystem {
     private double lastError;
     private double lastTimestamp = 0;
     private int elevatorAtReferenceCounter = 0;
+    public Supplier<Distance> stoppingDistance = () -> getStoppingDistance();
 
     public static class Config {
         public final Current MAX_ELEVATOR_STATOR_CURRENT_LIMIT = Amps.of(120);
@@ -109,7 +110,6 @@ public class ElevatorSystem extends GenericSubsystem {
         public double g = 9.81;
         public final double ELEVATOR_ZERO_CURRENT = 40;
         public SlewRateLimiter rateLimiter = new SlewRateLimiter(0.5);
-        public Distance stoppingDistance = Meters.of(1.0);
         public double gearing = 6;
     }
 
@@ -171,8 +171,8 @@ public class ElevatorSystem extends GenericSubsystem {
                 new Rotation3d()));
 
         elevator.setMotorFeedFwd(new MotorFeedFwdConstants(0.26329, 0.38506, 0.04261));
-        elevator.setProfiledMaxVelocity(6);
-        elevator.setProfiledMaxAcceleration(20);
+        elevator.setProfiledMaxVelocity(5.5);
+        elevator.setProfiledMaxAcceleration(16);
         elevator.setValues(new GenericPID(3, 0.0, 0.0));
         elevator.setOutputRange(-1, 1);
 
@@ -274,6 +274,7 @@ public class ElevatorSystem extends GenericSubsystem {
             resetController(position);
             elevator.setControlType(PIDControlType.NONE);
         }).finallyDo(() -> {
+            elevator.set(0);
             elevator.setControlType(controlType);
         });
     }
@@ -385,7 +386,7 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double getMaxForwardVelocity() {
-        return Math.sqrt(2 * (Math.abs(getMaxBackwardAcceleration())) * config.stoppingDistance.in(Meters));
+        return Math.sqrt(2 * (Math.abs(getMaxBackwardAcceleration())) * stoppingDistance.get().in(Meters));
     }
 
     public double getMaxBackwardAcceleration() {
@@ -395,7 +396,7 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double getMaxBackwardVelocity() {
-        return Math.sqrt(2 * (-Math.abs(getMaxForwardAcceleration())) * config.stoppingDistance.in(Meters));
+        return Math.sqrt(2 * (-Math.abs(getMaxForwardAcceleration())) * stoppingDistance.get().in(Meters));
     }
 
     public double getMaxRightAcceleration() {
@@ -405,7 +406,7 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double getMaxRightVelocity() {
-        return Math.sqrt(2 * (Math.abs(getMaxLeftAcceleration())) * config.stoppingDistance.in(Meters));
+        return Math.sqrt(2 * (Math.abs(getMaxLeftAcceleration())) * stoppingDistance.get().in(Meters));
     }
 
     public double getMaxLeftAcceleration() {
@@ -415,7 +416,7 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double getMaxLeftVelocity() {
-        return Math.sqrt(2 * (-Math.abs(getMaxRightAcceleration())) * config.stoppingDistance.in(Meters));
+        return Math.sqrt(2 * (-Math.abs(getMaxRightAcceleration())) * stoppingDistance.get().in(Meters));
     }
 
     public double getCOMAcceleration(double x) {
@@ -483,11 +484,19 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public boolean atLoading() {
-        return Math.abs(elevator.getPosition() - Position.LOAD.position().in(Meters)) < 0.02;
+        return Math.abs(elevator.getPosition() - Position.LOAD.position().in(Meters)) < 0.06;
     }
 
     public Distance getElevatorPosition() {
         return Meters.of(elevator.getPosition());
+    }
+
+    public Distance getStoppingDistance() {
+        if (Math.abs(getElevatorPosition().in(Meters) - Position.L4.position().in(Meters)) < 0.05) {
+            return Meters.of(0.3);
+        } else {
+            return Meters.of(1.0);
+        }
     }
 
     @Override

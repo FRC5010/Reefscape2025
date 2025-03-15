@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import org.frc5010.common.arch.GenericSubsystem;
@@ -33,7 +34,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.ReefscapeButtonBoard.ScoringLevel;
 
-
 public class ShooterSystem extends GenericSubsystem {
   Beambreak alignmentBeambreak;
   Beambreak entryBeambreak;
@@ -46,10 +46,11 @@ public class ShooterSystem extends GenericSubsystem {
   private Trigger isEmpty, isEntryActive, isCoralFullyCaptured, isAligned;
   private CoralState coralState;
   private DisplayBoolean entryBeamBreakDisplay, alignmentBeamBreakDisplay;
-  double captureEncoderCount = 0.0;
+  private double captureEncoderCount = 0.0;
+  private int stoppedCount = 0;
+  private BooleanSupplier isInLoadZone = () -> true;
 
-
-  public enum CoralState{
+  public enum CoralState {
     EMPTY,
     ENTRY,
     FULLY_CAPTURED,
@@ -57,7 +58,7 @@ public class ShooterSystem extends GenericSubsystem {
   }
 
   public static class Config {
-    private final Current INTAKE_CURRENT_THRESHOLD = Amps.of(3);
+    private final Current INTAKE_CURRENT_THRESHOLD = Amps.of(10);
     int alignmentBeambreakCanID = 8;
     int entryBeambreakCanID = 7;
     int shooterLeftCanID = 11;
@@ -84,79 +85,95 @@ public class ShooterSystem extends GenericSubsystem {
 
   /** Creates a new Shooter. */
   public ShooterSystem(Mechanism2d mechanismSimulation, Config config) {
-    if (config != null) this.config = config;
-    
-    
+    if (config != null)
+      this.config = config;
+
     setupMotors(mechanismSimulation);
 
-    beambreakLimit = new SparkLimit((SparkMax)shooterLeft.getMotor());
+    beambreakLimit = new SparkLimit((SparkMax) shooterLeft.getMotor());
     alignmentBeambreak = new Beambreak(() -> beambreakLimit.getForwardLimit());
-    entryBeambreak = new Beambreak(config.entryBeambreakCanID);
+    // entryBeambreak = new Beambreak(config.entryBeambreakCanID);
 
-    entryBeamBreakDisplay = displayValues.makeDisplayBoolean("Entry Beam Break");
+    // entryBeamBreakDisplay = displayValues.makeDisplayBoolean("Entry Beam Break");
     alignmentBeamBreakDisplay = displayValues.makeDisplayBoolean("Alignment Beam Break");
-    
-    entryBeamBreakDisplay.setValue(config.entryBeambreakDisplay);
+
+    // entryBeamBreakDisplay.setValue(config.entryBeambreakDisplay);
     alignmentBeamBreakDisplay.setValue(config.alignmentBeambreakDisplay);
 
-    entryBroken = new Trigger(entryBeambreak.isBrokenSupplier());
+    // entryBroken = new Trigger(entryBeambreak.isBrokenSupplier());
     alignmentBroken = new Trigger(alignmentBeambreak.isBrokenSupplier());
 
-    coralState = alignmentBeambreak.isBroken() ? CoralState.FULLY_CAPTURED : CoralState.EMPTY;
+    // coralState = alignmentBeambreak.isBroken() ? CoralState.FULLY_CAPTURED :
+    // CoralState.EMPTY;
+    coralState = CoralState.FULLY_CAPTURED;
 
     isEmpty = new Trigger(() -> coralState == CoralState.EMPTY);
     // isEntryActive = new Trigger(() -> coralState == CoralState.ENTRY);
     isCoralFullyCaptured = new Trigger(() -> coralState == CoralState.FULLY_CAPTURED);
     isAligned = new Trigger(() -> coralState == CoralState.ALIGNED);
 
-    isCoralFullyCaptured.onTrue(Commands.runOnce(() -> captureEncoderCount = shooterLeft.getMotorEncoder().getPosition()));
+    currentSwitch = new ValueSwitch(config.INTAKE_CURRENT_THRESHOLD.in(Amps), shooterRight::getOutputCurrent,
+        config.currentSwitchTriggerThreshold);
 
-    isCoralFullyCaptured.and(() -> Math.abs(captureEncoderCount - shooterLeft.getMotorEncoder().getPosition()) > 4).onTrue(setCoralState(CoralState.EMPTY));
+    captureEncoderCount = shooterLeft.getMotorEncoder().getPosition();
 
-    currentSwitch = new ValueSwitch(config.INTAKE_CURRENT_THRESHOLD.in(Amps), shooterLeft::getOutputCurrent, config.currentSwitchTriggerThreshold);
-    
+    isCoralFullyCaptured
+        .onTrue(Commands.runOnce(() -> captureEncoderCount = shooterLeft.getMotorEncoder().getPosition()));
+    isCoralFullyCaptured.and(() -> Math.abs(captureEncoderCount - shooterLeft.getMotorEncoder().getPosition()) > 6)
+        .onTrue(setCoralState(CoralState.EMPTY));
+    currentSwitch.getTrigger().and(isInLoadZone).and(() -> getStoppedCount() > 5)
+        .onTrue(setCoralState(CoralState.FULLY_CAPTURED)); // TODO: Calibrate threshold
+
     setupStateMachine();
     // isEntryActive.whileTrue(captureCoral());
     // isCoralFullyCaptured.whileTrue(alignCoral());
-   
+
   }
 
   private void setupMotors(Mechanism2d mechanismSimulation) {
-    shooterLeft = new VelocityControlMotor(MotorFactory.Spark(config.shooterLeftCanID, Motor.Neo), "shooterLeft", displayValues);
+    shooterLeft = new VelocityControlMotor(MotorFactory.Spark(config.shooterLeftCanID, Motor.Neo), "shooterLeft",
+        displayValues);
     shooterRight = new VelocityControlMotor(MotorFactory.Spark(config.shooterRightCanID, Motor.Neo), "shooterRight",
-            displayValues);
+        displayValues);
 
     shooterLeft.setCurrentLimit(Amps.of(100));
     shooterRight.setCurrentLimit(Amps.of(100));
     shooterLeft.invert(config.shooterLeftInverted);
     shooterRight.invert(config.shooterRightInverted);
 
-
     shooterLeft.setupSimulatedMotor(config.shooterLeftGearing, config.shooterLeftJKGMetersSquared);
     shooterRight.setupSimulatedMotor(config.shooterRightGearing, config.shooterRightJKGMetersSquared);
     shooterLeft.setVisualizer(mechanismSimulation, new Pose3d(
-            new Translation3d(config.shooterLeftX.in(Meters), config.shooterLeftY.in(Meters), config.shooterLeftZ.in(Meters)),
-            new Rotation3d()));
+        new Translation3d(config.shooterLeftX.in(Meters), config.shooterLeftY.in(Meters),
+            config.shooterLeftZ.in(Meters)),
+        new Rotation3d()));
     shooterRight.setVisualizer(mechanismSimulation,
-            new Pose3d(new Translation3d(config.shooterRightX.in(Meters), config.shooterRightY.in(Meters),
-                  config.shooterRightZ.in(Meters)), new Rotation3d()));
+        new Pose3d(new Translation3d(config.shooterRightX.in(Meters), config.shooterRightY.in(Meters),
+            config.shooterRightZ.in(Meters)), new Rotation3d()));
   }
 
   private void setupStateMachine() {
-    Trigger coralOutOfShooter = entryBroken.negate().and(alignmentBroken.negate());
+    // Trigger coralOutOfShooter =
+    // entryBroken.negate().and(alignmentBroken.negate());
 
     // Empty
-    alignmentBroken.and(isEmpty).onTrue(setCoralState(CoralState.FULLY_CAPTURED));
-    alignmentBroken.negate().onTrue(setCoralState(CoralState.EMPTY));
+    // alignmentBroken.and(isEmpty).onTrue(setCoralState(CoralState.FULLY_CAPTURED));
+    // alignmentBroken.negate().onTrue(setCoralState(CoralState.EMPTY));
     // Entry
-    // alignmentBroken.and(currentSwitch.getTrigger()).onTrue(setCoralState(CoralState.FULLY_CAPTURED)); // Entry -> Fully Captured
-    // coralOutOfShooter.and(isEntryActive).onTrue(setCoralState(CoralState.EMPTY)); // Entry -> Empty
+    // alignmentBroken.and(currentSwitch.getTrigger()).onTrue(setCoralState(CoralState.FULLY_CAPTURED));
+    // // Entry -> Fully Captured
+    // coralOutOfShooter.and(isEntryActive).onTrue(setCoralState(CoralState.EMPTY));
+    // // Entry -> Empty
     // // Fully Captured
-    // alignmentBroken.and(isCoralFullyCaptured).onFalse(setCoralState(CoralState.ALIGNED)); // Fully Captured -> Aligned
-    // coralOutOfShooter.and(isCoralFullyCaptured).onTrue(setCoralState(CoralState.EMPTY)); // Fully Captured -> Empty
+    // alignmentBroken.and(isCoralFullyCaptured).onFalse(setCoralState(CoralState.ALIGNED));
+    // // Fully Captured -> Aligned
+    // coralOutOfShooter.and(isCoralFullyCaptured).onTrue(setCoralState(CoralState.EMPTY));
+    // // Fully Captured -> Empty
     // // Aligned
-    // alignmentBroken.and(isAligned).onFalse(setCoralState(CoralState.FULLY_CAPTURED)); // Aligned -> Fully Captured
-    // coralOutOfShooter.and(isAligned).onTrue(setCoralState(CoralState.EMPTY)); // Aligned -> Empty
+    // alignmentBroken.and(isAligned).onFalse(setCoralState(CoralState.FULLY_CAPTURED));
+    // // Aligned -> Fully Captured
+    // coralOutOfShooter.and(isAligned).onTrue(setCoralState(CoralState.EMPTY)); //
+    // Aligned -> Empty
   }
 
   public void shooterLeftSpeed(double speed) {
@@ -164,7 +181,11 @@ public class ShooterSystem extends GenericSubsystem {
   }
 
   public void shooterRightSpeed(double speed) {
-      shooterRight.set(-speed);
+    shooterRight.set(-speed);
+  }
+
+  public void setLoadZoneSupplier(BooleanSupplier supplier) {
+    isInLoadZone = supplier;
   }
 
   public Command runMotors(DoubleSupplier speed) {
@@ -182,18 +203,26 @@ public class ShooterSystem extends GenericSubsystem {
   }
 
   public Command shootL1() {
-    return Commands.run(()->{
+    return Commands.run(() -> {
       shooterLeftSpeed(1.0);
       shooterRightSpeed(0.7);
-  }, this).until(isEmpty);
+    }, this).until(isEmpty);
   }
 
   public Command getShootCommand(ScoringLevel level) {
-    if (ScoringLevel.L1 == level) {
-      return shootL1();
-    } 
-    //return runMotors(() -> 1.0).until(isEmpty());
-    return runMotors(() -> 1.0).withTimeout(0.4);
+    switch (level) {
+      case L1:
+        return shootL1();
+      case L2:
+        return runMotors(() -> 0.3);
+      case L3:
+        return runMotors(() -> 0.3);
+      case L4:
+        return runMotors(() -> 0.6);
+      default:
+        return runMotors(() -> 0.6);
+    }
+
   }
 
   public Command captureCoral() {
@@ -225,29 +254,44 @@ public class ShooterSystem extends GenericSubsystem {
   }
 
   public double getAverageMotorSpeed() {
-    return (Math.abs(shooterLeft.get()) + Math.abs(shooterRight.get())) / 2;
+    return (Math.abs(shooterLeft.getMotorEncoder().getVelocity())
+        + Math.abs(shooterRight.getMotorEncoder().getVelocity())) / 2;
+  }
+
+  public int getStoppedCount() {
+    if (getAverageMotorSpeed() < 20) { // TODO: Fix Threshold
+      stoppedCount++;
+    } else {
+      stoppedCount = 0;
+    }
+    return stoppedCount;
   }
 
   @Override
   public void periodic() {
-      shooterLeft.draw();
-      shooterRight.draw();
-      entryBeamBreakDisplay.setValue(entryBroken.getAsBoolean());
-      alignmentBeamBreakDisplay.setValue(alignmentBroken.getAsBoolean());
-      
-      coralState = alignmentBeambreak.isBroken() ? CoralState.FULLY_CAPTURED : CoralState.EMPTY;
+    getStoppedCount();
+    shooterLeft.draw();
+    shooterRight.draw();
+    // entryBeamBreakDisplay.setValue(entryBroken.getAsBoolean());
+    // alignmentBeamBreakDisplay.setValue(alignmentBroken.getAsBoolean());
 
-      SmartDashboard.putString("Coral State", coralState.name());
-      SmartDashboard.putNumber("Shooter Left Current", shooterLeft.getOutputCurrent());
-      SmartDashboard.putNumber("Shooter Right Current", shooterRight.getOutputCurrent());
-      SmartDashboard.putBoolean("Spark Limit Forward", beambreakLimit.getForwardLimit());
-      SmartDashboard.putBoolean("Spark Limit Reverse", beambreakLimit.getReverseLimit());
+    SmartDashboard.putString("Coral State", coralState.name());
+    SmartDashboard.putNumber("Shooter Left Current", shooterLeft.getOutputCurrent());
+    SmartDashboard.putNumber("Shooter Right Current", shooterRight.getOutputCurrent());
+    SmartDashboard.putBoolean("Spark Limit Forward", beambreakLimit.getForwardLimit());
+    SmartDashboard.putBoolean("Spark Limit Reverse", beambreakLimit.getReverseLimit());
+    SmartDashboard.putNumber("Shooter Encoder Difference",
+        Math.abs(captureEncoderCount - shooterLeft.getMotorEncoder().getPosition()));
+    SmartDashboard.putNumber("Shooter Left Speed", shooterLeft.getMotorEncoder().getVelocity());
+    SmartDashboard.putNumber("Shooter Right Speed", shooterRight.getMotorEncoder().getVelocity());
+    SmartDashboard.putNumber("Stop Counter", stoppedCount);
+    SmartDashboard.putBoolean("Current Threshold Exceeded", currentSwitch.getTrigger().getAsBoolean());
   }
 
   @Override
   public void simulationPeriodic() {
-      shooterLeft.simulationUpdate();
-      shooterRight.simulationUpdate();
+    shooterLeft.simulationUpdate();
+    shooterRight.simulationUpdate();
   }
 
   public Command getSysIdCommand() {
