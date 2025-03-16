@@ -74,7 +74,7 @@ public class RobotStates {
     coralLoaded = new Trigger(() -> coralState.get() == CoralState.FULLY_CAPTURED); // Change logic when beambreaks are
                                                                                     // back
     algaeLoaded = new Trigger(() -> algaeState.get() == AlgaeState.DEPLOYED);
-    scoringCoral = new Trigger(() -> shooter.getAverageMotorSpeed() > 60 && !elevator.atLoading()).and(coralLoaded); // TODO: Fix Threshold
+    scoringCoral = new Trigger(() -> shooter.getAverageMotorSpeed() > 60 && !elevator.atLoading()); // TODO: Fix Threshold & coral loaded
     scoringProcessor = new Trigger(
         () -> elevator.isAtLocation(Position.PROCESSOR.position()) && algaeState.get() != AlgaeState.RETRACTED);
     scoringBarge = new Trigger(
@@ -141,12 +141,12 @@ public class RobotStates {
       state = RobotState.CLIMBING;
       leds.setPattern(leds.getSolidPattern(Color.kBlack));
     })); // TODO: Eventually add progress bar
-    poleAlignment.and(coralLoaded).and(scoringCoral.negate()).and(descoringAlgae.negate()).and(algaeLoaded.negate())
+    poleAlignment.and(scoringCoral.negate()).and(descoringAlgae.negate()).and(algaeLoaded.negate())
         .whileTrue(Commands.runOnce(() -> {
           state = RobotState.POLE_ALIGNMENT;
           leds.setPattern(leds.getBand(leds.getRainbowPattern(0.0),
               RobotModel.percentWidthPoleIntersection(robotPose, Inches.of(24.22)), 0.2, 0.0));
-        }));
+        })); // & coral loaded
   }
 
   public RobotState getRobotState() {

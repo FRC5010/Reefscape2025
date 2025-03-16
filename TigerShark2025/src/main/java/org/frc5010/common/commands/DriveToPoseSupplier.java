@@ -64,13 +64,15 @@ public class DriveToPoseSupplier extends GenericCommand {
 
   private Supplier<ChassisSpeeds> initialVelocity = () -> new ChassisSpeeds();
 
+  private final double maxAngularSpeed = 2.0;
+
   /** The speed that the robot will drive at in the X direction */
   private double translationalSpeed;
   /** The speed that the robot will rotate at */
   private double thetaSpeed;
 
   private final double MAX_VELOCITY = 4;
-  private final double MAX_ACCELERATION = 3;
+  private final double MAX_ACCELERATION = 4.5;
 
   /**
    * Creates a new DriveToPosition command.
@@ -90,7 +92,7 @@ public class DriveToPoseSupplier extends GenericCommand {
         MAX_ACCELERATION);
   
     thetaConstraints = new TrapezoidProfile.Constraints(
-        swerveSubsystem.getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond(),
+        maxAngularSpeed,
         swerveSubsystem
             .getSwerveConstants()
             .getkTeleDriveMaxAngularAccelerationUnitsPerSecond());
@@ -105,7 +107,7 @@ public class DriveToPoseSupplier extends GenericCommand {
     this.poseProvider = poseProvider;
     this.targetPoseProvider = targetPoseProvider;
 
-    distanceController.setTolerance(0.03);
+    distanceController.setTolerance(0.05);
     thetaController.setTolerance(Units.degreesToRadians(5));
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
@@ -142,7 +144,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   }
 
   public Rotation2d getAngleToTarget() {
-    return targetPoseProvider.get().minus(poseProvider.get()).getTranslation().getAngle();
+    return new Translation2d(targetPoseProvider.get().getX() - poseProvider.get().getX(), targetPoseProvider.get().getY() - poseProvider.get().getY()).getAngle().plus(Rotation2d.k180deg);
   }
 
   public DriveToPoseSupplier withInitialVelocity(Supplier<ChassisSpeeds> speedSupplier) {
@@ -172,7 +174,19 @@ public class DriveToPoseSupplier extends GenericCommand {
 
     Translation2d toTarget = getVectorToTarget();
     thetaController.reset(robotPose.getRotation().getRadians(), initialVelocity.get().omegaRadiansPerSecond);
-    distanceController.reset(getDistanceToTarget(), (toTarget.getX() * initialVelocity.get().vxMetersPerSecond + toTarget.getY() * initialVelocity.get().vyMetersPerSecond));
+    Translation2d initialVel = new Translation2d(initialVelocity.get().vxMetersPerSecond, initialVelocity.get().vyMetersPerSecond);
+    double initialSpeedTowardsTarget = Math.min(
+            0.0,
+            -initialVel
+                .rotateBy(
+                    targetPoseProvider
+                        .get()
+                        .getTranslation()
+                        .minus(robotPose.getTranslation())
+                        .getAngle()
+                        .unaryMinus())
+                .getX());
+    distanceController.reset(getDistanceToTarget(), initialSpeedTowardsTarget);
   
 
     if (null != targetPoseProvider.get()) {
@@ -199,17 +213,16 @@ public class DriveToPoseSupplier extends GenericCommand {
 
     // System.out.println(robotPose);
     
-    translationalSpeed = distanceController.calculate(robotPose2d.getX())
-        * MAX_VELOCITY;
+ 
     thetaSpeed = thetaController.calculate(robotPose2d.getRotation().getRadians())
-        * swerveSubsystem.getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond();
+        * maxAngularSpeed;
 
  
     double minFFRadius = 0.05;
-    double maxFFRadius = 1.0;
+    double maxFFRadius = 0.15;
     double distanceToGoal = robotPose2d.getTranslation().getDistance(targetPose.getTranslation());
     double ffInclusionFactor = MathUtil.clamp((distanceToGoal - minFFRadius) / (maxFFRadius - minFFRadius), 0.0, 1.0);
-    double translationalSpeed = distanceController.calculate(getDistanceToTarget());
+    double translationalSpeed = distanceController.calculate(getDistanceToTarget())  * MAX_VELOCITY;
     Rotation2d movementAngle = getAngleToTarget();
     double speedX = movementAngle.getCos() * translationalSpeed;
     double speedY = movementAngle.getSin() * translationalSpeed;
@@ -243,6 +256,6 @@ public class DriveToPoseSupplier extends GenericCommand {
       onTargetCounter++;
     }
 
-    return onTargetCounter > 20;
+    return onTargetCounter > 10;
   }
 }
