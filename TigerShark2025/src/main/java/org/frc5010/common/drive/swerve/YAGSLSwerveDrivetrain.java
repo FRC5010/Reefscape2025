@@ -309,7 +309,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
 
   public Supplier<Command> driveToPosePrecise(Supplier<Pose2d> pose, Transform2d PathPlanOffset, Time timeout) {
     Supplier<Pose3d> pose3D = () -> new Pose3d(pose.get());
-    Supplier<DriveToPoseSupplier> finishDriving = () -> new DriveToPoseSupplier((SwerveDrivetrain) this, this::getPose, () -> pose3D.get().toPose2d(),
+    Supplier<DriveToPosition> finishDriving = () -> new DriveToPosition((SwerveDrivetrain) this, this::getPose, pose3D,
         new Transform2d()).withInitialVelocity(() -> getFieldVelocity()); // TO-DO: Change to Distance-Based PID+
     // Create the constraints to use while pathfinding
     PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond() * 1.0,
