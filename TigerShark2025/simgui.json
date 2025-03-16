@@ -73,8 +73,10 @@
       "/Shuffleboard/TigerShark/Reef 3": "String Chooser",
       "/Shuffleboard/TigerShark/Reef 4": "String Chooser",
       "/SmartDashboard/Alerts": "Alerts",
+      "/SmartDashboard/Coral2": "Command",
       "/SmartDashboard/CustomAuto": "Command",
       "/SmartDashboard/Drive Visual": "Mechanism2d",
+      "/SmartDashboard/DriveToPoseSupplier": "Command",
       "/SmartDashboard/DriveToPosition": "Command",
       "/SmartDashboard/Encoders": "Alerts",
       "/SmartDashboard/Field": "Field2d",
@@ -746,6 +748,9 @@
     }
   },
   "NetworkTables Info": {
+    "Connections": {
+      "open": true
+    },
     "Server": {
       "Subscribers": {
         "open": true

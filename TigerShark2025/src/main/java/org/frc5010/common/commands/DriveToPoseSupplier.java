@@ -38,7 +38,7 @@ public class DriveToPoseSupplier extends GenericCommand {
 
   private final GenericPID pidTranslation = new GenericPID(0.8, 0, 0);
   /** The PID constants for rotation */
-  private final GenericPID pidRotation = new GenericPID(2.0, 0, 0);
+  private final GenericPID pidRotation = new GenericPID(4.0, 0, 0);
 
   private int onTargetCounter = 0;
 
@@ -64,7 +64,8 @@ public class DriveToPoseSupplier extends GenericCommand {
 
   private Supplier<ChassisSpeeds> initialVelocity = () -> new ChassisSpeeds();
 
-  private final double maxAngularSpeed = 2.0;
+  private final double maxAngularSpeed = 3.14;
+  private final double MAX_ANGULAR_ACCELERATION = 6.0;
 
   /** The speed that the robot will drive at in the X direction */
   private double translationalSpeed;
@@ -72,7 +73,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   private double thetaSpeed;
 
   private final double MAX_VELOCITY = 4;
-  private final double MAX_ACCELERATION = 4.5;
+  private final double MAX_ACCELERATION = 3;
 
   /**
    * Creates a new DriveToPosition command.
@@ -93,9 +94,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   
     thetaConstraints = new TrapezoidProfile.Constraints(
         maxAngularSpeed,
-        swerveSubsystem
-            .getSwerveConstants()
-            .getkTeleDriveMaxAngularAccelerationUnitsPerSecond());
+        MAX_ANGULAR_ACCELERATION);
 
     distanceController = new ProfiledPIDController(
         pidTranslation.getkP(), pidTranslation.getkI(), pidTranslation.getkD(), translationConstraints);
@@ -214,15 +213,14 @@ public class DriveToPoseSupplier extends GenericCommand {
     // System.out.println(robotPose);
     
  
-    thetaSpeed = thetaController.calculate(robotPose2d.getRotation().getRadians())
-        * maxAngularSpeed;
+    thetaSpeed = thetaController.calculate(robotPose2d.getRotation().getRadians());
 
  
     double minFFRadius = 0.05;
-    double maxFFRadius = 0.15;
+    double maxFFRadius = 0.1;
     double distanceToGoal = robotPose2d.getTranslation().getDistance(targetPose.getTranslation());
     double ffInclusionFactor = MathUtil.clamp((distanceToGoal - minFFRadius) / (maxFFRadius - minFFRadius), 0.0, 1.0);
-    double translationalSpeed = distanceController.calculate(getDistanceToTarget())  * MAX_VELOCITY;
+    double translationalSpeed = distanceController.calculate(getDistanceToTarget());
     Rotation2d movementAngle = getAngleToTarget();
     double speedX = movementAngle.getCos() * translationalSpeed;
     double speedY = movementAngle.getSin() * translationalSpeed;
