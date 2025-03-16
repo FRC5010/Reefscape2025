@@ -73,14 +73,15 @@ public class ElevatorSystem extends GenericSubsystem {
     public static enum Position {
         BOTTOM(Meters.of(0.0)),
         LOAD(Meters.of(0.09)),
+        CORAL_EXTENSION(Meters.of(0.15)),
         PROCESSOR(Meters.of(0.15)),
         L1(Meters.of(0.72)),
         L2Algae(Meters.of(0.11)),
         L2Shoot(Meters.of(0.87)),
-        L2(Meters.of(0.83)),
+        L2(Meters.of(0.8579)),
         L3Algae(Meters.of(1.1)),
         L3Shoot(Meters.of(1.27)),
-        L3(Meters.of(1.25)),
+        L3(Meters.of(1.23)),
         L4Shoot(Meters.of(1.78)),
         L4(Meters.of(1.89)),
         NET(Meters.of(1.9));
@@ -422,9 +423,14 @@ public class ElevatorSystem extends GenericSubsystem {
     public double getCOMAcceleration(double x) {
         timeChange = (RobotController.getFPGATime() - lastTime) / 1E6;
         lastTime = RobotController.getFPGATime();
-        currentVelocity = MathUtil.clamp((x - lastX) / timeChange, -2.5 , 2.5); // Note: temporary fix, add data smoothing later
+        currentVelocity = MathUtil.clamp((x - lastX) / timeChange, -2.5, 2.5); // Note: temporary fix, add data
+                                                                               // smoothing later
         lastX = x;
-        currentAcceleration = MathUtil.clamp((currentVelocity - lastVelocity) / timeChange, 2.5, -2.5); // Note: temporary fix, add data smoothing later
+        currentAcceleration = MathUtil.clamp((currentVelocity - lastVelocity) / timeChange, 2.5, -2.5); // Note:
+                                                                                                        // temporary
+                                                                                                        // fix, add data
+                                                                                                        // smoothing
+                                                                                                        // later
         lastVelocity = currentVelocity;
         return (growFactor * exponent * (exponent - 1) * Math.pow(x, exponent - 2)
                 * Math.pow(currentVelocity, 2))
@@ -468,7 +474,8 @@ public class ElevatorSystem extends GenericSubsystem {
         return new double[] { elevator.getProfiledMaxAcceleration(), accelerationTime, time };
     }
 
-    public void setRobotParameters(Distance centerofMassX, Distance centerOfMassY, Distance wheelBase, double growFactor, double exponent, double initialValue) {
+    public void setRobotParameters(Distance centerofMassX, Distance centerOfMassY, Distance wheelBase,
+            double growFactor, double exponent, double initialValue) {
         this.centerOfMassX = centerOfMassX;
         this.centerOfMassY = centerOfMassY;
         this.wheelBase = wheelBase;

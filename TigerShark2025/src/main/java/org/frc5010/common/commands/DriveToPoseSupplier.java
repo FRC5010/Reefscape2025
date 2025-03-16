@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -68,6 +69,9 @@ public class DriveToPoseSupplier extends GenericCommand {
   /** The speed that the robot will rotate at */
   private double thetaSpeed;
 
+  private final double MAX_VELOCITY = 4;
+  private final double MAX_ACCELERATION = 3;
+
   /**
    * Creates a new DriveToPosition command.
    *
@@ -82,8 +86,8 @@ public class DriveToPoseSupplier extends GenericCommand {
       Supplier<Pose2d> targetPoseProvider,
       Transform2d offset) {
     translationConstraints = new TrapezoidProfile.Constraints(
-        swerveSubsystem.getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond()/Math.sqrt(2),
-        swerveSubsystem.getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond()/Math.sqrt(2));
+        MAX_VELOCITY,
+        MAX_ACCELERATION);
   
     thetaConstraints = new TrapezoidProfile.Constraints(
         swerveSubsystem.getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond(),
@@ -128,6 +132,11 @@ public class DriveToPoseSupplier extends GenericCommand {
     addRequirements(swerveSubsystem);
   }
 
+  public Translation2d getVectorToTarget() {
+    Transform2d toTarget = targetPoseProvider.get().minus(poseProvider.get());
+    return new Translation2d(toTarget.getX()/toTarget.getTranslation().getNorm(), toTarget.getY()/toTarget.getTranslation().getNorm());
+  }
+
   public double getDistanceToTarget() {
     return targetPoseProvider.get().getTranslation().getDistance(poseProvider.get().getTranslation());
   }
@@ -161,8 +170,9 @@ public class DriveToPoseSupplier extends GenericCommand {
     Pose2d robotPose = poseProvider.get();
     onTargetCounter = 0;
 
+    Translation2d toTarget = getVectorToTarget();
     thetaController.reset(robotPose.getRotation().getRadians(), initialVelocity.get().omegaRadiansPerSecond);
-    distanceController.reset(robotPose.getX(), initialVelocity.get().vxMetersPerSecond);
+    distanceController.reset(getDistanceToTarget(), (toTarget.getX() * initialVelocity.get().vxMetersPerSecond + toTarget.getY() * initialVelocity.get().vyMetersPerSecond));
   
 
     if (null != targetPoseProvider.get()) {
@@ -190,7 +200,7 @@ public class DriveToPoseSupplier extends GenericCommand {
     // System.out.println(robotPose);
     
     translationalSpeed = distanceController.calculate(robotPose2d.getX())
-        * swerveSubsystem.getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond();
+        * MAX_VELOCITY;
     thetaSpeed = thetaController.calculate(robotPose2d.getRotation().getRadians())
         * swerveSubsystem.getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond();
 

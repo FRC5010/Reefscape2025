@@ -43,7 +43,7 @@ public class ShooterSystem extends GenericSubsystem {
   protected VelocityControlMotor shooterRight;
   protected SparkLimit beambreakLimit;
   private Trigger entryBroken, alignmentBroken;
-  private Trigger isEmpty, isEntryActive, isCoralFullyCaptured, isAligned;
+  private Trigger isEmpty, isEntryActive, isCoralFullyCaptured, isAligned, isStopped;
   private CoralState coralState;
   private DisplayBoolean entryBeamBreakDisplay, alignmentBeamBreakDisplay;
   private double captureEncoderCount = 0.0;
@@ -111,6 +111,7 @@ public class ShooterSystem extends GenericSubsystem {
     // isEntryActive = new Trigger(() -> coralState == CoralState.ENTRY);
     isCoralFullyCaptured = new Trigger(() -> coralState == CoralState.FULLY_CAPTURED);
     isAligned = new Trigger(() -> coralState == CoralState.ALIGNED);
+    isStopped = new Trigger(() -> getStoppedCount() > 10);
 
     currentSwitch = new ValueSwitch(config.INTAKE_CURRENT_THRESHOLD.in(Amps), shooterRight::getOutputCurrent,
         config.currentSwitchTriggerThreshold);
@@ -121,7 +122,7 @@ public class ShooterSystem extends GenericSubsystem {
         .onTrue(Commands.runOnce(() -> captureEncoderCount = shooterLeft.getMotorEncoder().getPosition()));
     isCoralFullyCaptured.and(() -> Math.abs(captureEncoderCount - shooterLeft.getMotorEncoder().getPosition()) > 6)
         .onTrue(setCoralState(CoralState.EMPTY));
-    currentSwitch.getTrigger().and(isInLoadZone).and(() -> getStoppedCount() > 5)
+    isStopped.and(currentSwitch.getTrigger()).and(isInLoadZone)
         .onTrue(setCoralState(CoralState.FULLY_CAPTURED)); // TODO: Calibrate threshold
 
     setupStateMachine();
@@ -214,9 +215,9 @@ public class ShooterSystem extends GenericSubsystem {
       case L1:
         return shootL1();
       case L2:
-        return runMotors(() -> 0.3);
+        return runMotors(() -> 0.2);
       case L3:
-        return runMotors(() -> 0.3);
+        return runMotors(() -> 0.1);
       case L4:
         return runMotors(() -> 0.6);
       default:
@@ -267,9 +268,12 @@ public class ShooterSystem extends GenericSubsystem {
     return stoppedCount;
   }
 
+  public Trigger isStopped() {
+    return isStopped;
+  }
+
   @Override
   public void periodic() {
-    getStoppedCount();
     shooterLeft.draw();
     shooterRight.draw();
     // entryBeamBreakDisplay.setValue(entryBroken.getAsBoolean());

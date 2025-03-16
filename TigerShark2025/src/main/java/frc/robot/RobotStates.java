@@ -14,6 +14,7 @@ import org.frc5010.common.subsystems.NewLEDSubsystem;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -82,13 +83,24 @@ public class RobotStates {
         && elevator.getElevatorPosition().in(Meters) < Position.L4.position().in(Meters)
         && (algaeState.get() == AlgaeState.DEPLOYING || algaeState.get() == AlgaeState.RETRACTING));
     climbing = new Trigger(() -> climb.isClimbing());
-    poleAlignment = new Trigger(() -> RobotModel.percentWidthPoleIntersection(robotPose, Inches.of(24.22)) != -1.0)
-        .and(coralLoaded);
+    poleAlignment = new Trigger(() -> RobotModel.percentWidthPoleIntersection(robotPose, Inches.of(24.22)) != -1.0);
     isEnabled = new Trigger(() -> DriverStation.isEnabled());
 
     isEnabled.onTrue(Commands.runOnce(() -> {
       state = RobotState.CORAL_LOADED;
       leds.setPattern(leds.getMaskedPattern(leds.getSolidPattern(Color.kGreen), 0.5, 50));
+    }));
+    isEnabled.whileTrue(Commands.run(() -> {
+      SmartDashboard.putBoolean("Empty", empty.getAsBoolean());
+      SmartDashboard.putBoolean("Coral Loading", coralLoading.getAsBoolean());
+      SmartDashboard.putBoolean("Coral Loaded", coralLoaded.getAsBoolean());
+      SmartDashboard.putBoolean("Algae Loaded", algaeLoaded.getAsBoolean());
+      SmartDashboard.putBoolean("Scoring Coral", scoringCoral.getAsBoolean());
+      SmartDashboard.putBoolean("Scoring Processor", scoringProcessor.getAsBoolean());
+      SmartDashboard.putBoolean("Scoring Barge", scoringBarge.getAsBoolean());
+      SmartDashboard.putBoolean("Descoring Algae", descoringAlgae.getAsBoolean());
+      SmartDashboard.putBoolean("Climbing", climbing.getAsBoolean());
+      SmartDashboard.putBoolean("Pole Alignment", poleAlignment.getAsBoolean());
     }));
     empty.and(climbing.negate()).and(algaeLoaded.negate()).and(scoringCoral.negate()).and(scoringProcessor.negate())
         .and(scoringBarge.negate()).and(descoringAlgae.negate()).and(poleAlignment.negate())
@@ -127,9 +139,9 @@ public class RobotStates {
     }));
     climbing.onTrue(Commands.runOnce(() -> {
       state = RobotState.CLIMBING;
-      leds.setPattern(leds.getMaskedPattern(leds.getSolidPattern(Color.kViolet), 0.5, 100));
+      leds.setPattern(leds.getSolidPattern(Color.kBlack));
     })); // TODO: Eventually add progress bar
-    poleAlignment.and(scoringCoral.negate()).and(descoringAlgae.negate()).and(algaeLoaded.negate())
+    poleAlignment.and(coralLoaded).and(scoringCoral.negate()).and(descoringAlgae.negate()).and(algaeLoaded.negate())
         .whileTrue(Commands.runOnce(() -> {
           state = RobotState.POLE_ALIGNMENT;
           leds.setPattern(leds.getBand(leds.getRainbowPattern(0.0),

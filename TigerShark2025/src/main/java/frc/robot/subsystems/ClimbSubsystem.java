@@ -35,7 +35,7 @@ public class ClimbSubsystem extends GenericSubsystem {
 
 
   public static enum ClimbPosition {
-    RETRACTED(Rotations.of(0.0)),
+    RETRACTED(Rotations.of(-10.0)),
     EXTENDED(Rotations.of(10.0)); // TODO: Fix number of rotations
 
     private final Angle position;

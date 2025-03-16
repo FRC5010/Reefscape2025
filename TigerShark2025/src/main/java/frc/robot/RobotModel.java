@@ -204,9 +204,9 @@ public class RobotModel {
     // TODO: Finish Function
     public static double percentWidthPoleIntersection(Supplier<Pose2d> robotPose, Distance robotRadius) {
         Pose2d frontLeftCorner = robotPose.get().transformBy(new Transform2d(new Translation2d(robotRadius, Meters.of(0.0)), new Rotation2d(Degrees.of(45)))); // Point 1
-        Pose2d frontRightCorner = robotPose.get().transformBy(new Transform2d(new Translation2d(robotRadius, Meters.of(0.0)), new Rotation2d(Degrees.of(315)))); // Point 2
-        Pose2d coralRayEnd = ReefscapeButtonBoard.getScoringPose().transformBy(new Transform2d(new Translation2d(Meters.of(-0.4), Inches.of(0.0)), new Rotation2d())); // Point 4
-        Pose2d coralRayStart = coralRayEnd.transformBy(new Transform2d(new Translation2d(Meters.of(1.0), Meters.of(0.0)), new Rotation2d())); // Point 3
+        Pose2d frontRightCorner = robotPose.get().transformBy(new Transform2d(new Translation2d(robotRadius, Meters.of(0.0)), new Rotation2d(Degrees.of(-45)))); // Point 2
+        Pose2d coralRayEnd = ReefscapeButtonBoard.getScoringPose().transformBy(new Transform2d(Meters.of(-0.4), Inches.of(0.0), new Rotation2d())); // Point 4
+        Pose2d coralRayStart = coralRayEnd.transformBy(new Transform2d(Meters.of(1.0), Meters.of(0.0), new Rotation2d())); // Point 3
         double numerator = (coralRayStart.getX() - frontLeftCorner.getX()) * (coralRayEnd.getY() - coralRayStart.getY()) - (coralRayStart.getY() - frontLeftCorner.getY()) * (coralRayEnd.getX() - coralRayStart.getX());
         double denominator = (frontRightCorner.getX() - frontLeftCorner.getX()) * (coralRayEnd.getY() - coralRayStart.getY()) - (frontRightCorner.getY() - frontLeftCorner.getY()) * (coralRayEnd.getX() - coralRayStart.getX());
         SmartDashboard.putNumber("Percentage Intersect Numerator", numerator);

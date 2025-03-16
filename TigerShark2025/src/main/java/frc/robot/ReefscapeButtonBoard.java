@@ -194,6 +194,7 @@ public class ReefscapeButtonBoard {
     public boolean fineControl = false;
     public ShuffleboardTab tab = Shuffleboard.getTab("Driver");
     public final int FIRE_BUTTON_ID = 7;
+    public final int HOME_BUTTON_ID = 5;
 
     public ReefscapeButtonBoard(int port1, int port2) {
         controller1 = new ButtonBoard(port1);
@@ -251,6 +252,10 @@ public class ReefscapeButtonBoard {
 
     public JoystickButton getFireButton() {
         return getButton(FIRE_BUTTON_ID);
+    }
+
+    public JoystickButton getHomeButton() {
+        return controller2.getButton(HOME_BUTTON_ID);
     }
 
     public void configureOperatorButtonBindings(Controller operator) {
