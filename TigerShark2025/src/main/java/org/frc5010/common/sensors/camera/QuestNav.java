@@ -194,7 +194,7 @@ public class QuestNav implements PoseProvider {
     }
 
     public double getCaptureTime() {
-        double t = timestamp.get();
+        double t = timestamp.getAtomic().timestamp;
         SmartDashboard.putNumber("Quest Timestamp", t);
         updateFrameCount();
         return t;

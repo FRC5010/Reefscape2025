@@ -31,7 +31,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.auto_routines.AutoChoosers;
-import frc.robot.auto_routines.Coral2;
+
 import frc.robot.auto_routines.CustomAuto;
 import frc.robot.auto_routines.DriveOnlyCustom;
 import frc.robot.auto_routines.Right1Coral;
@@ -203,9 +203,6 @@ public class Elphaba extends GenericRobot {
     @Override
     public void buildAutoCommands() {
         super.buildAutoCommands();
-        addAutoToChooser("Right 4 Coral", new Right4Coral());
-        addAutoToChooser("Right 1 Coral", new Right1Coral(((YAGSLSwerveDrivetrain)drivetrain), shooter, elevatorSystem));
-        addAutoToChooser("2 Piece Coral", new Coral2(((YAGSLSwerveDrivetrain)drivetrain), shooter, elevatorSystem));
         addAutoToChooser("Custom Auto", Commands.deferredProxy(() -> new CustomAuto()));
         addAutoToChooser("Drive Only Custom Auto", new DriveOnlyCustom());
     }
