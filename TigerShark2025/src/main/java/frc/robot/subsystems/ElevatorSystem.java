@@ -73,7 +73,7 @@ public class ElevatorSystem extends GenericSubsystem {
     public static enum Position {
         BOTTOM(Meters.of(0.0)),
         LOAD(Meters.of(0.09)),
-        CORAL_EXTENSION(Meters.of(0.15)),
+        CORAL_EXTENSION(Meters.of(0.30)),
         PROCESSOR(Meters.of(0.15)),
         L1(Meters.of(0.72)),
         L2Algae(Meters.of(0.11)),

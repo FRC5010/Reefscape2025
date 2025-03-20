@@ -21,7 +21,7 @@ public class Beambreak {
     }
 
     public boolean isBroken() {
-        return !valueSupplier.getAsBoolean();
+        return valueSupplier.getAsBoolean();
     }
 
     public BooleanSupplier isBrokenSupplier() {

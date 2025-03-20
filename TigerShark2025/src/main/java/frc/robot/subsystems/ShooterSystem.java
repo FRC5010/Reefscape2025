@@ -16,6 +16,7 @@ import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.motors.function.VelocityControlMotor;
 import org.frc5010.common.sensors.Beambreak;
+import org.frc5010.common.sensors.LaserCAN;
 import org.frc5010.common.sensors.SparkLimit;
 import org.frc5010.common.sensors.ValueSwitch;
 import org.frc5010.common.telemetry.DisplayBoolean;
@@ -36,7 +37,7 @@ import frc.robot.ReefscapeButtonBoard.ScoringLevel;
 
 public class ShooterSystem extends GenericSubsystem {
   Beambreak alignmentBeambreak;
-  Beambreak entryBeambreak;
+  LaserCAN entryBeambreak;
 
   protected ValueSwitch currentSwitch;
   protected VelocityControlMotor shooterLeft;
@@ -60,7 +61,7 @@ public class ShooterSystem extends GenericSubsystem {
   public static class Config {
     private final Current INTAKE_CURRENT_THRESHOLD = Amps.of(10);
     int alignmentBeambreakCanID = 8;
-    int entryBeambreakCanID = 7;
+    int entryBeambreakCanID = 0;
     int shooterLeftCanID = 11;
     int shooterRightCanID = 12;
     boolean entryBeambreakDisplay = false;
@@ -90,25 +91,23 @@ public class ShooterSystem extends GenericSubsystem {
 
     setupMotors(mechanismSimulation);
 
-    beambreakLimit = new SparkLimit((SparkMax) shooterLeft.getMotor());
+    beambreakLimit = new SparkLimit((SparkMax) shooterRight.getMotor());
     alignmentBeambreak = new Beambreak(() -> beambreakLimit.getForwardLimit());
-    // entryBeambreak = new Beambreak(config.entryBeambreakCanID);
+    entryBeambreak = new LaserCAN(config.entryBeambreakCanID);
 
-    // entryBeamBreakDisplay = displayValues.makeDisplayBoolean("Entry Beam Break");
+    entryBeamBreakDisplay = displayValues.makeDisplayBoolean("Entry Beam Break");
     alignmentBeamBreakDisplay = displayValues.makeDisplayBoolean("Alignment Beam Break");
 
-    // entryBeamBreakDisplay.setValue(config.entryBeambreakDisplay);
+    entryBeamBreakDisplay.setValue(config.entryBeambreakDisplay);
     alignmentBeamBreakDisplay.setValue(config.alignmentBeambreakDisplay);
 
-    // entryBroken = new Trigger(entryBeambreak.isBrokenSupplier());
+    entryBroken = new Trigger(() -> entryBeambreak.getDistance() == 0);
     alignmentBroken = new Trigger(alignmentBeambreak.isBrokenSupplier());
 
-    // coralState = alignmentBeambreak.isBroken() ? CoralState.FULLY_CAPTURED :
-    // CoralState.EMPTY;
-    coralState = CoralState.FULLY_CAPTURED;
+    coralState = alignmentBeambreak.isBroken() ? CoralState.FULLY_CAPTURED : CoralState.EMPTY;
 
     isEmpty = new Trigger(() -> coralState == CoralState.EMPTY);
-    // isEntryActive = new Trigger(() -> coralState == CoralState.ENTRY);
+    isEntryActive = new Trigger(() -> coralState == CoralState.ENTRY);
     isCoralFullyCaptured = new Trigger(() -> coralState == CoralState.FULLY_CAPTURED);
     isAligned = new Trigger(() -> coralState == CoralState.ALIGNED);
     isStopped = new Trigger(() -> getStoppedCount() > 10);
@@ -118,16 +117,20 @@ public class ShooterSystem extends GenericSubsystem {
 
     captureEncoderCount = shooterLeft.getMotorEncoder().getPosition();
 
-    isCoralFullyCaptured
-        .onTrue(Commands.runOnce(() -> captureEncoderCount = shooterLeft.getMotorEncoder().getPosition()));
-    isCoralFullyCaptured.and(() -> Math.abs(captureEncoderCount - shooterLeft.getMotorEncoder().getPosition()) > 6)
-        .onTrue(setCoralState(CoralState.EMPTY));
-    isStopped.and(currentSwitch.getTrigger()).and(isInLoadZone)
-        .onTrue(setCoralState(CoralState.FULLY_CAPTURED)); // TODO: Calibrate threshold
+    
+    
+    // isStopped.and(currentSwitch.getTrigger()).and(isInLoadZone)
+    //     .onTrue(setCoralState(CoralState.FULLY_CAPTURED)); // TODO: Calibrate threshold
 
     setupStateMachine();
     // isEntryActive.whileTrue(captureCoral());
     // isCoralFullyCaptured.whileTrue(alignCoral());
+
+    isCoralFullyCaptured
+        .onTrue(Commands.runOnce(() -> captureEncoderCount = shooterLeft.getMotorEncoder().getPosition()));
+
+    isCoralFullyCaptured.and(() -> Math.abs(captureEncoderCount - shooterLeft.getMotorEncoder().getPosition()) > 1.0)
+        .onTrue(setCoralState(CoralState.ALIGNED));
 
   }
 
@@ -154,27 +157,20 @@ public class ShooterSystem extends GenericSubsystem {
   }
 
   private void setupStateMachine() {
-    // Trigger coralOutOfShooter =
-    // entryBroken.negate().and(alignmentBroken.negate());
+     Trigger coralOutOfShooter = entryBroken.negate().and(alignmentBroken.negate());
 
-    // Empty
-    // alignmentBroken.and(isEmpty).onTrue(setCoralState(CoralState.FULLY_CAPTURED));
-    // alignmentBroken.negate().onTrue(setCoralState(CoralState.EMPTY));
-    // Entry
-    // alignmentBroken.and(currentSwitch.getTrigger()).onTrue(setCoralState(CoralState.FULLY_CAPTURED));
-    // // Entry -> Fully Captured
-    // coralOutOfShooter.and(isEntryActive).onTrue(setCoralState(CoralState.EMPTY));
-    // // Entry -> Empty
-    // // Fully Captured
-    // alignmentBroken.and(isCoralFullyCaptured).onFalse(setCoralState(CoralState.ALIGNED));
-    // // Fully Captured -> Aligned
-    // coralOutOfShooter.and(isCoralFullyCaptured).onTrue(setCoralState(CoralState.EMPTY));
-    // // Fully Captured -> Empty
-    // // Aligned
-    // alignmentBroken.and(isAligned).onFalse(setCoralState(CoralState.FULLY_CAPTURED));
-    // // Aligned -> Fully Captured
-    // coralOutOfShooter.and(isAligned).onTrue(setCoralState(CoralState.EMPTY)); //
-    // Aligned -> Empty
+     coralOutOfShooter.onTrue(setCoralState(CoralState.EMPTY));
+
+     // Empty
+     isEmpty().and(entryBroken).onTrue(setCoralState(CoralState.ENTRY));
+    
+     // Entry
+     isEntryActive.and(alignmentBroken).onTrue(setCoralState(CoralState.FULLY_CAPTURED));
+
+     // Fully Captured
+
+
+    
   }
 
   public void shooterLeftSpeed(double speed) {
@@ -227,13 +223,22 @@ public class ShooterSystem extends GenericSubsystem {
   }
 
   public Command captureCoral() {
-    return runMotors(() -> 0.1);
+    return runMotors(() -> 0.05);
   }
 
   public Command alignCoral() {
-    return runMotors(() -> -0.1).until(isAligned);
+    return runMotors(() -> 0.1).until(isAligned);
   }
 
+  public Command stopMotors() {
+    return Commands.runOnce(() -> {
+      shooterLeftSpeed(0);
+      shooterRightSpeed(0);
+    });
+  }
+
+
+ 
   public Command setCoralState(CoralState state) {
     return Commands.runOnce(() -> coralState = state);
   }
@@ -243,8 +248,12 @@ public class ShooterSystem extends GenericSubsystem {
   }
 
   public Command intakeCoral() {
-    return runMotors(() -> 0.1).until(isEmpty.negate());
+    return runMotors(() -> 0.15).until(isFullyCaptured()).finallyDo(() -> {
+      shooterLeftSpeed(0);
+      shooterRightSpeed(0);
+    });
   }
+  
 
   public Trigger isEmpty() {
     return isEmpty;
@@ -252,6 +261,10 @@ public class ShooterSystem extends GenericSubsystem {
 
   public Trigger isFullyCaptured() {
     return isCoralFullyCaptured;
+  }
+
+  public Trigger coralHasEntered() {
+    return isEntryActive;
   }
 
   public double getAverageMotorSpeed() {
@@ -276,8 +289,8 @@ public class ShooterSystem extends GenericSubsystem {
   public void periodic() {
     shooterLeft.draw();
     shooterRight.draw();
-    // entryBeamBreakDisplay.setValue(entryBroken.getAsBoolean());
-    // alignmentBeamBreakDisplay.setValue(alignmentBroken.getAsBoolean());
+    entryBeamBreakDisplay.setValue(entryBroken.getAsBoolean());
+    alignmentBeamBreakDisplay.setValue(alignmentBroken.getAsBoolean());
 
     SmartDashboard.putString("Coral State", coralState.name());
     SmartDashboard.putNumber("Shooter Left Current", shooterLeft.getOutputCurrent());
