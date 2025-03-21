@@ -73,7 +73,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   private double thetaSpeed;
 
   private final double MAX_VELOCITY = 4;
-  private final double MAX_ACCELERATION = 3;
+  private final double MAX_ACCELERATION = 5;
 
   /**
    * Creates a new DriveToPosition command.
@@ -106,8 +106,8 @@ public class DriveToPoseSupplier extends GenericCommand {
     this.poseProvider = poseProvider;
     this.targetPoseProvider = targetPoseProvider;
 
-    distanceController.setTolerance(0.05);
-    thetaController.setTolerance(Units.degreesToRadians(5));
+    distanceController.setTolerance(0.02);
+    thetaController.setTolerance(Units.degreesToRadians(2));
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
     targetTransform = offset;
@@ -218,9 +218,9 @@ public class DriveToPoseSupplier extends GenericCommand {
  
     double minFFRadius = 0.05;
     double maxFFRadius = 0.1;
-    double distanceToGoal = robotPose2d.getTranslation().getDistance(targetPose.getTranslation());
+    double distanceToGoal = getDistanceToTarget();
     double ffInclusionFactor = MathUtil.clamp((distanceToGoal - minFFRadius) / (maxFFRadius - minFFRadius), 0.0, 1.0);
-    double translationalSpeed = distanceController.calculate(getDistanceToTarget());
+    double translationalSpeed = distanceController.calculate(distanceToGoal);
     Rotation2d movementAngle = getAngleToTarget();
     double speedX = movementAngle.getCos() * translationalSpeed;
     double speedY = movementAngle.getSin() * translationalSpeed;
@@ -254,6 +254,6 @@ public class DriveToPoseSupplier extends GenericCommand {
       onTargetCounter++;
     }
 
-    return onTargetCounter > 10;
+    return distanceController.atGoal() && thetaController.atGoal() && onTargetCounter > 5;
   }
 }

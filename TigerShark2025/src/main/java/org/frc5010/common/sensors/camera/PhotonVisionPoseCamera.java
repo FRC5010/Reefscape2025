@@ -107,6 +107,12 @@ public class PhotonVisionPoseCamera extends PhotonVisionCamera {
         double stdDevFactor = Math.pow(averageDistance, 2.0) / tagCount;
         double linearStdDev = VisionConstants.linearStdDevBaseline * stdDevFactor;
         double angularStdDev = VisionConstants.angularStdDevBaseline * stdDevFactor;
+
+        // If really close, disregard angle measurement
+        if (totalTagDistance < 0.3) {
+          angularStdDev = 1000.0;
+        }
+        SmartDashboard.putNumber("Total Distance To Tag "+name, totalTagDistance);
         SmartDashboard.putNumber("Photon Ambiguity "+name,  camResult.getBestTarget().poseAmbiguity);
         SmartDashboard.putNumberArray("Photon Camera "+name+" POSE", new double[] {
                   robotPose.getX(), robotPose.getY(), robotPose.getRotation().toRotation2d().getDegrees()

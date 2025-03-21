@@ -83,7 +83,7 @@ public class ElevatorSystem extends GenericSubsystem {
         L3Shoot(Meters.of(1.27)),
         L3(Meters.of(1.23)),
         L4Shoot(Meters.of(1.765)),
-        L4(Meters.of(1.89)),
+        L4(Meters.of(1.87)),
         NET(Meters.of(1.9));
 
         private final Distance position;
@@ -245,7 +245,7 @@ public class ElevatorSystem extends GenericSubsystem {
     public Command elevatorPositionZeroSequence() {
         double zeroSpeed = -0.1;
         return Commands.run(() -> elevator.set(zeroSpeed), this).until(hasHighCurrentLoad.getTrigger())
-                .andThen(zeroElevator());
+                .andThen(zeroElevator()).finallyDo(() -> elevator.set(0.0));
     }
 
     public Command profiledBangBangCmd(Distance position) {

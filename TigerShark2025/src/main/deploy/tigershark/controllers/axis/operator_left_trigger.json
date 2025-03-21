@@ -2,7 +2,7 @@
     "channel" : 2,
     "deadband" : 0.07,
     "invert" : false,
-    "scale" : 0.8,
+    "scale" : 0.5,
     "curvePower" : 1.0,
     "limit" : 1.0
 }

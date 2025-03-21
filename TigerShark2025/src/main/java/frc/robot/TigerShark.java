@@ -255,12 +255,12 @@ public class TigerShark extends GenericRobot {
 
                 reefscapeButtonBoard.getFireButton()
                                 .whileTrue(shooter.getShootCommand(ReefscapeButtonBoard.getScoringLevel()));
-                shooter.coralHasEntered().whileTrue(shooter.intakeCoral());
-                shooter.isFullyCaptured()
-                                .whileTrue(elevatorSystem
-                                                .pidControlCommand(ElevatorSystem.Position.CORAL_EXTENSION.position())
-                                                .until(() -> elevatorSystem.isAtLocation(
-                                                        ElevatorSystem.Position.CORAL_EXTENSION.position())).andThen(shooter.alignCoral()));
+                // shooter.coralHasEntered().whileTrue(shooter.intakeCoral());
+                // shooter.isFullyCaptured()
+                //                 .whileTrue(elevatorSystem
+                //                                 .pidControlCommand(ElevatorSystem.Position.CORAL_EXTENSION.position())
+                //                                 .until(() -> elevatorSystem.isAtLocation(
+                //                                         ElevatorSystem.Position.CORAL_EXTENSION.position())).andThen(shooter.alignCoral()));
 
                 Trigger elevatorAtCoralExtendPosition = new Trigger(() -> elevatorSystem
                                 .isAtLocationImproved(ElevatorSystem.Position.CORAL_EXTENSION.position()));

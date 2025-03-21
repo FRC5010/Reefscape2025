@@ -129,8 +129,8 @@ public class ShooterSystem extends GenericSubsystem {
     isCoralFullyCaptured
         .onTrue(Commands.runOnce(() -> captureEncoderCount = shooterLeft.getMotorEncoder().getPosition()));
 
-    isCoralFullyCaptured.and(() -> Math.abs(captureEncoderCount - shooterLeft.getMotorEncoder().getPosition()) > 1.0)
-        .onTrue(setCoralState(CoralState.ALIGNED));
+    // isCoralFullyCaptured.and(() -> Math.abs(captureEncoderCount - shooterLeft.getMotorEncoder().getPosition()) > 0.75)
+    //     .onTrue(setCoralState(CoralState.ALIGNED));
 
   }
 
@@ -165,8 +165,7 @@ public class ShooterSystem extends GenericSubsystem {
      isEmpty().and(entryBroken).onTrue(setCoralState(CoralState.ENTRY));
     
      // Entry
-     isEntryActive.and(alignmentBroken).onTrue(setCoralState(CoralState.FULLY_CAPTURED));
-
+     (isEntryActive.or(isEmpty())).and(alignmentBroken).onTrue(setCoralState(CoralState.FULLY_CAPTURED));
      // Fully Captured
 
 
@@ -215,9 +214,9 @@ public class ShooterSystem extends GenericSubsystem {
       case L3:
         return runMotors(() -> 0.1);
       case L4:
-        return runMotors(() -> 0.6);
+        return runMotors(() -> 0.4);
       default:
-        return runMotors(() -> 0.6);
+        return runMotors(() -> 0.4);
     }
 
   }
@@ -235,6 +234,11 @@ public class ShooterSystem extends GenericSubsystem {
       shooterLeftSpeed(0);
       shooterRightSpeed(0);
     });
+  }
+
+  public void setMotorSpeedZero() {
+    shooterLeftSpeed(0.0);
+    shooterRightSpeed(0.0);
   }
 
 
@@ -257,6 +261,10 @@ public class ShooterSystem extends GenericSubsystem {
 
   public Trigger isEmpty() {
     return isEmpty;
+  }
+
+  public Trigger isAligned() {
+    return isAligned;
   }
 
   public Trigger isFullyCaptured() {

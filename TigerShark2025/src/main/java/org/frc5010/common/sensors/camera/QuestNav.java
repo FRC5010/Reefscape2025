@@ -152,7 +152,7 @@ public class QuestNav implements PoseProvider {
         List<PoseObservation> observations = new ArrayList<>();
         double calib = getConfidence();
         if (isActive) {
-            observations.add(new PoseObservation(getCaptureTime(), 0, 0, VecBuilder.fill(calib, calib, calib*0.01),
+            observations.add(new PoseObservation(getCaptureTime(), 0, 0, VecBuilder.fill(calib, calib, calib*0.2),
                     new Pose3d(getPosition(), getRotation())));
         }
         return observations;
@@ -194,7 +194,7 @@ public class QuestNav implements PoseProvider {
     }
 
     public double getCaptureTime() {
-        double t = timestamp.get();
+        double t = timestamp.getAtomic().serverTime;
         SmartDashboard.putNumber("Quest Timestamp", t);
         updateFrameCount();
         return t;

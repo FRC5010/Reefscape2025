@@ -97,12 +97,11 @@ public class TargetingSystem {
         // .alongWith(Commands.runOnce(() -> SmartDashboard.putNumber("Elevator Level:",
         // level.in(Meters))),
         // elevator.pidControlCommand(level));
-        return elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level))
-                .andThen(drivetrain.driveToPosePrecise(targetPose, StationOffset).get().alongWith(
-                        shooter.runMotors(() -> 0.65)).until(shooter.isFullyCaptured()).andThen(Commands.runOnce(() -> {
-                            shooter.shooterLeftSpeed(0);
-                            shooter.shooterRightSpeed(0);
-                        }, shooter)).alongWith(elevator.elevatorPositionZeroSequence()));
+        return elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)).andThen(elevator.elevatorPositionZeroSequence())
+                .andThen(
+                drivetrain.driveToPosePrecise(() -> targetPose, StationOffset).get()
+                    ).andThen(
+                        shooter.intakeCoral().until(shooter.isFullyCaptured()).finallyDo(shooter::setMotorSpeedZero));
     }
 
     public static Command driveXMetersQuest(Distance distance) {

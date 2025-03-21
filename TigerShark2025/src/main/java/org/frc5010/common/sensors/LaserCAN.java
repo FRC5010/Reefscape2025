@@ -24,6 +24,10 @@ public class LaserCAN {
         //     // You can still use distance_mm in here, if you're ok tolerating a clamped
         //     // value or an unreliable measurement.
         // }
-        return measurement.distance_mm;
+        if (null != measurement) {
+            return measurement.distance_mm;
+        }
+        return -1.0;
+        
     }
 }
