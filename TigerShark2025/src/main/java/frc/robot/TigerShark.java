@@ -80,6 +80,9 @@ public class TigerShark extends GenericRobot {
                 shooter = new ShooterSystem(mechVisual, new ShooterSystem.Config());
                 algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config());
 
+                elevatorSystem.setUpAccelerationConstraints(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0); // T0-DO: Setup correct parameters
+                elevatorSystem.setUpElevatorVelocityFunction(0.0, 0.0, 0.0);
+
                 shooter.setLoadZoneSupplier(() -> elevatorSystem.atLoading());
 
                 TargetingSystem.setupParameters((YAGSLSwerveDrivetrain) drivetrain, shooter, elevatorSystem, algaeArm);
