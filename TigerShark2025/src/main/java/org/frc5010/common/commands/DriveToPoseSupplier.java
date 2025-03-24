@@ -36,7 +36,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   private DisplayDouble rotationkP;
   private DisplayDouble rotationkD;
 
-  private final GenericPID pidTranslation = new GenericPID(0.8, 0, 0);
+  private final GenericPID pidTranslation = new GenericPID(5, 0, 0);
   /** The PID constants for rotation */
   private final GenericPID pidRotation = new GenericPID(4.0, 0, 0);
 
@@ -72,8 +72,8 @@ public class DriveToPoseSupplier extends GenericCommand {
   /** The speed that the robot will rotate at */
   private double thetaSpeed;
 
-  private final double MAX_VELOCITY = 4;
-  private final double MAX_ACCELERATION = 5;
+  private final double MAX_VELOCITY = 4.5;
+  private final double MAX_ACCELERATION = 4;
 
   /**
    * Creates a new DriveToPosition command.
@@ -230,8 +230,11 @@ public class DriveToPoseSupplier extends GenericCommand {
 
     SmartDashboard.putNumber("X Speed", chassisSpeeds.vxMetersPerSecond);
     SmartDashboard.putNumber("Y Speed", chassisSpeeds.vyMetersPerSecond);
+    SmartDashboard.putNumber("Distance Velocity Setpoint", distanceController.getSetpoint().velocity);
     SmartDashboard.putNumber("Theta Speed", chassisSpeeds.omegaRadiansPerSecond);
     SmartDashboard.putBoolean("Distance Controller At Setpoint", distanceController.atGoal());
+    SmartDashboard.putNumber("VelocityError", distanceController.getVelocityError());
+    SmartDashboard.putNumber("PositionError", distanceController.getPositionError());
 
     SmartDashboard.putBoolean("Theta Controller at Setpoins", thetaController.atGoal());
     swerveSubsystem.drive(chassisSpeeds, null);

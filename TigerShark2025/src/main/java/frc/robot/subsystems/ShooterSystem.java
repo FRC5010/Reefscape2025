@@ -173,10 +173,12 @@ public class ShooterSystem extends GenericSubsystem {
   }
 
   public void shooterLeftSpeed(double speed) {
+    SmartDashboard.putNumber("Shooter Left Set", speed);
     shooterLeft.set(speed);
   }
 
   public void shooterRightSpeed(double speed) {
+    SmartDashboard.putNumber("Shooter Right Set", speed);
     shooterRight.set(-speed);
   }
 
@@ -200,9 +202,9 @@ public class ShooterSystem extends GenericSubsystem {
 
   public Command shootL1() {
     return Commands.run(() -> {
-      shooterLeftSpeed(1.0);
-      shooterRightSpeed(0.7);
-    }, this).until(isEmpty);
+      shooterLeftSpeed(0.25);
+      shooterRightSpeed(0.1);
+    }, this);
   }
 
   public Command getShootCommand(ScoringLevel level) {
@@ -210,9 +212,9 @@ public class ShooterSystem extends GenericSubsystem {
       case L1:
         return shootL1();
       case L2:
-        return runMotors(() -> 0.2);
+        return runMotors(() -> 0.3);
       case L3:
-        return runMotors(() -> 0.1);
+        return runMotors(() -> 0.3);
       case L4:
         return runMotors(() -> 0.4);
       default:

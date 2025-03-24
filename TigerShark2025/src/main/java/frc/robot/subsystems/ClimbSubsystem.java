@@ -33,6 +33,8 @@ public class ClimbSubsystem extends GenericSubsystem {
   private final Distance PIVOT_TO_ATTACHMENT = Inches.of(10);
   private final Translation2d PIVOT_LOCATION = new Translation2d(Inches.of(20), Inches.of(20));
 
+  private final double CLIMB_LIMIT_PEAK = 2.83;
+  private final double CLIMB_LIMIT_MIN = -4.5;
 
   public static enum ClimbPosition {
     RETRACTED(Rotations.of(-10.0)),
@@ -67,6 +69,23 @@ public class ClimbSubsystem extends GenericSubsystem {
     return spoolRotationsToDegrees(climbMotorEncoder.getPosition());
   }
 
+  public boolean isAtMax() {
+    return climbMotor.getMotorEncoder().getPosition() > CLIMB_LIMIT_PEAK;
+  }
+
+  public boolean isAtMin() {
+    return climbMotor.getMotorEncoder().getPosition() < CLIMB_LIMIT_MIN;
+  }
+
+  public void runMotor(double speed) {
+    if (speed > 0 && isAtMax() || speed < 0 && isAtMin()) {
+      climbMotor.set(0);
+      return;
+    }
+    climbMotor.set(speed);
+
+  }
+
   public ClimbSubsystem() {
     climbMotor = new PositionControlMotor(MotorFactory.TalonFX(13, Motor.KrakenX60), "Climb Motor", new DisplayValuesHelper("Motors", "Climb Motor"));
     climbMotorEncoder = climbMotor.getMotorEncoder();
@@ -75,15 +94,15 @@ public class ClimbSubsystem extends GenericSubsystem {
   }
 
   public Command retractClimb() {
-    return Commands.run(() -> climbMotor.set(-1.0), this).until(() -> getRotation() <= ClimbPosition.RETRACTED.getPosition().in(Rotations));
+    return Commands.run(() -> runMotor(-1.0), this).until(() -> getRotation() <= ClimbPosition.RETRACTED.getPosition().in(Rotations));
   }
 
   public Command extendClimb() {
-    return Commands.run(() -> climbMotor.set(1.0), this).until(() -> getRotation() >= ClimbPosition.EXTENDED.getPosition().in(Rotations));
+    return Commands.run(() -> runMotor(1.0), this).until(() -> getRotation() >= ClimbPosition.EXTENDED.getPosition().in(Rotations));
   }
 
   public Command runClimb(DoubleSupplier speed) {
-    return Commands.run(() -> climbMotor.set(speed.getAsDouble()), this);
+    return Commands.run(() -> runMotor(speed.getAsDouble()), this);
   }
 
   public double getRotation() {

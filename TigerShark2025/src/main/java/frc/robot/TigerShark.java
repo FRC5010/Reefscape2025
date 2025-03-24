@@ -56,7 +56,7 @@ public class TigerShark extends GenericRobot {
         DigitalInput centerLineZero;
         Pose2d centerLineResetPose;
         NewLEDSubsystem leds;
-        Servo climbServo;
+       
         private final Distance ROBOT_WIDTH = Inches.of(34.75);
         Pose2d startingPose1, startingPose2, startingPose3;
         RobotStates robotStates;
@@ -254,7 +254,7 @@ public class TigerShark extends GenericRobot {
                 }, shooter));
 
                 reefscapeButtonBoard.getFireButton()
-                                .whileTrue(shooter.getShootCommand(ReefscapeButtonBoard.getScoringLevel()));
+                                .whileTrue(Commands.deferredProxy(() -> shooter.getShootCommand(ReefscapeButtonBoard.getScoringLevel())));
                 // shooter.coralHasEntered().whileTrue(shooter.intakeCoral());
                 // shooter.isFullyCaptured()
                 //                 .whileTrue(elevatorSystem
@@ -299,6 +299,9 @@ public class TigerShark extends GenericRobot {
                                 .ignoringDisable(true)
                                 .andThen(Commands.runOnce(() -> leds.setPattern(leds.getRainbowPattern(1.0))))
                                 .withTimeout(Seconds.of(3.0)));
+
+                Trigger driverFire = new Trigger(() -> driver.getRightTrigger() > 0.15);
+                driverFire.whileTrue(Commands.deferredProxy(() -> shooter.getShootCommand(ReefscapeButtonBoard.getScoringLevel())));
 
                 // TODO: Fix logix
                 QuestNav.isQuestOn().and(() -> DriverStation.isDisabled()).whileTrue(

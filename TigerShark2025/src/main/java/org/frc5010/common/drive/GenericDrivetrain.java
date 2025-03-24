@@ -207,7 +207,7 @@ public abstract class GenericDrivetrain extends GenericSubsystem {
       return autoCommand
         .beforeStarting(
             () -> {
-              resetEncoders();
+
             })
         .until(() -> hasIssues());
     }

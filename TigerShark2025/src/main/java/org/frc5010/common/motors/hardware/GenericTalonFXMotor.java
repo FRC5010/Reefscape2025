@@ -409,7 +409,7 @@ public class GenericTalonFXMotor implements MotorController5010 {
   @Override
   public double getVoltage() {
     if (RobotBase.isReal()) {
-      return motor.getMotorVoltage().waitForUpdate(STATUS_TIMEOUT_SECONDS).getValue().in(Volts);
+      return motor.getMotorVoltage().refresh().getValue().in(Volts);
     } else {
       return encoder.getVoltage();
     }
@@ -426,7 +426,7 @@ public class GenericTalonFXMotor implements MotorController5010 {
    */
   @Override
   public double getAppliedOutput() {
-    return motor.getDutyCycle().waitForUpdate(STATUS_TIMEOUT_SECONDS).getValue();
+    return motor.getDutyCycle().refresh().getValue();
   }
 
   /**
@@ -501,7 +501,7 @@ public class GenericTalonFXMotor implements MotorController5010 {
    */
   @Override
   public double getOutputCurrent() {
-    return motor.getTorqueCurrent().waitForUpdate(STATUS_TIMEOUT_SECONDS).getValueAsDouble();
+    return motor.getTorqueCurrent().refresh().getValueAsDouble();
   }
 
   /**

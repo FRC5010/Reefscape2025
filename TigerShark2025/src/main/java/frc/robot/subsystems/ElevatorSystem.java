@@ -382,7 +382,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
     public double getMaxForwardAcceleration() {
         return ((((wheelBase.in(Meters) / 2) + centerOfMassY.in(Meters))
-                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ())
+                * (config.g)) / getCenterOfMassZ())
                 - getGeneralAccelerationDampener();
     }
 
@@ -392,7 +392,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
     public double getMaxBackwardAcceleration() {
         return -((((wheelBase.in(Meters) / 2) - centerOfMassY.in(Meters))
-                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ())
+                * (config.g)) / getCenterOfMassZ())
                 + getBackwardAccelerationDampener();
     }
 
@@ -402,7 +402,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
     public double getMaxRightAcceleration() {
         return ((((wheelBase.in(Meters) / 2) + centerOfMassX.in(Meters))
-                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ())
+                * (config.g)) / getCenterOfMassZ())
                 - getGeneralAccelerationDampener();
     }
 
@@ -412,7 +412,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
     public double getMaxLeftAcceleration() {
         return -((((wheelBase.in(Meters) / 2) - centerOfMassX.in(Meters))
-                * (config.g + getCOMAcceleration(elevator.getPosition()))) / getCenterOfMassZ())
+                * (config.g)) / getCenterOfMassZ())
                 + getGeneralAccelerationDampener();
     }
 
@@ -509,6 +509,8 @@ public class ElevatorSystem extends GenericSubsystem {
     @Override
     public void periodic() {
         elevator.draw();
+
+        SmartDashboard.putNumber("Elevator Current", Math.abs(elevator.getOutputCurrent()));
         SmartDashboard.putNumber("forward acceleration", getMaxForwardAcceleration());
         SmartDashboard.putNumber("backward acceleration", getMaxBackwardAcceleration());
         SmartDashboard.putNumber("left acceleration", getMaxLeftAcceleration());
@@ -516,6 +518,8 @@ public class ElevatorSystem extends GenericSubsystem {
         SmartDashboard.putNumber("Center of Mass Z", getCenterOfMassZ());
         SmartDashboard.putNumber("Elevator Position Setpoint", profiledPID.getSetpoint().position);
         SmartDashboard.putNumber("Elevator Velocity Setpoint", profiledPID.getSetpoint().velocity);
+
+        
     }
 
     @Override

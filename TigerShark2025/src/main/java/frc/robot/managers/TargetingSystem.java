@@ -46,6 +46,13 @@ public class TargetingSystem {
         TargetingSystem.arm = arm;
     }
 
+    public static void setupParameters(YAGSLSwerveDrivetrain drivetrain, ShooterSystem shooter, ElevatorSystem elevator
+            ) {
+        TargetingSystem.drivetrain = drivetrain;
+        TargetingSystem.shooter = shooter;
+        TargetingSystem.elevator = elevator;
+    }
+
     public static YAGSLSwerveDrivetrain getDrivetrain() {
         return drivetrain;
     }
@@ -99,7 +106,7 @@ public class TargetingSystem {
         // elevator.pidControlCommand(level));
         return elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)).andThen(elevator.elevatorPositionZeroSequence())
                 .andThen(
-                drivetrain.driveToPosePrecise(() -> targetPose, StationOffset).get()
+                drivetrain.driveToPosePrecise(() -> targetPose, StationOffset, Seconds.of(3)).get()
                     ).andThen(
                         shooter.intakeCoral().until(shooter.isFullyCaptured()).finallyDo(shooter::setMotorSpeedZero));
     }

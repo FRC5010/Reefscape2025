@@ -45,7 +45,6 @@ public class Elphaba extends GenericRobot {
     GenericDrivetrain drivetrain;
     ElevatorSystem elevatorSystem;
     ShooterSystem shooter;
-    AlgaeArm algaeArm;
     GenericGyro gyro;
     ReefscapeButtonBoard reefscapeButtonBoard;
     AutoChoosers autoChoosers;
@@ -67,11 +66,11 @@ public class Elphaba extends GenericRobot {
         elevatorSystem.setCOGFunctionParameters(0.233035, 0.824063, 0.189682);
 
         shooter = new ShooterSystem(mechVisual, new ShooterSystem.Config());
-        algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config());
+    
 
         elevatorSystem.setRobotParameters(Meters.zero(), Inches.of(1.178), Meters.of(0.56), 0.233035, 0.824063, 0.189682);
 
-        TargetingSystem.setupParameters((YAGSLSwerveDrivetrain) drivetrain, shooter, elevatorSystem, algaeArm);
+        TargetingSystem.setupParameters((YAGSLSwerveDrivetrain) drivetrain, shooter, elevatorSystem);
 
         reefscapeButtonBoard = new ReefscapeButtonBoard(2, 3);
         autoChoosers = new AutoChoosers(shuffleTab);
@@ -80,14 +79,14 @@ public class Elphaba extends GenericRobot {
 
         ((YAGSLSwerveDrivetrain) drivetrain).setVelocitySuppliers(() -> elevatorSystem.getMaxForwardVelocity(), () -> elevatorSystem.getMaxBackwardVelocity(), () -> elevatorSystem.getMaxRightVelocity(), () -> elevatorSystem.getMaxLeftVelocity());
 
-        Pose2d obstaclePosition = DriverStation.getAlliance().get() == Alliance.Blue ? new Pose2d(4.48945, 4.0259, new Rotation2d()) : new Pose2d(13.065, 4.0259, new Rotation2d());
-        Pose2d[] blueVertices = new Pose2d[] {new Pose2d(3.325, 3.313, new Rotation2d()), new Pose2d(3.325, 4.698, new Rotation2d()), new Pose2d(4.490, 5.332, new Rotation2d()), new Pose2d(5.655, 4.689, new Rotation2d()), new Pose2d(5.655, 3.332, new Rotation2d()), new Pose2d(4.490, 2.700, new Rotation2d())};
-        Pose2d[] redVertices = new Pose2d[] {new Pose2d(11.905, 3.313, new Rotation2d()), new Pose2d(11.905, 4.698, new Rotation2d()), new Pose2d(13.07, 5.332, new Rotation2d()), new Pose2d(14.235, 4.689, new Rotation2d()), new Pose2d(14.235, 3.332, new Rotation2d()), new Pose2d(13.07, 2.700, new Rotation2d())};
-        Pose2d[] vertices = DriverStation.getAlliance().get() == Alliance.Blue ? blueVertices : redVertices;
-        Distance obstacleRadius = Inches.of(37.621), maximumObstacleDimensionDeviation = Inches.of(4.8755), robotRadius = Inches.of(24.22), maximumRobotDimensionDeviation = Inches.of(7.0934);
+        // Pose2d obstaclePosition = DriverStation.getAlliance().get() == Alliance.Blue ? new Pose2d(4.48945, 4.0259, new Rotation2d()) : new Pose2d(13.065, 4.0259, new Rotation2d());
+        // Pose2d[] blueVertices = new Pose2d[] {new Pose2d(3.325, 3.313, new Rotation2d()), new Pose2d(3.325, 4.698, new Rotation2d()), new Pose2d(4.490, 5.332, new Rotation2d()), new Pose2d(5.655, 4.689, new Rotation2d()), new Pose2d(5.655, 3.332, new Rotation2d()), new Pose2d(4.490, 2.700, new Rotation2d())};
+        // Pose2d[] redVertices = new Pose2d[] {new Pose2d(11.905, 3.313, new Rotation2d()), new Pose2d(11.905, 4.698, new Rotation2d()), new Pose2d(13.07, 5.332, new Rotation2d()), new Pose2d(14.235, 4.689, new Rotation2d()), new Pose2d(14.235, 3.332, new Rotation2d()), new Pose2d(13.07, 2.700, new Rotation2d())};
+        // Pose2d[] vertices = DriverStation.getAlliance().get() == Alliance.Blue ? blueVertices : redVertices;
+        // Distance obstacleRadius = Inches.of(37.621), maximumObstacleDimensionDeviation = Inches.of(4.8755), robotRadius = Inches.of(24.22), maximumRobotDimensionDeviation = Inches.of(7.0934);
 
 
-        ((YAGSLSwerveDrivetrain) drivetrain).setUpCircularObstacle(obstaclePosition, vertices, obstacleRadius.in(Meters), robotRadius.in(Meters), maximumRobotDimensionDeviation.in(Meters), maximumObstacleDimensionDeviation.in(Meters), 100);
+        //((YAGSLSwerveDrivetrain) drivetrain).setUpCircularObstacle(obstaclePosition, vertices, obstacleRadius.in(Meters), robotRadius.in(Meters), maximumRobotDimensionDeviation.in(Meters), maximumObstacleDimensionDeviation.in(Meters), 100);
     }
 
 
@@ -108,7 +107,7 @@ public class Elphaba extends GenericRobot {
             driver.createXButton().whileTrue(calibrationQuest.determineOffsetToRobotCenter(drivetrain));
 
             driver.createYButton().whileTrue(shooter.getSysIdCommand());
-            operator.createXButton().whileTrue(algaeArm.getSysIdCommand());
+            //operator.createXButton().whileTrue(algaeArm.getSysIdCommand());
 
             operator.createAButton().whileTrue(
                     new RelayPIDAutoTuner(
@@ -148,10 +147,10 @@ public class Elphaba extends GenericRobot {
                 .pidControlCommand(
                         elevatorSystem.selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()))));
 
-        driver.LEFT_BUMPER.and(AlgaeArm.algaeSelected).and(ReefscapeButtonBoard.algaeLevelIsSelected)
-            .whileTrue(algaeArm.getDeployCommand());
+        // driver.LEFT_BUMPER.and(AlgaeArm.algaeSelected).and(ReefscapeButtonBoard.algaeLevelIsSelected)
+        //     .whileTrue(algaeArm.getDeployCommand());
 
-       driver.createBButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
+       //driver.createBButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
 
        driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
                 .pidControlCommand(
@@ -179,8 +178,8 @@ public class Elphaba extends GenericRobot {
 
         shooter.setDefaultCommand(shooter.runMotors(() -> operator.getLeftTrigger()));
 
-       // elevatorSystem.setDefaultCommand(elevatorSystem.basicSuppliersMovement(operator::getLeftYAxis));
-        algaeArm.setDefaultCommand(algaeArm.getInitialCommand(operator::getRightTrigger));
+        elevatorSystem.setDefaultCommand(elevatorSystem.basicSuppliersMovement(operator::getLeftYAxis));
+        //algaeArm.setDefaultCommand(algaeArm.getInitialCommand(operator::getRightTrigger));
 
 
     }
