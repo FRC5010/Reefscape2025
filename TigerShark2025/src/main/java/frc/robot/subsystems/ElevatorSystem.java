@@ -66,6 +66,7 @@ public class ElevatorSystem extends GenericSubsystem {
     // "MyTable");
     private double currentX = 0.0, lastX = 0.0, lastTime = 0.0, timeChange = 0.0, currentVelocity = 0.0,
             lastVelocity = 0.0, currentAcceleration = 0.0;
+    private double forwardA = 0.0, forwardB = 0.0, forwardC = 0.0, backwardA = 0.0, backwardB = 0.0, backwardC = 0.0, horizontalA = 0.0, horizontalB = 0.0, horizontalC = 0.0, elevatorA = 0.0, elevatorB = 0.0, elevatorC = 0.0;
 
     private ProfiledPIDController profiledPID;
     private TrapezoidProfile.Constraints PIDConstraints;
@@ -280,6 +281,13 @@ public class ElevatorSystem extends GenericSubsystem {
         });
     }
 
+    public Command stopElevator() {
+        return Commands.run(() -> {
+            elevator.set(0);
+            elevator.setControlType(controlType);
+        });
+    }
+
     public void runControllerToSetpoint() {
         double output = profiledPID.calculate(elevator.getPosition());
         elevator.set(MathUtil.clamp(output, -1, 1), profiledPID.getSetpoint().velocity);
@@ -325,6 +333,10 @@ public class ElevatorSystem extends GenericSubsystem {
         if (controlType == elevator.getControlType()) {
             elevator.setReference(position.in(Meters));
         }
+    }
+
+    public double getElevatorReference() {
+        return elevator.getReference();
     }
 
     public Command zeroElevator() {
@@ -504,6 +516,44 @@ public class ElevatorSystem extends GenericSubsystem {
         } else {
             return Meters.of(1.0);
         }
+    }
+
+    public void setUpElevatorVelocityFunction(double elevatorA, double elevatorB, double elevatorC) {
+        this.elevatorA = elevatorA;
+        this.elevatorB = elevatorB;
+        this.elevatorC = elevatorC;
+    }
+
+    public void setUpAccelerationConstraints(double forwardA, double forwardB, double forwardC, double backwardA, double backwardB, double backwardC, double horizontalA, double horizontalB, double horizontalC) {
+        this.forwardA = forwardA;
+        this.forwardB = forwardB;
+        this.forwardC = forwardC;
+        this.backwardA = backwardA;
+        this.backwardB = backwardB;
+        this.backwardC = backwardC;
+        this.horizontalA = horizontalA;
+        this.horizontalB = horizontalB;
+        this.horizontalC = horizontalC;
+    }
+
+    public double[] getForwardAccelerationConstants() {
+        return new double[] {forwardA, forwardB, forwardC};
+    }
+
+    public double[] getBackwardAccelerationConstants() {
+        return new double[] {backwardA, backwardB, backwardC};
+    }
+
+    public double[] getHorizontalAccelerationConstants() {
+        return new double[] {horizontalA, horizontalB, horizontalC};
+    }
+
+    public double getElevatorExtensionTime() {
+        return elevatorA * Math.pow(elevator.getReference() - elevator.getPosition(), elevatorB) + elevatorC;
+    }
+
+    public double getAverageElevatorVelocity() {
+        return (elevator.getReference() - getElevatorPosition().in(Meters)) / getElevatorExtensionTime();
     }
 
     @Override
