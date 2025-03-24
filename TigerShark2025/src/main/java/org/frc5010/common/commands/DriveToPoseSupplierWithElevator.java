@@ -152,24 +152,24 @@ public class DriveToPoseSupplierWithElevator extends GenericCommand {
   }
 
   public double calculateElevatorVelocityChange(double a, double b, double c) {
-    return ((a * Math.pow((elevatorAverageVelocity * elevatorExtensionTime) + initialHeight, b + 1)) / (elevatorAverageVelocity * (b + 1))) + (c * elevatorExtensionTime);
+    return ((a * (Math.pow((elevatorAverageVelocity * elevatorExtensionTime) + initialHeight, b + 1) - Math.pow((elevatorAverageVelocity * elevatorLowerBoundTime) + initialHeight, b + 1))) / (elevatorAverageVelocity * (b + 1))) + (c * (elevatorExtensionTime - elevatorLowerBoundTime));
   }
 
   public double calculateElevatorEngagementDistance(double a, double b, double c) {
-    return ((a * Math.pow((elevatorAverageVelocity * elevatorExtensionTime) + initialHeight, b + 2)) / (Math.pow(elevatorAverageVelocity, 2) * (b + 1) * (b + 2))) + ((c / 2) * Math.pow(elevatorExtensionTime, 2));
+    return ((a * (Math.pow((elevatorAverageVelocity * elevatorExtensionTime) + initialHeight, b + 2) - Math.pow((elevatorAverageVelocity * elevatorLowerBoundTime) + initialHeight, b + 2))) / (Math.pow(elevatorAverageVelocity, 2) * (b + 1) * (b + 2))) + ((c / 2) * (Math.pow(elevatorExtensionTime, 2) - Math.pow(elevatorLowerBoundTime, 2)));
   }
 
-  public double calculateStartBrakingDistance(double a, double b, double c, double ordinalVelocity) {
-    return (Math.pow(ordinalVelocity - ((a * Math.pow((elevatorAverageVelocity * elevatorExtensionTime) + initialHeight, b + 1)) / (elevatorAverageVelocity * (b + 1))) - (c * elevatorExtensionTime), 2) / (2 * MAX_ORDINAL_ACCELERATION)) + ((a * Math.pow((elevatorAverageVelocity * elevatorExtensionTime) + initialHeight, b + 2)) / (Math.pow(elevatorAverageVelocity, 2) * (b + 1) * (b + 2))) + ((c / 2) * Math.pow(elevatorExtensionTime, 2));
+  public double calculateStartBrakingDistance(double ordinalVelocity, double elevatorVelocityChange, double elevatorEngagementDistance) {
+    return (Math.pow(ordinalVelocity - elevatorVelocityChange, 2) / (2 * MAX_ORDINAL_ACCELERATION)) + elevatorEngagementDistance;
   }
 
-  public void updateVitalCalculations() { // TO-DO: Change the functions to utilize the lower bound time
+  public void updateVitalCalculations() {
     verticalElevatorVelocityChange = calculateElevatorVelocityChange(verticalA, verticalB, verticalC);
     horizontalElevatorVelocityChange = calculateElevatorVelocityChange(horizontalA, horizontalB, horizontalC);
     verticalElevatorEngagementDistance = calculateElevatorEngagementDistance(verticalA, verticalB, verticalC);
     horizontalElevatorEngagementDistance = calculateElevatorEngagementDistance(horizontalA, horizontalB, horizontalC);
-    verticalStartBrakingDistance = calculateStartBrakingDistance(verticalA, verticalB, verticalC, currentVelocity.getX());
-    horizontalStartBrakingDistance = calculateStartBrakingDistance(horizontalA, horizontalB, horizontalC, currentVelocity.getY());
+    verticalStartBrakingDistance = calculateStartBrakingDistance(currentVelocity.getX(), verticalElevatorVelocityChange, verticalElevatorEngagementDistance);
+    horizontalStartBrakingDistance = calculateStartBrakingDistance(currentVelocity.getY(), horizontalElevatorVelocityChange, horizontalElevatorEngagementDistance);
   }
 
   public void engageMaximumAcceleration() {
