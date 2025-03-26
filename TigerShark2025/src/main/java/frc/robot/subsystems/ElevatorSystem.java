@@ -82,7 +82,7 @@ public class ElevatorSystem extends GenericSubsystem {
         L2(Meters.of(0.8579)),
         L3Algae(Meters.of(1.1)),
         L3Shoot(Meters.of(1.27)),
-        L3(Meters.of(1.23)),
+        L3(Meters.of(1.25)),
         L4Shoot(Meters.of(1.765)),
         L4(Meters.of(1.87)),
         NET(Meters.of(1.9));

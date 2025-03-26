@@ -6,6 +6,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 
 import org.frc5010.common.arch.GenericRobot;
+import org.frc5010.common.commands.calibration.WheelRadiusCharacterization;
 import org.frc5010.common.config.ConfigConstants;
 import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.drive.pose.DrivePoseEstimator.State;
@@ -56,7 +57,7 @@ public class TigerShark extends GenericRobot {
         DigitalInput centerLineZero;
         Pose2d centerLineResetPose;
         NewLEDSubsystem leds;
-       
+
         private final Distance ROBOT_WIDTH = Inches.of(34.75);
         Pose2d startingPose1, startingPose2, startingPose3;
         RobotStates robotStates;
@@ -80,7 +81,10 @@ public class TigerShark extends GenericRobot {
                 shooter = new ShooterSystem(mechVisual, new ShooterSystem.Config());
                 algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config());
 
-                elevatorSystem.setUpAccelerationConstraints(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0); // T0-DO: Setup correct parameters
+                elevatorSystem.setUpAccelerationConstraints(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0); // T0-DO:
+                                                                                                          // Setup
+                                                                                                          // correct
+                                                                                                          // parameters
                 elevatorSystem.setUpElevatorVelocityFunction(0.0, 0.0, 0.0);
 
                 shooter.setLoadZoneSupplier(() -> elevatorSystem.atLoading());
@@ -191,29 +195,33 @@ public class TigerShark extends GenericRobot {
                 ((YAGSLSwerveDrivetrain) drivetrain).resetPose(AllianceFlip.apply(position));
         }
 
+        private void configureTestButtonBindings(Controller driver, Controller operator) {
+                driver.createAButton().whileTrue(((YAGSLSwerveDrivetrain) drivetrain).sysIdDriveMotorCommand());
+                driver.createBButton().whileTrue(((YAGSLSwerveDrivetrain) drivetrain).sysIdAngleMotorCommand());
+                driver.createXButton().whileTrue(new WheelRadiusCharacterization((YAGSLSwerveDrivetrain) drivetrain));
+                operator.createYButton().whileTrue(elevatorSystem.elevatorSysIdCommand());
+
+                QuestNav calibrationQuest = new QuestNav(new Transform3d(new Translation3d(),
+                                new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(-90))));
+                driver.createYButton().whileTrue(calibrationQuest.determineOffsetToRobotCenter(drivetrain));
+
+                operator.createAButton()
+                                .whileTrue(drivetrain.getPoseEstimator().getCalibrationCommand(drivetrain, 1));
+
+
+                driver.createUpPovButton().whileTrue(Commands
+                                .run(() -> ((YAGSLSwerveDrivetrain) drivetrain)
+                                                .drive(new ChassisSpeeds(0.1, 0, 0)), drivetrain));
+                operator.createXButton().whileTrue(algaeArm.getSysIdCommand());
+
+                operator.createYButton().onTrue(TargetingSystem.driveXMetersQuest(Meters.of(1.0)));
+        }
+
         @Override
         public void configureButtonBindings(Controller driver, Controller operator) {
                 drivetrain.configureButtonBindings(driver, operator);
-                if (DriverStation.isTest()) {
-                        driver.createAButton().whileTrue(((YAGSLSwerveDrivetrain) drivetrain).sysIdDriveMotorCommand());
-                        driver.createBButton().whileTrue(((YAGSLSwerveDrivetrain) drivetrain).sysIdAngleMotorCommand());
-                        operator.createYButton().whileTrue(elevatorSystem.elevatorSysIdCommand());
-
-                        QuestNav calibrationQuest = new QuestNav(new Transform3d(new Translation3d(),
-                                        new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(-90))));
-                        driver.createXButton().whileTrue(calibrationQuest.determineOffsetToRobotCenter(drivetrain));
-
-                        operator.createAButton()
-                                        .whileTrue(drivetrain.getPoseEstimator().getCalibrationCommand(drivetrain, 1));
-
-                        driver.createYButton().whileTrue(shooter.getSysIdCommand());
-
-                        driver.createUpPovButton().whileTrue(Commands
-                                        .run(() -> ((YAGSLSwerveDrivetrain) drivetrain)
-                                                        .drive(new ChassisSpeeds(0.1, 0, 0)), drivetrain));
-                        operator.createXButton().whileTrue(algaeArm.getSysIdCommand());
-
-                        operator.createYButton().onTrue(TargetingSystem.driveXMetersQuest(Meters.of(1.0)));
+                if (DriverStation.isTest()) {// TODO: Move into Generic Robot
+                        configureTestButtonBindings(driver, operator);
                         return;
                 }
                 reefscapeButtonBoard.configureOperatorButtonBindings(operator);
@@ -257,13 +265,14 @@ public class TigerShark extends GenericRobot {
                 }, shooter));
 
                 reefscapeButtonBoard.getFireButton()
-                                .whileTrue(Commands.deferredProxy(() -> shooter.getShootCommand(ReefscapeButtonBoard.getScoringLevel())));
+                                .whileTrue(Commands.deferredProxy(
+                                                () -> shooter.getShootCommand(ReefscapeButtonBoard.getScoringLevel())));
                 // shooter.coralHasEntered().whileTrue(shooter.intakeCoral());
                 // shooter.isFullyCaptured()
-                //                 .whileTrue(elevatorSystem
-                //                                 .pidControlCommand(ElevatorSystem.Position.CORAL_EXTENSION.position())
-                //                                 .until(() -> elevatorSystem.isAtLocation(
-                //                                         ElevatorSystem.Position.CORAL_EXTENSION.position())).andThen(shooter.alignCoral()));
+                // .whileTrue(elevatorSystem
+                // .pidControlCommand(ElevatorSystem.Position.CORAL_EXTENSION.position())
+                // .until(() -> elevatorSystem.isAtLocation(
+                // ElevatorSystem.Position.CORAL_EXTENSION.position())).andThen(shooter.alignCoral()));
 
                 Trigger elevatorAtCoralExtendPosition = new Trigger(() -> elevatorSystem
                                 .isAtLocationImproved(ElevatorSystem.Position.CORAL_EXTENSION.position()));
@@ -304,7 +313,8 @@ public class TigerShark extends GenericRobot {
                                 .withTimeout(Seconds.of(3.0)));
 
                 Trigger driverFire = new Trigger(() -> driver.getRightTrigger() > 0.15);
-                driverFire.whileTrue(Commands.deferredProxy(() -> shooter.getShootCommand(ReefscapeButtonBoard.getScoringLevel())));
+                driverFire.whileTrue(Commands
+                                .deferredProxy(() -> shooter.getShootCommand(ReefscapeButtonBoard.getScoringLevel())));
 
                 // TODO: Fix logix
                 QuestNav.isQuestOn().and(() -> DriverStation.isDisabled()).whileTrue(

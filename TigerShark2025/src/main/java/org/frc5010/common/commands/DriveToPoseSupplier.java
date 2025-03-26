@@ -72,8 +72,8 @@ public class DriveToPoseSupplier extends GenericCommand {
   /** The speed that the robot will rotate at */
   private double thetaSpeed;
 
-  private final double MAX_VELOCITY = 4.5;
-  private final double MAX_ACCELERATION = 4;
+  private final double MAX_VELOCITY = 4.0;
+  private final double MAX_ACCELERATION = 3.5;
 
   /**
    * Creates a new DriveToPosition command.
@@ -224,7 +224,6 @@ public class DriveToPoseSupplier extends GenericCommand {
     Rotation2d movementAngle = getAngleToTarget();
     double speedX = movementAngle.getCos() * translationalSpeed;
     double speedY = movementAngle.getSin() * translationalSpeed;
-
     ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
         speedX + distanceController.getSetpoint().velocity*movementAngle.getCos()*ffInclusionFactor, speedY + distanceController.getSetpoint().velocity*movementAngle.getSin()*ffInclusionFactor, thetaSpeed + thetaController.getSetpoint().velocity*ffInclusionFactor, swerveSubsystem.getHeading());
 

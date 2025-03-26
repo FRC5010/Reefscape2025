@@ -7,6 +7,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Rotation;
 
 import java.util.Map;
 import java.util.function.Consumer;
@@ -96,49 +97,102 @@ public class ReefscapeButtonBoard {
         Map.entry(
             ScoringLocation.FRONT_AB,
             Map.ofEntries(
-                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d()),
+                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d(0.0, 0.0, Rotation2d.kZero)),
                 Map.entry(ScoringAlignment.ALGAE, new Transform2d()),
-                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d())
+                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d(0.0, 0.0, Rotation2d.kZero))
             )
         ),
         Map.entry(
             ScoringLocation.FRONT_RIGHT_CD,
             Map.ofEntries(
-                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d()),
+                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d(-0.0, 0.0, Rotation2d.kZero)),
                 Map.entry(ScoringAlignment.ALGAE, new Transform2d()),
-                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d())
+                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d(-0.0, -0.0, Rotation2d.kZero))
             )
         ),
         Map.entry(
             ScoringLocation.BACK_RIGHT_EF,
             Map.ofEntries(
-                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d()),
+                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d(-0.0, 0.0, Rotation2d.kZero)),
                 Map.entry(ScoringAlignment.ALGAE, new Transform2d()),
-                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d())
+                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d(-0.0, -0.0, Rotation2d.kZero))
             )
         ),
         Map.entry(
             ScoringLocation.BACK_GH,
             Map.ofEntries(
-                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d()),
+                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d(-0.0, 0.0, Rotation2d.kZero)),
                 Map.entry(ScoringAlignment.ALGAE, new Transform2d()),
-                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d())
+                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d(-0.0, 0.0, Rotation2d.kZero))
             )
         ),
         Map.entry(
             ScoringLocation.BACK_LEFT_IJ,
             Map.ofEntries(
-                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d()),
+                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d(-0.0, 0.0, Rotation2d.kZero)),
                 Map.entry(ScoringAlignment.ALGAE, new Transform2d()),
-                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d())
+                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d(-0.0, 0.0, Rotation2d.kZero))
             )
         ),
         Map.entry(
             ScoringLocation.FRONT_LEFT_KL,
             Map.ofEntries(
-                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d()),
+                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d(-0.0, 0.0, Rotation2d.kZero)),
                 Map.entry(ScoringAlignment.ALGAE, new Transform2d()),
-                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d())
+                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d(0.0, 0.0, Rotation2d.kZero
+                ))
+            )
+        )
+    );
+
+    public static Map<ScoringLocation, Map<ScoringAlignment, Transform2d>> branchOffsets868 = Map.ofEntries(
+        Map.entry(
+            ScoringLocation.FRONT_AB,
+            Map.ofEntries(
+                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d(0.013, 0.0, Rotation2d.kZero)),
+                Map.entry(ScoringAlignment.ALGAE, new Transform2d()),
+                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d(0.006, 0.0, Rotation2d.kZero))
+            )
+        ),
+        Map.entry(
+            ScoringLocation.FRONT_RIGHT_CD,
+            Map.ofEntries(
+                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d(-0.013, 0.048, Rotation2d.kZero)),
+                Map.entry(ScoringAlignment.ALGAE, new Transform2d()),
+                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d(-0.061, -0.015, Rotation2d.kZero))
+            )
+        ),
+        Map.entry(
+            ScoringLocation.BACK_RIGHT_EF,
+            Map.ofEntries(
+                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d(-0.025, 0.029, Rotation2d.kZero)),
+                Map.entry(ScoringAlignment.ALGAE, new Transform2d()),
+                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d(-0.037, -0.081, Rotation2d.kZero))
+            )
+        ),
+        Map.entry(
+            ScoringLocation.BACK_GH,
+            Map.ofEntries(
+                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d(-0.004, 0.027, Rotation2d.kZero)),
+                Map.entry(ScoringAlignment.ALGAE, new Transform2d()),
+                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d(-0.007, 0.013, Rotation2d.kZero))
+            )
+        ),
+        Map.entry(
+            ScoringLocation.BACK_LEFT_IJ,
+            Map.ofEntries(
+                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d(-0.012, 0.038, Rotation2d.kZero)),
+                Map.entry(ScoringAlignment.ALGAE, new Transform2d()),
+                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d(-0.003, 0.001, Rotation2d.kZero))
+            )
+        ),
+        Map.entry(
+            ScoringLocation.FRONT_LEFT_KL,
+            Map.ofEntries(
+                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d(-0.020, 0.054, Rotation2d.kZero)),
+                Map.entry(ScoringAlignment.ALGAE, new Transform2d()),
+                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d(-0.040, 0.017, Rotation2d.kZero
+                ))
             )
         )
     );
