@@ -385,11 +385,11 @@ public class ElevatorSystem extends GenericSubsystem {
 
     // Function that decreases acceleration to counteract elevator flex
     public double getGeneralAccelerationDampener() {
-        return Math.pow(elevator.getPosition(), 2) + 3 * (2 - elevator.getPosition());
+        return Math.pow(elevator.getPosition()*2, 0.5);
     }
 
     public double getBackwardAccelerationDampener() {
-        return Math.pow(elevator.getPosition(), 2) + 3 * (1.95 - elevator.getPosition());
+        return Math.pow(elevator.getPosition()*2, 0.5);
     }
 
     public double getMaxForwardAcceleration() {
