@@ -147,7 +147,7 @@ public class SwerveDrivetrain extends GenericDrivetrain {
       } else {
 
       }
-      driver.createAButton().onTrue(Commands.runOnce(() -> toggleFieldOrientedDrive()));
+      driver.createXButton().onTrue(Commands.runOnce(() -> toggleFieldOrientedDrive()));
     }
   }
 

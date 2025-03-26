@@ -226,11 +226,12 @@ public class TigerShark extends GenericRobot {
                 }
                 reefscapeButtonBoard.configureOperatorButtonBindings(operator);
 
-                driver.createXButton().whileTrue(
+                // Auto drive to reef
+                driver.createBButton().whileTrue(
                                 Commands.deferredProxy(() -> TargetingSystem.createCoralScoringSequence(
                                                 ReefscapeButtonBoard.getScoringPose(),
                                                 ReefscapeButtonBoard.getScoringLevel())));
-
+                // Auto drive to station
                 driver.createYButton().whileTrue(
                                 Commands.deferredProxy(
                                                 () -> TargetingSystem.createLoadingSequence(
@@ -247,7 +248,7 @@ public class TigerShark extends GenericRobot {
                 driver.LEFT_BUMPER.and(AlgaeArm.algaeSelected).and(ReefscapeButtonBoard.algaeLevelIsSelected)
                                 .whileTrue(algaeArm.getDeployCommand());
 
-                driver.createBButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
+                driver.createAButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
 
                 driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
                                 .pidControlCommand(
