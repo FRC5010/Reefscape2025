@@ -76,7 +76,7 @@ public class TargetingSystem {
     public static Command createCoralScoringSequence(Pose2d targetPose, ScoringLevel scoringLevel) {
         Distance level = elevator.selectElevatorLevel(() -> scoringLevel);
 
-        return drivetrain.driveToPosePrecise(targetPose, CoralOffset).get()
+        return drivetrain.driveToPosePrecise(targetPose, CoralOffset).get().until(() -> elevator.getElevatorPosition().in(Meters) > 1.0)
                 .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocationImproved(level)));
     }
 

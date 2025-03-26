@@ -197,9 +197,6 @@ public class ElevatorSystem extends GenericSubsystem {
 
         hasHighCurrentLoad = new ValueSwitch(config.ELEVATOR_ZERO_CURRENT, () -> Math.abs(elevator.getOutputCurrent()),
                 1);
-
-        hasHighCurrentLoad.getTrigger().and(() -> elevator.getPosition() < 0.25).and(() -> elevator.get() < -0.1)
-                .onTrue(zeroElevator());
     }
 
     public Boolean validSpeed(double speed) {
@@ -245,7 +242,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
     public Command elevatorPositionZeroSequence() {
         double zeroSpeed = -0.1;
-        return Commands.run(() -> elevator.set(zeroSpeed), this).until(hasHighCurrentLoad.getTrigger())
+        return Commands.run(() -> elevator.set(zeroSpeed), this).until(() -> hasHighCurrentLoad.get())
                 .andThen(zeroElevator()).finallyDo(() -> elevator.set(0.0));
     }
 

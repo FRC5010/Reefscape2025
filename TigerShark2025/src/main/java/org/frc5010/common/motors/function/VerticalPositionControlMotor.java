@@ -237,16 +237,19 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
     @Override
     public void draw() {
         updateReference();
+        double currentPosition = 0;
+        currentPosition = getPosition();
+        setPointRoot.setPosition(getSimX(Meters.of(_robotToMotor.getX())) + setPointDisplayOffset,
+                getSimY(Meters.of(_robotToMotor.getZ())) + getReference());
+        mechRoot.setPosition(getSimX(Meters.of(_robotToMotor.getX())),
+                getSimY(Meters.of(_robotToMotor.getZ())) + currentPosition);
+        position.setValue(currentPosition);
+        velocity.setValue(encoder.getVelocity());
+
         if (Robot.isSimulation()) {
-            double currentPosition = 0;
+            
             effort.setVoltage(_motor.getVoltage(), Volts);
-            currentPosition = getPosition();
-            setPointRoot.setPosition(getSimX(Meters.of(_robotToMotor.getX())) + setPointDisplayOffset,
-                    getSimY(Meters.of(_robotToMotor.getZ())) + getReference());
-            mechRoot.setPosition(getSimX(Meters.of(_robotToMotor.getX())),
-                    getSimY(Meters.of(_robotToMotor.getZ())) + currentPosition);
-            position.setValue(currentPosition);
-            velocity.setValue(encoder.getVelocity());
+            
         }
     }
 

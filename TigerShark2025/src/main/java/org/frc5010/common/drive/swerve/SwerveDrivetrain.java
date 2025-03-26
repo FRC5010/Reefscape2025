@@ -148,14 +148,6 @@ public class SwerveDrivetrain extends GenericDrivetrain {
 
       }
       driver.createAButton().onTrue(Commands.runOnce(() -> toggleFieldOrientedDrive()));
-      driver
-          .createDownPovButton()
-          .whileTrue(
-              Commands.run(
-                  () -> {
-                    lockWheels();
-                  },
-                  this));
     }
   }
 

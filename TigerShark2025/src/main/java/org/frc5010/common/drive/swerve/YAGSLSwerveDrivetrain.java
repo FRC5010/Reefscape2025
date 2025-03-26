@@ -452,7 +452,13 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         RadiansPerSecondPerSecond.of(getSwerveConstants().getkTeleDriveMaxAngularAccelerationUnitsPerSecond()),
         Volts.of(12), false);
 
-    return startRun(() -> previousTime.set(Timer.getFPGATimestamp()),
+    return startRun(() -> {
+      previousTime.set(Timer.getFPGATimestamp());
+      prevSetpoint.set(
+        new SwerveSetpoint(swerveDrive.getRobotVelocity(),
+            swerveDrive.getStates(),
+            DriveFeedforwards.zeros(swerveDrive.getModules().length)));
+    },
         () -> {
           double newTime = Timer.getFPGATimestamp();
           SwerveSetpoint newSetpoint = setpointGenerator.generateSetpoint(prevSetpoint.get(),
