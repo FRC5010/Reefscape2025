@@ -167,7 +167,7 @@ public class TigerShark extends GenericRobot {
                                                 .in(Meters),
                                 Inches.of(17.875).in(Meters), new Rotation2d(Degrees.of(180)));
 
-                robotStates = new RobotStates(shooter, algaeArm, elevatorSystem, climb, leds,
+                robotStates = new RobotStates(shooter, algaeArm, elevatorSystem, climb,
                                 () -> drivetrain.getPoseEstimator().getCurrentPose());
         }
 

@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import org.frc5010.common.arch.GenericSubsystem;
-import org.frc5010.common.commands.PoseProviderAutoOffset;
+import org.frc5010.common.commands.calibration.PoseProviderAutoOffset;
 import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.drive.pose.PoseProvider.PoseObservation;
 import org.frc5010.common.drive.pose.PoseProvider.ProviderType;
