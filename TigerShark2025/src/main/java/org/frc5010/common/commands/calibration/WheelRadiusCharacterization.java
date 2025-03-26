@@ -116,7 +116,7 @@ public class WheelRadiusCharacterization extends GenericCommand {
         moduleMovement += Math.abs(currentPositions[i] - wheelPositions[i]) / 4.0;
       }
 
-      double radius = (gyroChange * robotRotationRadius) / moduleMovement;
+      double radius = (gyroChange * robotRotationRadius) / moduleMovement; 
       wheelRadius.setValue(radius);
     }
 
