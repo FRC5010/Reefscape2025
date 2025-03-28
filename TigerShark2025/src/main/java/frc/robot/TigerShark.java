@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.auto_routines.AutoChoosers;
 import frc.robot.auto_routines.CustomAuto;
@@ -79,7 +80,7 @@ public class TigerShark extends GenericRobot {
                 eleConfig.gearing = 72.0 / 12.0;
                 elevatorSystem = new ElevatorSystem(mechVisual, eleConfig);
                 shooter = new ShooterSystem(mechVisual, new ShooterSystem.Config());
-                algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config());
+                //algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config());
 
                 elevatorSystem.setUpAccelerationConstraints(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0); // T0-DO:
                                                                                                           // Setup
@@ -212,7 +213,7 @@ public class TigerShark extends GenericRobot {
                 driver.createUpPovButton().whileTrue(Commands
                                 .run(() -> ((YAGSLSwerveDrivetrain) drivetrain)
                                                 .drive(new ChassisSpeeds(0.1, 0, 0)), drivetrain));
-                operator.createXButton().whileTrue(algaeArm.getSysIdCommand());
+                //operator.createXButton().whileTrue(algaeArm.getSysIdCommand());
 
                 operator.createYButton().onTrue(TargetingSystem.driveXMetersQuest(Meters.of(1.0)));
         }
@@ -245,17 +246,17 @@ public class TigerShark extends GenericRobot {
                                                 elevatorSystem.selectElevatorLevel(
                                                                 () -> ReefscapeButtonBoard.getScoringLevel()))));
 
-                driver.LEFT_BUMPER.and(AlgaeArm.algaeSelected).and(ReefscapeButtonBoard.algaeLevelIsSelected)
-                                .whileTrue(algaeArm.getDeployCommand());
+                // driver.LEFT_BUMPER.and(AlgaeArm.algaeSelected).and(ReefscapeButtonBoard.algaeLevelIsSelected)
+                //                 .whileTrue(algaeArm.getDeployCommand());
 
-                driver.createAButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
+                //driver.createAButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
 
                 driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
                                 .pidControlCommand(
                                                 elevatorSystem.selectElevatorLevel(
                                                                 () -> ReefscapeButtonBoard.ScoringLevel.INTAKE))
-                                .until(() -> elevatorSystem.atLoading())
-                                .andThen(elevatorSystem.elevatorPositionZeroSequence())));
+                                ).finallyDo(() -> elevatorSystem.elevatorPositionZeroSequence().schedule()
+                                ));
 
                 driver.createRightPovButton().onTrue(elevatorSystem.zeroElevator());
 
@@ -344,7 +345,7 @@ public class TigerShark extends GenericRobot {
                 shooter.setDefaultCommand(shooter.runMotors(() -> operator.getLeftTrigger()));
 
                 elevatorSystem.setDefaultCommand(elevatorSystem.basicSuppliersMovement(operator::getLeftYAxis));
-                algaeArm.setDefaultCommand(algaeArm.getInitialCommand(operator::getRightTrigger));
+                //algaeArm.setDefaultCommand(algaeArm.getInitialCommand(operator::getRightTrigger));
         }
 
         @Override
@@ -359,7 +360,7 @@ public class TigerShark extends GenericRobot {
 
         @Override
         public Command generateAutoCommand(Command autoCommand) {
-                return drivetrain.generateAutoCommand(autoCommand).alongWith(algaeArm.getInitialCommand(() -> 0));
+                return drivetrain.generateAutoCommand(autoCommand);//.alongWith(algaeArm.getInitialCommand(() -> 0));
         }
 
         @Override

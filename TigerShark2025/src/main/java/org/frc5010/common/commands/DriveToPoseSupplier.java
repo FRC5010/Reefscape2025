@@ -14,6 +14,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.function.Supplier;
 import org.frc5010.common.arch.GenericCommand;
@@ -74,6 +75,12 @@ public class DriveToPoseSupplier extends GenericCommand {
 
   private final double MAX_VELOCITY = 4.0;
   private final double MAX_ACCELERATION = 3.5;
+
+  private Translation2d lastSetpointTranslation = Translation2d.kZero;
+  private Rotation2d lastSetpointRotation = Rotation2d.kZero;
+  private double lastTime = 0.0;
+  private double driveErrorAbs = 0.0;
+  private double thetaErrorAbs = 0.0;
 
   /**
    * Creates a new DriveToPosition command.
@@ -186,6 +193,10 @@ public class DriveToPoseSupplier extends GenericCommand {
                         .unaryMinus())
                 .getX());
     distanceController.reset(getDistanceToTarget(), initialSpeedTowardsTarget);
+
+    lastSetpointTranslation = robotPose.getTranslation();
+    lastSetpointRotation = targetPoseProvider.get().getRotation();
+    lastTime = Timer.getTimestamp();
   
 
     if (null != targetPoseProvider.get()) {
@@ -213,17 +224,43 @@ public class DriveToPoseSupplier extends GenericCommand {
     // System.out.println(robotPose);
     
  
-    thetaSpeed = thetaController.calculate(robotPose2d.getRotation().getRadians());
+    
 
  
     double minFFRadius = 0.05;
     double maxFFRadius = 0.1;
     double distanceToGoal = getDistanceToTarget();
     double ffInclusionFactor = MathUtil.clamp((distanceToGoal - minFFRadius) / (maxFFRadius - minFFRadius), 0.0, 1.0);
-    double translationalSpeed = distanceController.calculate(distanceToGoal);
+    distanceController.reset(
+        lastSetpointTranslation.getDistance(targetPose.getTranslation()),
+        distanceController.getSetpoint().velocity);
+    double translationalSpeed =
+        distanceController.calculate(distanceToGoal, 0.0);
     Rotation2d movementAngle = getAngleToTarget();
+
+    lastSetpointTranslation =
+        new Pose2d(
+                targetPose.getTranslation(),
+                new Rotation2d(
+                    Math.atan2(
+                        robotPose2d.getTranslation().getY() - targetPose.getTranslation().getY(),
+                        robotPose2d.getTranslation().getX() - targetPose.getTranslation().getX())))
+            .transformBy(new Transform2d(distanceController.getSetpoint().position, 0.0, new Rotation2d()))
+            .getTranslation();
+    
     double speedX = movementAngle.getCos() * translationalSpeed;
     double speedY = movementAngle.getSin() * translationalSpeed;
+
+
+
+    thetaSpeed = thetaController.calculate(robotPose2d.getRotation().getRadians(), new TrapezoidProfile.State(
+                    targetPose.getRotation().getRadians(),
+                    (targetPose.getRotation().minus(lastSetpointRotation)).getRadians()
+                        / (Timer.getTimestamp() - lastTime)));
+
+    lastSetpointRotation = targetPose.getRotation();
+
+    lastTime = Timer.getTimestamp();
     ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
         speedX + distanceController.getSetpoint().velocity*movementAngle.getCos()*ffInclusionFactor, speedY + distanceController.getSetpoint().velocity*movementAngle.getSin()*ffInclusionFactor, thetaSpeed + thetaController.getSetpoint().velocity*ffInclusionFactor, swerveSubsystem.getHeading());
 

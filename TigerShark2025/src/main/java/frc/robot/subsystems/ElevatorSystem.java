@@ -110,7 +110,7 @@ public class ElevatorSystem extends GenericSubsystem {
         public final Current MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT = Amps.of(60);
         public Distance centerOfMassX = Meters.zero(), centerOfMassY = Inches.of(1.178), wheelBase = Meters.of(0.56);
         public double g = 9.81;
-        public final double ELEVATOR_ZERO_CURRENT = 40;
+        public final double ELEVATOR_ZERO_CURRENT = 50;
         public SlewRateLimiter rateLimiter = new SlewRateLimiter(0.5);
         public double gearing = 6;
     }
@@ -241,7 +241,7 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public Command elevatorPositionZeroSequence() {
-        double zeroSpeed = -0.1;
+        double zeroSpeed = -0.2;
         return Commands.run(() -> elevator.set(zeroSpeed), this).until(() -> hasHighCurrentLoad.get())
                 .andThen(zeroElevator()).finallyDo(() -> elevator.set(0.0));
     }

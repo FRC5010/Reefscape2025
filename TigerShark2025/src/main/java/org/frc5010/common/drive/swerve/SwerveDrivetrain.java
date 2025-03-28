@@ -178,6 +178,12 @@ public class SwerveDrivetrain extends GenericDrivetrain {
     };
   }
 
+  public double[] getDriveModuleRotations() {
+    return new double[] {
+      0, 0, 0, 0
+    };
+  }
+
   public void setModuleStates(SwerveModuleState[] setDesiredStates) {
     SwerveModuleState[] states = setDesiredStates;
     SwerveDriveKinematics.desaturateWheelSpeeds(states, maxChassisVelocity.get());

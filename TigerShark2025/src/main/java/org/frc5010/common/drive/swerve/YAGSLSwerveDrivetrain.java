@@ -244,8 +244,8 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         // RELATIVE ChassisSpeeds
         new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic
                                         // drive trains
-            new PIDConstants(2, 0, 0), // Translation PID constants
-            new PIDConstants(5, 0, 0) // Rotation PID constants
+            new PIDConstants(4, 0, 0), // Translation PID constants
+            new PIDConstants(1.0, 0, 0) // Rotation PID constants
         ),
         config, // The robot configuration
         () -> {
@@ -313,7 +313,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         new Transform2d()).withInitialVelocity(() -> getFieldVelocity()); // TO-DO: Change to Distance-Based PID+
     // Create the constraints to use while pathfinding
     PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond() * 1.0,
-        getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond() * 1.0,
+        3.5,
         getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond(),
         getSwerveConstants().getkTeleDriveMaxAngularAccelerationUnitsPerSecond());
     // PathConstraints constraints = new PathConstraints(
@@ -338,7 +338,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
           poseEstimator.setTargetPoseOnField(pose.get().transformBy(PathPlanOffset), "Auto Drive Pose");
           SmartDashboard.putBoolean("Running AutoDrive", true);
         })
-        .until(() -> getPose().getTranslation().getDistance(pose.get().getTranslation()) < 3.0)
+        .until(() -> getPose().getTranslation().getDistance(pose.get().getTranslation()) < 0.3)
         // .until(() -> RobotModel.circularObstacleWillBeAvoided(obstaclePosition,
         // poseEstimator::getCurrentPose,
         // pose.get(), unavoidableVertices, obstacleRadius, robotRadius,
@@ -544,9 +544,9 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   public Command sysIdDriveMotorCommand() {
     return SwerveDriveTest.generateSysIdCommand(
         SwerveDriveTest.setDriveSysIdRoutine(
-            new SysIdRoutine.Config(Volts.of(0.5).per(Second), Volts.of(7), Second.of(20)),
+            new SysIdRoutine.Config(Volts.of(0.5).per(Second), Volts.of(8), Second.of(30)),
             this, swerveDrive, 12, true),
-        3.0, 6.0, 4.0);
+        3.0, 10.0, 4.0);
   }
 
   /**

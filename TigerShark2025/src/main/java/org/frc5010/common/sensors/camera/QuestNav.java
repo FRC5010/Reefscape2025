@@ -25,6 +25,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.FloatArraySubscriber;
 import edu.wpi.first.networktables.IntegerEntry;
@@ -70,6 +71,12 @@ public class QuestNav implements PoseProvider {
     private final double TIMESTAMP_DELAY = 0.002;
     private static boolean hasHardReset = false;
     private static boolean initialReset = false;
+
+    private DoubleSubscriber heartbeatRequestSub;
+    /** Publisher for heartbeat responses */
+    private DoublePublisher heartbeatResponsePub;
+    /** Last processed heartbeat request ID */
+    private double lastProcessedHeartbeatId = 0;
 
     private long previousFrameCount;
 
@@ -119,6 +126,9 @@ public class QuestNav implements PoseProvider {
         quaternion = networkTable.getFloatArrayTopic("quaternion").subscribe(new float[4]);
         eulerAngles = networkTable.getFloatArrayTopic("eulerAngles").subscribe(new float[3]);
         battery = networkTable.getDoubleTopic("battery").subscribe(0.0);
+
+        heartbeatRequestSub = networkTable.getDoubleTopic("heartbeat/quest_to_robot").subscribe(0.0);
+        heartbeatResponsePub = networkTable.getDoubleTopic("heartbeat/robot_to_quest").publish();
     }
 
     public Translation3d getRawPosition() {
@@ -199,6 +209,15 @@ public class QuestNav implements PoseProvider {
         updateFrameCount();
         return t;
     }
+
+    public void processHeartbeat() {
+        double requestId = heartbeatRequestSub.get();
+        // Only respond to new requests to avoid flooding
+        if (requestId > 0 && requestId != lastProcessedHeartbeatId) {
+          heartbeatResponsePub.set(requestId);
+          lastProcessedHeartbeatId = requestId;
+        }
+      }
 
     public boolean isActive() {
         double t = timestamp.get();
@@ -307,6 +326,7 @@ public class QuestNav implements PoseProvider {
     @Override
     public void update() {
         if (RobotBase.isReal()) {
+            processHeartbeat();
             cleanUpQuestCommand();
             updateVelocity();
             SmartDashboard.putBoolean("Reset Pose", false);
