@@ -59,6 +59,8 @@ public class TigerShark extends GenericRobot {
         Pose2d centerLineResetPose;
         NewLEDSubsystem leds;
 
+        boolean safetyOverride = false;
+
         private final Distance ROBOT_WIDTH = Inches.of(34.75);
         Pose2d startingPose1, startingPose2, startingPose3;
         RobotStates robotStates;
@@ -241,15 +243,30 @@ public class TigerShark extends GenericRobot {
                 // driver.createLeftBumper().whileTrue(Commands.run(() ->
                 // elevatorSystem.setElevatorPosition(elevatorSystem.selectElevatorLevel(() ->
                 // ReefscapeButtonBoard.getScoringLevel())), elevatorSystem));
-                driver.createLeftBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
+
+                driver.createRightPovButton().onTrue(Commands.runOnce(() -> {
+                        safetyOverride = !safetyOverride;
+                }).andThen(Commands.startEnd(() -> driver.setRumble(0.5), () -> driver.setRumble(0.0)).withTimeout(0.5).onlyIf(() -> safetyOverride)));
+
+                
+                Trigger safetiesOverrided = new Trigger(() -> safetyOverride);
+                Trigger elevatorOkToRun = (shooter.entrySensorIsBroken().negate()).or(safetiesOverrided);
+                
+               
+                elevatorSystem.isLoadingTrigger().and(shooter.coralCapturedOrAligned().negate())
+                        .whileTrue(shooter.intakeCoral());
+                driver.createLeftBumper().and(elevatorOkToRun).whileTrue(Commands.deferredProxy(() -> elevatorSystem
                                 .pidControlCommand(
                                                 elevatorSystem.selectElevatorLevel(
                                                                 () -> ReefscapeButtonBoard.getScoringLevel()))));
+
+                
 
                 // driver.LEFT_BUMPER.and(AlgaeArm.algaeSelected).and(ReefscapeButtonBoard.algaeLevelIsSelected)
                 //                 .whileTrue(algaeArm.getDeployCommand());
 
                 //driver.createAButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
+
 
                 driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
                                 .pidControlCommand(
@@ -258,13 +275,9 @@ public class TigerShark extends GenericRobot {
                                 ).finallyDo(() -> elevatorSystem.elevatorPositionZeroSequence().schedule()
                                 ));
 
-                driver.createRightPovButton().onTrue(elevatorSystem.zeroElevator());
 
                 driver.createDownPovButton().whileTrue(elevatorSystem.elevatorPositionZeroSequence());
-                driver.createUpPovButton().whileTrue(Commands.run(() -> {
-                        shooter.shooterLeftSpeed(0.25);
-                        shooter.shooterRightSpeed(0.1);
-                }, shooter));
+
 
                 reefscapeButtonBoard.getFireButton()
                                 .whileTrue(Commands.deferredProxy(

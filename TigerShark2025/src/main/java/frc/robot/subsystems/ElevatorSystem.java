@@ -21,6 +21,7 @@ import org.frc5010.common.motors.PIDController5010.PIDControlType;
 import org.frc5010.common.motors.function.FollowerMotor;
 import org.frc5010.common.motors.function.VerticalPositionControlMotor;
 import org.frc5010.common.motors.hardware.GenericTalonFXMotor;
+import org.frc5010.common.sensors.CountingValueSwitch;
 import org.frc5010.common.sensors.ValueSwitch;
 import org.frc5010.common.telemetry.DisplayLength;
 
@@ -44,7 +45,7 @@ import frc.robot.ReefscapeButtonBoard;
 
 /** Add your docs here. */
 public class ElevatorSystem extends GenericSubsystem {
-    protected ValueSwitch hasHighCurrentLoad;
+    protected CountingValueSwitch hasHighCurrentLoad;
     protected VerticalPositionControlMotor elevator;
     protected FollowerMotor elevatorFollower;
     protected PIDControlType controlType = PIDControlType.NONE;
@@ -174,7 +175,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
         elevator.setMotorFeedFwd(new MotorFeedFwdConstants(0.26329, 0.38506, 0.04261));
         elevator.setProfiledMaxVelocity(5.5);
-        elevator.setProfiledMaxAcceleration(16);
+        elevator.setProfiledMaxAcceleration(18);
         elevator.setValues(new GenericPID(3, 0.0, 0.0));
         elevator.setOutputRange(-1, 1);
 
@@ -195,8 +196,8 @@ public class ElevatorSystem extends GenericSubsystem {
 
         elevator.burnFlash();
 
-        hasHighCurrentLoad = new ValueSwitch(config.ELEVATOR_ZERO_CURRENT, () -> Math.abs(elevator.getOutputCurrent()),
-                1);
+        hasHighCurrentLoad = new CountingValueSwitch(config.ELEVATOR_ZERO_CURRENT, () -> Math.abs(elevator.getOutputCurrent()),
+                1, 10);
     }
 
     public Boolean validSpeed(double speed) {
@@ -242,8 +243,13 @@ public class ElevatorSystem extends GenericSubsystem {
 
     public Command elevatorPositionZeroSequence() {
         double zeroSpeed = -0.2;
+
         return Commands.run(() -> elevator.set(zeroSpeed), this).until(() -> hasHighCurrentLoad.get())
                 .andThen(zeroElevator()).finallyDo(() -> elevator.set(0.0));
+    }
+
+    public Command holdElevatorDown() {
+        return Commands.run(() -> elevator.set(-0.05));
     }
 
     public Command profiledBangBangCmd(Distance position) {
@@ -500,8 +506,13 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public boolean atLoading() {
-        return Math.abs(elevator.getPosition() - Position.LOAD.position().in(Meters)) < 0.06;
+        return Math.abs(elevator.getPosition() - Position.LOAD.position().in(Meters)) < 0.1;
     }
+
+    public Trigger isLoadingTrigger() {
+        return new Trigger(() -> atLoading());
+    }
+
 
     public Distance getElevatorPosition() {
         return Meters.of(elevator.getPosition());

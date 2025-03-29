@@ -115,7 +115,7 @@ public class PhotonVisionPoseCamera extends PhotonVisionCamera {
           averageDistance = totalTagDistance / camResult.targets.size();
         }
 
-        double stdDevFactor = Math.pow(averageDistance, 2.0) / tagCount;
+        double stdDevFactor = Math.pow(averageDistance, 4.0) / tagCount;
         double linearStdDev = VisionConstants.linearStdDevBaseline * stdDevFactor;
 
 

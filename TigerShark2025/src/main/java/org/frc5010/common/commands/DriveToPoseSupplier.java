@@ -37,7 +37,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   private DisplayDouble rotationkP;
   private DisplayDouble rotationkD;
 
-  private final GenericPID pidTranslation = new GenericPID(5, 0, 0);
+  private final GenericPID pidTranslation = new GenericPID(7.0, 0, 0.1);
   /** The PID constants for rotation */
   private final GenericPID pidRotation = new GenericPID(4.0, 0, 0);
 
@@ -74,7 +74,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   private double thetaSpeed;
 
   private final double MAX_VELOCITY = 4.0;
-  private final double MAX_ACCELERATION = 3.5;
+  private final double MAX_ACCELERATION = 5.0;
 
   private Translation2d lastSetpointTranslation = Translation2d.kZero;
   private Rotation2d lastSetpointRotation = Rotation2d.kZero;
@@ -113,7 +113,7 @@ public class DriveToPoseSupplier extends GenericCommand {
     this.poseProvider = poseProvider;
     this.targetPoseProvider = targetPoseProvider;
 
-    distanceController.setTolerance(0.02);
+    distanceController.setTolerance(0.01);
     thetaController.setTolerance(Units.degreesToRadians(2));
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
@@ -227,7 +227,7 @@ public class DriveToPoseSupplier extends GenericCommand {
     
 
  
-    double minFFRadius = 0.05;
+    double minFFRadius = 0.04;
     double maxFFRadius = 0.1;
     double distanceToGoal = getDistanceToTarget();
     double ffInclusionFactor = MathUtil.clamp((distanceToGoal - minFFRadius) / (maxFFRadius - minFFRadius), 0.0, 1.0);
@@ -262,7 +262,7 @@ public class DriveToPoseSupplier extends GenericCommand {
 
     lastTime = Timer.getTimestamp();
     ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-        speedX + distanceController.getSetpoint().velocity*movementAngle.getCos()*ffInclusionFactor, speedY + distanceController.getSetpoint().velocity*movementAngle.getSin()*ffInclusionFactor, thetaSpeed + thetaController.getSetpoint().velocity*ffInclusionFactor, swerveSubsystem.getHeading());
+        speedX + distanceController.getSetpoint().velocity*movementAngle.getCos()*ffInclusionFactor, speedY + distanceController.getSetpoint().velocity*movementAngle.getSin()*ffInclusionFactor, thetaSpeed + thetaController.getSetpoint().velocity*Math.min(ffInclusionFactor*5, 1.0), swerveSubsystem.getHeading());
 
     SmartDashboard.putNumber("X Speed", chassisSpeeds.vxMetersPerSecond);
     SmartDashboard.putNumber("Y Speed", chassisSpeeds.vyMetersPerSecond);
@@ -271,8 +271,9 @@ public class DriveToPoseSupplier extends GenericCommand {
     SmartDashboard.putBoolean("Distance Controller At Setpoint", distanceController.atGoal());
     SmartDashboard.putNumber("VelocityError", distanceController.getVelocityError());
     SmartDashboard.putNumber("PositionError", distanceController.getPositionError());
+    SmartDashboard.putNumber("Theta Error", thetaController.getPositionError());
 
-    SmartDashboard.putBoolean("Theta Controller at Setpoins", thetaController.atGoal());
+    SmartDashboard.putBoolean("Theta Controller at Setpoint", thetaController.atGoal());
     swerveSubsystem.drive(chassisSpeeds, null);
   }
 
@@ -289,10 +290,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   @Override
   public boolean isFinished() {
 
-    if (distanceController.atGoal() && thetaController.atGoal()){
-      onTargetCounter++;
-    }
 
-    return distanceController.atGoal() && thetaController.atGoal() && onTargetCounter > 5;
+    return distanceController.atGoal() && thetaController.atGoal();
   }
 }
