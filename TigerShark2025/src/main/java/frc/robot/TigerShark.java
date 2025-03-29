@@ -74,7 +74,7 @@ public class TigerShark extends GenericRobot {
                 brainZero = new DigitalInput(0);
                 brainOne = new DigitalInput(1);
 
-                leds = new NewLEDSubsystem(4, 28, Inches.of(27.0));
+                leds = new NewLEDSubsystem(1, 28, Inches.of(27.0));
 
                 gyro = (GenericGyro) subsystems.get(ConfigConstants.GYRO);
 
@@ -82,7 +82,7 @@ public class TigerShark extends GenericRobot {
                 eleConfig.gearing = 72.0 / 12.0;
                 elevatorSystem = new ElevatorSystem(mechVisual, eleConfig);
                 shooter = new ShooterSystem(mechVisual, new ShooterSystem.Config());
-                //algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config());
+                algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config());
 
                 elevatorSystem.setUpAccelerationConstraints(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0); // T0-DO:
                                                                                                           // Setup
@@ -262,17 +262,17 @@ public class TigerShark extends GenericRobot {
 
                 
 
-                // driver.LEFT_BUMPER.and(AlgaeArm.algaeSelected).and(ReefscapeButtonBoard.algaeLevelIsSelected)
-                //                 .whileTrue(algaeArm.getDeployCommand());
+                driver.LEFT_BUMPER.and(AlgaeArm.algaeSelected).and(ReefscapeButtonBoard.algaeLevelIsSelected)
+                                .whileTrue(algaeArm.getDeployCommand());
 
-                //driver.createAButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
+                driver.createAButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
 
 
                 driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
                                 .pidControlCommand(
                                                 elevatorSystem.selectElevatorLevel(
                                                                 () -> ReefscapeButtonBoard.ScoringLevel.INTAKE))
-                                ).finallyDo(() -> elevatorSystem.elevatorPositionZeroSequence().schedule()
+                                ).finallyDo(() -> elevatorSystem.elevatorPositionZeroSequence().andThen(elevatorSystem.holdElevatorDown()).schedule()
                                 ));
 
 
@@ -358,7 +358,7 @@ public class TigerShark extends GenericRobot {
                 shooter.setDefaultCommand(shooter.runMotors(() -> operator.getLeftTrigger()));
 
                 elevatorSystem.setDefaultCommand(elevatorSystem.basicSuppliersMovement(operator::getLeftYAxis));
-                //algaeArm.setDefaultCommand(algaeArm.getInitialCommand(operator::getRightTrigger));
+                algaeArm.setDefaultCommand(algaeArm.getInitialCommand(operator::getRightTrigger));
         }
 
         @Override
@@ -373,7 +373,7 @@ public class TigerShark extends GenericRobot {
 
         @Override
         public Command generateAutoCommand(Command autoCommand) {
-                return drivetrain.generateAutoCommand(autoCommand);//.alongWith(algaeArm.getInitialCommand(() -> 0));
+                return drivetrain.generateAutoCommand(autoCommand).alongWith(algaeArm.getInitialCommand(() -> 0));
         }
 
         @Override
