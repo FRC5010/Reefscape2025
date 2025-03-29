@@ -272,7 +272,7 @@ public class TigerShark extends GenericRobot {
                                 .pidControlCommand(
                                                 elevatorSystem.selectElevatorLevel(
                                                                 () -> ReefscapeButtonBoard.ScoringLevel.INTAKE))
-                                ).finallyDo(() -> elevatorSystem.elevatorPositionZeroSequence().andThen(elevatorSystem.holdElevatorDown()).schedule()
+                                ).finallyDo(() -> elevatorSystem.elevatorPositionZeroSequence().andThen(elevatorSystem.holdElevatorDown().withTimeout(1.0)).schedule()
                                 ));
 
 
