@@ -1,5 +1,6 @@
 package swervelib;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Meter;
@@ -29,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import java.util.function.Supplier;
 import swervelib.encoders.SwerveAbsoluteEncoder;
+import swervelib.motors.TalonFXSwerve;
 import swervelib.telemetry.SwerveDriveTelemetry;
 
 /**
@@ -110,7 +112,12 @@ public class SwerveDriveTest
   {
     for (SwerveModule swerveModule : swerveDrive.getModules())
     {
-      swerveModule.getDriveMotor().setVoltage(volts);
+      if (TalonFXSwerve.class.isInstance(swerveModule.getDriveMotor())) {
+        ((TalonFXSwerve)swerveModule.getDriveMotor()).currentCharacterization(Amps.of(volts));
+      } else {
+        swerveModule.getDriveMotor().setVoltage(volts);
+      }
+      
     }
   }
 
@@ -389,7 +396,11 @@ public class SwerveDriveTest
         log -> {
           for (SwerveModule module : swerveDrive.getModules())
           {
-            logDriveMotorVoltage(module, log);
+            if (TalonFXSwerve.class.isInstance(module.getDriveMotor())) {
+              ((TalonFXSwerve)module.getDriveMotor()).sysidSignalLog(log);
+            } else {
+              logDriveMotorVoltage(module, log);
+            }
           }
         }, swerveSubsystem));
   }

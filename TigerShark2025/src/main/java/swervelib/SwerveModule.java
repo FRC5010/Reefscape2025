@@ -13,6 +13,8 @@ import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -23,6 +25,7 @@ import swervelib.math.SwerveMath;
 import swervelib.motors.SparkMaxBrushedMotorSwerve;
 import swervelib.motors.SparkMaxSwerve;
 import swervelib.motors.SwerveMotor;
+import swervelib.motors.TalonFXSwerve;
 import swervelib.parser.Cache;
 import swervelib.parser.PIDFConfig;
 import swervelib.parser.SwerveModuleConfiguration;
@@ -470,7 +473,61 @@ public class SwerveModule
       driveMotor.setVoltage(percentOutput * 12);
     } else
     {
+    
       driveMotor.setReference(desiredState.speedMetersPerSecond, driveFeedforwardVoltage);
+    }
+
+    // Prevent module rotation if angle is the same as the previous angle.
+    // Synchronize encoders if queued and send in the current position as the value from the absolute encoder.
+    if (absoluteEncoder != null && synchronizeEncoderQueued && synchronizeEncoderEnabled)
+    {
+      double absoluteEncoderPosition = getAbsolutePosition();
+      if (Math.abs(angleMotor.getPosition() - absoluteEncoderPosition) >= synchronizeEncoderDeadband)
+      {
+        angleMotor.setPosition(absoluteEncoderPosition);
+      }
+      angleMotor.setReference(desiredState.angle.getDegrees(), 0, absoluteEncoderPosition);
+      synchronizeEncoderQueued = false;
+    } else
+    {
+      angleMotor.setReference(desiredState.angle.getDegrees(), 0);
+    }
+
+    lastState = desiredState;
+
+    if (SwerveDriveTelemetry.isSimulation)
+    {
+      simModule.updateStateAndPosition(desiredState);
+    }
+
+    // TODO: Change and move to SwerveDriveTelemetry
+    if (SwerveDriveTelemetry.verbosity.ordinal() >= TelemetryVerbosity.INFO.ordinal())
+    {
+      SwerveDriveTelemetry.desiredStatesObj[moduleNumber] = desiredState;
+    }
+
+    if (SwerveDriveTelemetry.verbosity == TelemetryVerbosity.HIGH)
+    {
+      speedSetpointPublisher.set(desiredState.speedMetersPerSecond);
+      angleSetpointPublisher.set(desiredState.angle.getDegrees());
+    }
+
+    if (moduleNumber == SwerveDriveTelemetry.moduleCount - 1)
+    {
+      SwerveDriveTelemetry.endCtrlCycle();
+    }
+  }
+
+  public void setDesiredState(SwerveModuleState desiredState, boolean isOpenLoop, LinearAcceleration acceleration, Current torqueCurrent)
+  {
+    if (isOpenLoop)
+    {
+      double percentOutput = desiredState.speedMetersPerSecond / maxDriveVelocity.in(MetersPerSecond);
+      driveMotor.setVoltage(percentOutput * 12);
+    } else
+    {
+    
+      ((TalonFXSwerve)driveMotor).setDriveReference(desiredState.speedMetersPerSecond, acceleration, torqueCurrent);
     }
 
     // Prevent module rotation if angle is the same as the previous angle.

@@ -516,7 +516,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
               newTime - previousTime.get());
           swerveDrive.drive(newSetpoint.robotRelativeSpeeds(),
               newSetpoint.moduleStates(),
-              newSetpoint.feedforwards().linearForces());
+              newSetpoint.feedforwards());
 
           prevSetpoint.set(newSetpoint);
           previousTime.set(newTime);
@@ -591,6 +591,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
    * @return SysId Drive Command
    */
   public Command sysIdDriveMotorCommand() {
+    
     return SwerveDriveTest.generateSysIdCommand(
         SwerveDriveTest.setDriveSysIdRoutine(
             new SysIdRoutine.Config(Volts.of(0.5).per(Second), Volts.of(8), Second.of(30)),
@@ -1047,11 +1048,11 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         null != angleSpeedSupplier
             ? angleSpeedSupplier.getAsDouble()
             : chassisSpeeds.omegaRadiansPerSecond);
-
+    moduleFeedForwards.torqueCurrentsAmps();
     swerveDrive.drive(
         angleSuppliedChassisSpeeds,
         swerveDrive.kinematics.toSwerveModuleStates(angleSuppliedChassisSpeeds),
-        moduleFeedForwards.linearForces());
+        moduleFeedForwards);
   }
 
   @Override

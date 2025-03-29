@@ -1,18 +1,28 @@
 package swervelib.motors;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfigurator;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.TorqueCurrentFOC;
+import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.pathplanner.lib.util.DriveFeedforwards;
+
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.LinearAcceleration;
+import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import swervelib.encoders.SwerveAbsoluteEncoder;
 import swervelib.parser.PIDFConfig;
 import swervelib.telemetry.SwerveDriveTelemetry;
@@ -43,6 +53,9 @@ public class TalonFXSwerve extends SwerveMotor
    * Velocity voltage setter for controlling drive motor.
    */
   private final VelocityVoltage      m_velocityVoltageSetter = new VelocityVoltage(0);
+
+  private final VelocityTorqueCurrentFOC velocityTorqueSetter = new VelocityTorqueCurrentFOC(0);
+  private final TorqueCurrentFOC        torqueSetter         = new TorqueCurrentFOC(0);
   /**
    * TalonFX motor controller.
    */
@@ -296,11 +309,18 @@ public class TalonFXSwerve extends SwerveMotor
 
     if (isDriveMotor)
     {
+      velocityTorqueSetter.withVelocity(setpoint).withAcceleration(position);
       motor.setControl(m_velocityVoltageSetter.withVelocity(setpoint).withFeedForward(feedforward));
     } else
     {
       motor.setControl(m_angleVoltageSetter.withPosition(setpoint / 360.0));
     }
+  }
+
+  
+  public void setDriveReference(double setpoint, LinearAcceleration acceleration, Current torqueCurrent) {
+    velocityTorqueSetter.withVelocity(setpoint).withAcceleration(acceleration.in(MetersPerSecondPerSecond)).withFeedForward(torqueCurrent);
+    motor.setControl(velocityTorqueSetter);
   }
 
   /**
@@ -323,6 +343,14 @@ public class TalonFXSwerve extends SwerveMotor
   public void setVoltage(double voltage)
   {
     motor.setVoltage(voltage);
+  }
+
+  public void sysidSignalLog(SysIdRoutineLog log) {
+    SignalLogger.writeString("state", log.toString());
+  }
+
+  public void currentCharacterization(Current current) {
+    motor.setControl(torqueSetter.withOutput(current));
   }
 
   /**
