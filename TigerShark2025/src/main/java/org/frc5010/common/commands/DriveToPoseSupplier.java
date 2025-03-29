@@ -37,7 +37,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   private DisplayDouble rotationkP;
   private DisplayDouble rotationkD;
 
-  private final GenericPID pidTranslation = new GenericPID(7.0, 0, 0.1);
+  private final GenericPID pidTranslation = new GenericPID(7.0, 0, 1.0);
   /** The PID constants for rotation */
   private final GenericPID pidRotation = new GenericPID(4.0, 0, 0);
 
@@ -113,7 +113,7 @@ public class DriveToPoseSupplier extends GenericCommand {
     this.poseProvider = poseProvider;
     this.targetPoseProvider = targetPoseProvider;
 
-    distanceController.setTolerance(0.01);
+    distanceController.setTolerance(0.02);
     thetaController.setTolerance(Units.degreesToRadians(2));
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
@@ -227,7 +227,7 @@ public class DriveToPoseSupplier extends GenericCommand {
     
 
  
-    double minFFRadius = 0.04;
+    double minFFRadius = 0.05;
     double maxFFRadius = 0.1;
     double distanceToGoal = getDistanceToTarget();
     double ffInclusionFactor = MathUtil.clamp((distanceToGoal - minFFRadius) / (maxFFRadius - minFFRadius), 0.0, 1.0);
