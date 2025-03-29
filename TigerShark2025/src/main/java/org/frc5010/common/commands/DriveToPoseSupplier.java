@@ -37,7 +37,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   private DisplayDouble rotationkP;
   private DisplayDouble rotationkD;
 
-  private final GenericPID pidTranslation = new GenericPID(7.0, 0, 1.0);
+  private final GenericPID pidTranslation = new GenericPID(5.0, 0, 0.0);
   /** The PID constants for rotation */
   private final GenericPID pidRotation = new GenericPID(4.0, 0, 0);
 
