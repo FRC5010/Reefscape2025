@@ -176,6 +176,7 @@ public class ElevatorSystem extends GenericSubsystem {
         elevator.setProfiledMaxVelocity(5.5);
         elevator.setProfiledMaxAcceleration(16);
         elevator.setValues(new GenericPID(3, 0.0, 0.0));
+        elevator.setValues(new GenericPID(3.0, 0.0, 0.0));
         elevator.setOutputRange(-1, 1);
 
         PIDConstraints = new TrapezoidProfile.Constraints(elevator.getProfiledMaxVelocity(),
@@ -354,7 +355,7 @@ public class ElevatorSystem extends GenericSubsystem {
         }, this).beforeStarting(setControlType(PIDControlType.PROFILED_POSITION)).finallyDo(this::resetControlType);
     }
 
-    private Command setControlType(PIDControlType type) {
+    public Command setControlType(PIDControlType type) {
         return Commands.runOnce(() -> elevator.setControlType(type));
     }
 
@@ -549,11 +550,11 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double getElevatorExtensionTime() {
-        return elevatorA * Math.pow(elevator.getReference() - elevator.getPosition(), elevatorB) + elevatorC;
+        return elevatorA * Math.pow(Math.abs(selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()).in(Meters) - getElevatorPosition().in(Meters)), elevatorB) + elevatorC;
     }
 
     public double getAverageElevatorVelocity() {
-        return (elevator.getReference() - getElevatorPosition().in(Meters)) / getElevatorExtensionTime();
+        return getElevatorExtensionTime() == 0.0 ? 0.0 : (selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()).in(Meters) - getElevatorPosition().in(Meters)) / getElevatorExtensionTime();
     }
 
     @Override

@@ -32,6 +32,7 @@ import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.arch.GenericRobot.LogLevel;
 import org.frc5010.common.auto.pathplanner.PathfindingCommand5010;
 import org.frc5010.common.commands.DriveToPoseSupplier;
+import org.frc5010.common.commands.DriveToPoseSupplierWithElevator;
 import org.frc5010.common.commands.DriveToPosition;
 import org.frc5010.common.commands.JoystickToSwerve;
 import org.frc5010.common.constants.Constants;
@@ -95,6 +96,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.RobotModel;
+import frc.robot.subsystems.ElevatorSystem;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
@@ -125,6 +127,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
       maxObstacleDimensionDeviation = 0.0;
   int obstacleAvoidanceResolution = 0;
   double previousLeftXInput = 0.0, previousLeftYInput = 0.0, previousRightXInput = 0.0;
+  private ElevatorSystem elevator = new ElevatorSystem(mechanismSimulation, new ElevatorSystem.Config());
 
   public YAGSLSwerveDrivetrain(
       Mechanism2d mechVisual,
@@ -311,6 +314,9 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     Supplier<Pose3d> pose3D = () -> new Pose3d(pose.get());
     Supplier<DriveToPoseSupplier> finishDriving = () -> new DriveToPoseSupplier((SwerveDrivetrain) this, this::getPose, () -> pose3D.get().toPose2d(),
         new Transform2d()).withInitialVelocity(() -> getFieldVelocity()); // TO-DO: Change to Distance-Based PID+
+    // Supplier<DriveToPoseSupplierWithElevator> finishDriving = () -> new DriveToPoseSupplierWithElevator((SwerveDrivetrain) this, this::getPose, () -> pose3D.get().toPose2d(),
+    //     new Transform2d(), elevator, () -> getRobotVelocity());
+    
     // Create the constraints to use while pathfinding
     PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond() * 1.0,
         getSwerveConstants().getkTeleDriveMaxAccelerationUnitsPerSecond() * 1.0,
@@ -494,6 +500,10 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     this.maxRobotDimensionDeviation = maxRobotDimensionDeviation;
     this.maxObstacleDimensionDeviation = maxObstacleDimensionDeviation;
     this.obstacleAvoidanceResolution = resolution;
+  }
+
+  public void addElevator(ElevatorSystem elevator) {
+    this.elevator = elevator;
   }
 
   /**

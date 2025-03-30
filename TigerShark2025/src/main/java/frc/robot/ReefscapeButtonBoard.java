@@ -51,7 +51,8 @@ public class ReefscapeButtonBoard {
         BACK_RIGHT_EF(2, FieldConstants.Reef.Side.EF.getRobotPose(robotOffset)),
         BACK_GH(15, FieldConstants.Reef.Side.GH.getRobotPose(robotOffset)),
         BACK_LEFT_IJ(22, FieldConstants.Reef.Side.IJ.getRobotPose(robotOffset)),
-        FRONT_LEFT_KL(9, FieldConstants.Reef.Side.KL.getRobotPose(robotOffset));
+        FRONT_LEFT_KL(9, FieldConstants.Reef.Side.KL.getRobotPose(robotOffset)),
+        PID_TEST(1, FieldConstants.Reef.Side.AB.getRobotPose(new Transform2d(Meters.of(1.0), Meters.zero(), Rotation2d.fromDegrees(180)))); // TO-DO: Remove
 
         private int button;
         private Pose2d pose;
@@ -135,6 +136,14 @@ public class ReefscapeButtonBoard {
         ),
         Map.entry(
             ScoringLocation.FRONT_LEFT_KL,
+            Map.ofEntries(
+                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d()),
+                Map.entry(ScoringAlignment.ALGAE, new Transform2d()),
+                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d())
+            )
+        ),
+        Map.entry( // TO-DO: Remove
+            ScoringLocation.PID_TEST,
             Map.ofEntries(
                 Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d()),
                 Map.entry(ScoringAlignment.ALGAE, new Transform2d()),
