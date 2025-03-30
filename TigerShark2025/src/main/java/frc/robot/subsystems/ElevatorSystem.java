@@ -21,6 +21,7 @@ import org.frc5010.common.motors.PIDController5010.PIDControlType;
 import org.frc5010.common.motors.function.FollowerMotor;
 import org.frc5010.common.motors.function.VerticalPositionControlMotor;
 import org.frc5010.common.motors.hardware.GenericTalonFXMotor;
+import org.frc5010.common.sensors.CountingValueSwitch;
 import org.frc5010.common.sensors.ValueSwitch;
 import org.frc5010.common.telemetry.DisplayLength;
 
@@ -44,7 +45,7 @@ import frc.robot.ReefscapeButtonBoard;
 
 /** Add your docs here. */
 public class ElevatorSystem extends GenericSubsystem {
-    protected ValueSwitch hasHighCurrentLoad;
+    protected CountingValueSwitch hasHighCurrentLoad;
     protected VerticalPositionControlMotor elevator;
     protected FollowerMotor elevatorFollower;
     protected PIDControlType controlType = PIDControlType.NONE;
@@ -82,7 +83,7 @@ public class ElevatorSystem extends GenericSubsystem {
         L2(Meters.of(0.8579)),
         L3Algae(Meters.of(1.1)),
         L3Shoot(Meters.of(1.27)),
-        L3(Meters.of(1.23)),
+        L3(Meters.of(1.25)),
         L4Shoot(Meters.of(1.765)),
         L4(Meters.of(1.87)),
         NET(Meters.of(1.9));
@@ -110,7 +111,7 @@ public class ElevatorSystem extends GenericSubsystem {
         public final Current MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT = Amps.of(60);
         public Distance centerOfMassX = Meters.zero(), centerOfMassY = Inches.of(1.178), wheelBase = Meters.of(0.56);
         public double g = 9.81;
-        public final double ELEVATOR_ZERO_CURRENT = 40;
+        public final double ELEVATOR_ZERO_CURRENT = 50;
         public SlewRateLimiter rateLimiter = new SlewRateLimiter(0.5);
         public double gearing = 6;
     }
@@ -174,7 +175,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
         elevator.setMotorFeedFwd(new MotorFeedFwdConstants(0.26329, 0.38506, 0.04261));
         elevator.setProfiledMaxVelocity(5.5);
-        elevator.setProfiledMaxAcceleration(16);
+        elevator.setProfiledMaxAcceleration(18);
         elevator.setValues(new GenericPID(3, 0.0, 0.0));
         elevator.setValues(new GenericPID(3.0, 0.0, 0.0));
         elevator.setOutputRange(-1, 1);
@@ -196,11 +197,8 @@ public class ElevatorSystem extends GenericSubsystem {
 
         elevator.burnFlash();
 
-        hasHighCurrentLoad = new ValueSwitch(config.ELEVATOR_ZERO_CURRENT, () -> Math.abs(elevator.getOutputCurrent()),
-                1);
-
-        hasHighCurrentLoad.getTrigger().and(() -> elevator.getPosition() < 0.25).and(() -> elevator.get() < -0.1)
-                .onTrue(zeroElevator());
+        hasHighCurrentLoad = new CountingValueSwitch(config.ELEVATOR_ZERO_CURRENT, () -> Math.abs(elevator.getOutputCurrent()),
+                1, 10);
     }
 
     public Boolean validSpeed(double speed) {
@@ -245,9 +243,14 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public Command elevatorPositionZeroSequence() {
-        double zeroSpeed = -0.1;
-        return Commands.run(() -> elevator.set(zeroSpeed), this).until(hasHighCurrentLoad.getTrigger())
+        double zeroSpeed = -0.2;
+
+        return Commands.run(() -> elevator.set(zeroSpeed), this).until(() -> hasHighCurrentLoad.get())
                 .andThen(zeroElevator()).finallyDo(() -> elevator.set(0.0));
+    }
+
+    public Command holdElevatorDown() {
+        return Commands.run(() -> elevator.set(-0.05));
     }
 
     public Command profiledBangBangCmd(Distance position) {
@@ -386,11 +389,11 @@ public class ElevatorSystem extends GenericSubsystem {
 
     // Function that decreases acceleration to counteract elevator flex
     public double getGeneralAccelerationDampener() {
-        return Math.pow(elevator.getPosition(), 2) + 3 * (2 - elevator.getPosition());
+        return Math.pow(elevator.getPosition()*2, 0.5);
     }
 
     public double getBackwardAccelerationDampener() {
-        return Math.pow(elevator.getPosition(), 2) + 3 * (1.95 - elevator.getPosition());
+        return Math.pow(elevator.getPosition()*2, 0.5);
     }
 
     public double getMaxForwardAcceleration() {
@@ -504,8 +507,13 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public boolean atLoading() {
-        return Math.abs(elevator.getPosition() - Position.LOAD.position().in(Meters)) < 0.06;
+        return Math.abs(elevator.getPosition() - Position.LOAD.position().in(Meters)) < 0.1;
     }
+
+    public Trigger isLoadingTrigger() {
+        return new Trigger(() -> atLoading());
+    }
+
 
     public Distance getElevatorPosition() {
         return Meters.of(elevator.getPosition());

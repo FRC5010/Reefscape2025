@@ -165,11 +165,15 @@ public class ShooterSystem extends GenericSubsystem {
      isEmpty().and(entryBroken).onTrue(setCoralState(CoralState.ENTRY));
     
      // Entry
-     (isEntryActive.or(isEmpty())).and(alignmentBroken).onTrue(setCoralState(CoralState.FULLY_CAPTURED));
+     (isEntryActive.or(isEmpty())).and(alignmentBroken).and(entryBroken.negate()).onTrue(setCoralState(CoralState.FULLY_CAPTURED));
      // Fully Captured
 
 
     
+  }
+
+  public Trigger coralCapturedOrAligned() {
+    return isFullyCaptured().or(isAligned());
   }
 
   public void shooterLeftSpeed(double speed) {
@@ -254,7 +258,7 @@ public class ShooterSystem extends GenericSubsystem {
   }
 
   public Command intakeCoral() {
-    return runMotors(() -> 0.15).until(isFullyCaptured()).finallyDo(() -> {
+    return runMotors(() -> 0.7).until(isFullyCaptured()).finallyDo(() -> {
       shooterLeftSpeed(0);
       shooterRightSpeed(0);
     });
@@ -293,6 +297,10 @@ public class ShooterSystem extends GenericSubsystem {
 
   public Trigger isStopped() {
     return isStopped;
+  }
+
+  public Trigger entrySensorIsBroken() {
+    return entryBroken;
   }
 
   @Override

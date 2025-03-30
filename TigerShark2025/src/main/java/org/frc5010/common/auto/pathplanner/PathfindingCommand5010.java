@@ -298,6 +298,7 @@ public class PathfindingCommand5010 extends Command {
 
     if (!skipUpdates && Pathfinding.isNewPathAvailable()) {
       currentPath = Pathfinding.getCurrentPath(constraints, goalEndState);
+    
 
       if (currentPath != null) {
         currentTrajectory =

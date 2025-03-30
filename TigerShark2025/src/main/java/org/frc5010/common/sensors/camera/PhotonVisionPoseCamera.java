@@ -23,7 +23,11 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Robot;
+import frc.robot.RobotContainer;
 
 /** A camera using the PhotonVision library. */
 public class PhotonVisionPoseCamera extends PhotonVisionCamera {
@@ -62,6 +66,8 @@ public class PhotonVisionPoseCamera extends PhotonVisionCamera {
     this.poseSupplier = poseSupplier;
     this.fieldLayout = fieldLayout;
     poseEstimator = new PhotonPoseEstimator(fieldLayout, strategy, cameraToRobot);
+    poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
+    
   }
 
   public PhotonVisionPoseCamera(
@@ -79,14 +85,19 @@ public class PhotonVisionPoseCamera extends PhotonVisionCamera {
     this.fiducialIds = fiducialIds;
     visionLayout.addDouble("Observations", () -> observations.size());
     poseEstimator = new PhotonPoseEstimator(fieldLayout, strategy, cameraToRobot);
+    poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
   }
 
   /** Update the camera and target with the latest result */
   @Override
   public void updateCameraInfo() {
+    poseEstimator.addHeadingData(Timer.getFPGATimestamp(), poseSupplier.get().getRotation());
+  
     observations.clear();
 
     super.updateCameraInfo();
+    SmartDashboard.putString("Primary Strategy "+name, poseEstimator.getPrimaryStrategy().name());
+  
     for (PhotonPipelineResult camResult : camResults) {
       Optional<EstimatedRobotPose> estimate = poseEstimator.update(camResult);
       if (estimate.isPresent()) {
@@ -104,9 +115,17 @@ public class PhotonVisionPoseCamera extends PhotonVisionCamera {
           averageDistance = totalTagDistance / camResult.targets.size();
         }
 
-        double stdDevFactor = Math.pow(averageDistance, 2.0) / tagCount;
+        double stdDevFactor = Math.pow(averageDistance, 4.0) / tagCount;
         double linearStdDev = VisionConstants.linearStdDevBaseline * stdDevFactor;
+
+
         double angularStdDev = VisionConstants.angularStdDevBaseline * stdDevFactor;
+        if (camResult.multitagResult.isEmpty()) {
+          angularStdDev = 1.0;
+        }
+
+
+        double rotStdDev = 0.3;
 
         // If really close, disregard angle measurement
         if (totalTagDistance < 0.3) {

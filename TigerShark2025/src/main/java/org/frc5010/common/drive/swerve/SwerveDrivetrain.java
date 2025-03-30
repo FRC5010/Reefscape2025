@@ -147,15 +147,7 @@ public class SwerveDrivetrain extends GenericDrivetrain {
       } else {
 
       }
-      driver.createAButton().onTrue(Commands.runOnce(() -> toggleFieldOrientedDrive()));
-      driver
-          .createDownPovButton()
-          .whileTrue(
-              Commands.run(
-                  () -> {
-                    lockWheels();
-                  },
-                  this));
+      driver.createXButton().onTrue(Commands.runOnce(() -> toggleFieldOrientedDrive()));
     }
   }
 
@@ -183,6 +175,12 @@ public class SwerveDrivetrain extends GenericDrivetrain {
             backLeft.getDrivePosition(), new Rotation2d(backLeft.getTurningPosition())),
         new SwerveModulePosition(
             backRight.getDrivePosition(), new Rotation2d(backRight.getTurningPosition()))
+    };
+  }
+
+  public double[] getDriveModuleRotations() {
+    return new double[] {
+      0, 0, 0, 0
     };
   }
 
