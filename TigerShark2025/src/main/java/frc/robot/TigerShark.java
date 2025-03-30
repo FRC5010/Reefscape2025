@@ -35,6 +35,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.ReefscapeButtonBoard.ScoringLocation;
 import frc.robot.auto_routines.AutoChoosers;
 import frc.robot.auto_routines.CustomAuto;
 import frc.robot.auto_routines.Right1Coral;
@@ -84,11 +85,8 @@ public class TigerShark extends GenericRobot {
                 shooter = new ShooterSystem(mechVisual, new ShooterSystem.Config());
                 algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config());
 
-                elevatorSystem.setUpAccelerationConstraints(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0); // T0-DO:
-                                                                                                          // Setup
-                                                                                                          // correct
-                                                                                                          // parameters
-                elevatorSystem.setUpElevatorVelocityFunction(0.0, 0.0, 0.0);
+                elevatorSystem.setUpAccelerationConstraints(-2.5, 1.0, 6, -2.5, 1.0, 6.0, -2.5, 1.0, 6.0); // T0-DO: Setup correct parameters
+                elevatorSystem.setUpElevatorVelocityFunction(1.0, 0.9, 0.0);
 
                 shooter.setLoadZoneSupplier(() -> elevatorSystem.atLoading());
 
@@ -112,6 +110,8 @@ public class TigerShark extends GenericRobot {
                                 () -> elevatorSystem.getMaxBackwardVelocity(),
                                 () -> elevatorSystem.getMaxRightVelocity(),
                                 () -> elevatorSystem.getMaxLeftVelocity());
+
+                ((YAGSLSwerveDrivetrain) drivetrain).addElevator(elevatorSystem);
 
                 centerLineResetPose = new Pose2d(
                                 FieldConstants.Reef.Side.GH.getCenterFace().getTranslation().getMeasureX()
@@ -267,6 +267,8 @@ public class TigerShark extends GenericRobot {
 
                 driver.createAButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
 
+
+                operator.createAButton().onTrue(Commands.runOnce(() -> ReefscapeButtonBoard.setScoringLocation(ScoringLocation.PID_TEST)));
 
                 driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
                                 .pidControlCommand(
