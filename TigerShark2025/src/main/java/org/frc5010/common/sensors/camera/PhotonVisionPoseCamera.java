@@ -130,18 +130,16 @@ public class PhotonVisionPoseCamera extends PhotonVisionCamera {
         double rotStdDev = 0.3;
 
         // If really close, disregard angle measurement
-        if (totalTagDistance < 0.3) {
+        if (averageDistance < 0.3 || (averageDistance > 2 && RobotState.isEnabled())) {
           angularStdDev = 1000.0;
         }
+
+
         SmartDashboard.putNumber("Total Distance To Tag "+name, totalTagDistance);
         SmartDashboard.putNumber("Photon Ambiguity "+name,  camResult.getBestTarget().poseAmbiguity);
         SmartDashboard.putNumberArray("Photon Camera "+name+" POSE", new double[] {
                   robotPose.getX(), robotPose.getY(), robotPose.getRotation().toRotation2d().getDegrees()
           });
-
-        if (RobotState.isEnabled() && robotPose.getTranslation().toTranslation2d().getDistance(poseSupplier.get().getTranslation()) > 2.0) {
-          continue;
-        }
 
         observations.add(
             new PoseObservation(

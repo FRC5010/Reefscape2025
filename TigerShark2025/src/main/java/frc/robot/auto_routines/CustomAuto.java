@@ -26,6 +26,11 @@ public class CustomAuto extends AutoSequence {
           ReefscapeButtonBoard.getScoringPose(location.get(), alignment.get()), level.get()));
   }
 
+  private Command scoreCoralNotDefereed(Supplier<ScoringLocation> location, Supplier<ScoringAlignment> alignment, Supplier<ScoringLevel> level) {
+    return TargetingSystem.createAutoCoralScoringSequence(
+      ReefscapeButtonBoard.getScoringPose(location.get(), alignment.get()), level.get());
+  }
+
   private Command scoreCoral(SendableChooser<ScoringLocations> chooser, SendableChooser<ScoringLevel> level) {
     return scoreCoral(() -> chooser.getSelected().location, () -> chooser.getSelected().align, () -> level.getSelected());
   }

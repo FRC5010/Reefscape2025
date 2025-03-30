@@ -392,8 +392,18 @@ public class PathfindingCommand5010 extends Command {
 
     if (targetPath != null && !targetPath.isChoreoPath()) {
       Pose2d currentPose = poseSupplier.get();
+      ChassisSpeeds currentSpeeds = speedsSupplier.get();
+
+      double currentVel =
+          Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
+      double stoppingDistance = Math.pow(currentVel, 2) / (2 * constraints.maxAccelerationMPSSq());
+
       return currentPose.getTranslation().getDistance(targetPose.getTranslation())
-          <= 0.3;
+          <= stoppingDistance;
+    }
+
+    if (currentTrajectory != null) {
+      return timer.hasElapsed(currentTrajectory.getTotalTimeSeconds() - timeOffset);
     }
 
     return false;

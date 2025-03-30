@@ -74,7 +74,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   private double thetaSpeed;
 
   private final double MAX_VELOCITY = 4.0;
-  private final double MAX_ACCELERATION = 5.0;
+  private final double MAX_ACCELERATION = 4.0;
 
   private Translation2d lastSetpointTranslation = Translation2d.kZero;
   private Rotation2d lastSetpointRotation = Rotation2d.kZero;

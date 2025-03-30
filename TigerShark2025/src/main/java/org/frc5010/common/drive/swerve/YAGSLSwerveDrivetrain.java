@@ -48,6 +48,7 @@ import org.frc5010.common.telemetry.DisplayBoolean;
 import org.ironmaple.simulation.SimulatedArena;
 import org.json.simple.parser.ParseException;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.commands.PathfindingCommand;
@@ -362,14 +363,13 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         new Transform2d()).withInitialVelocity(() -> getFieldVelocity()); // TO-DO: Change to Distance-Based PID+
     // Create the constraints to use while pathfinding
     PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond() * 0.8,
-        5.0,
+        6.0,
         getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond(),
         getSwerveConstants().getkTeleDriveMaxAngularAccelerationUnitsPerSecond());
     // PathConstraints constraints = new PathConstraints(
     // swerveDrive.getMaximumChassisVelocity(), 4.0,
     // swerveDrive.getMaximumChassisAngularVelocity(), Units.degreesToRadians(720));
     // Since AutoBuilder is configured, we can use it to build pathfinding commands
-
     return () -> new PathfindingCommand5010(
         pose.get().transformBy(PathPlanOffset),
         constraints,
@@ -379,27 +379,20 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         this::setChassisSpeedsWithAngleSupplier,
         new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic
                                         // drive trains
-            new PIDConstants(2.0, 0, 0.0), // Translation PID constants
-            new PIDConstants(2.0, 0, 0.0) // Rotation PID constants
+            new PIDConstants(4.0, 0, 0.0), // Translation PID constants
+            new PIDConstants(4.0, 0, 0.0) // Rotation PID constants
         ),
         config,
         this).beforeStarting(() -> {
           poseEstimator.setTargetPoseOnField(pose.get().transformBy(PathPlanOffset), "Auto Drive Pose");
           SmartDashboard.putBoolean("Running AutoDrive", true);
         })
-        .until(() -> getPose().getTranslation().getDistance(pose.get().getTranslation()) < 0.8)
-        // .until(() -> RobotModel.circularObstacleWillBeAvoided(obstaclePosition,
-        // poseEstimator::getCurrentPose,
-        // pose.get(), unavoidableVertices, obstacleRadius, robotRadius,
-        // maxRobotDimensionDeviation,
-        // maxObstacleDimensionDeviation, obstacleAvoidanceResolution))
-        // .until(() -> RobotModel.robotHasLinearPath(getPose(), pose.get(),
-        // unavoidableVertices,
-        // getSwerveConstants().getTrackWidth(), getSwerveConstants().getWheelBase()))
+        .until(() -> getPose().getTranslation().getDistance(pose.get().getTranslation()) < 2.0)
         .andThen(finishDriving.get().withTimeout(timeout).beforeStarting(() -> {
           // poseEstimator.setState(State.ENABLED_FIELD);
           poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose");
-        })).finallyDo(() -> {
+        }))
+        .finallyDo(() -> {
           // poseEstimator.setState(State.ENABLED_ENV);
           SmartDashboard.putBoolean("Running AutoDrive", false);
         });
@@ -593,7 +586,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   public Command sysIdDriveMotorCommand() {
     return SwerveDriveTest.generateSysIdCommand(
         SwerveDriveTest.setDriveSysIdRoutine(
-            new SysIdRoutine.Config(Volts.of(0.5).per(Second), Volts.of(8), Second.of(30)),
+            new SysIdRoutine.Config(Volts.of(0.5).per(Second), Volts.of(7), Second.of(30), (state) -> SignalLogger.writeString("state", state.toString())),
             this, swerveDrive, 12, true),
         3.0, 10.0, 4.0);
   }
