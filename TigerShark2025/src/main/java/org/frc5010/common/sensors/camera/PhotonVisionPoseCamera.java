@@ -24,6 +24,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
@@ -136,6 +138,11 @@ public class PhotonVisionPoseCamera extends PhotonVisionCamera {
         SmartDashboard.putNumberArray("Photon Camera "+name+" POSE", new double[] {
                   robotPose.getX(), robotPose.getY(), robotPose.getRotation().toRotation2d().getDegrees()
           });
+
+        if (RobotState.isEnabled() && robotPose.getTranslation().toTranslation2d().getDistance(poseSupplier.get().getTranslation()) > 2.0) {
+          continue;
+        }
+
         observations.add(
             new PoseObservation(
                 camResult.getTimestampSeconds(), // Timestamp
