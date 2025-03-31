@@ -1,6 +1,7 @@
 {
   "cameras": [
     "left_photonvision.json",
-    "right_photonvision.json"
+    "right_photonvision.json",
+    "quest.json"
   ]
 }

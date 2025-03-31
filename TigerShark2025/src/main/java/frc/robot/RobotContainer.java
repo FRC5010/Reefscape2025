@@ -21,7 +21,7 @@ public class RobotContainer implements WpiHelperInterface {
 
   public RobotContainer() {
     // CanBridge.runTCP();
-    // SignalLogger.start();
+    SignalLogger.start();
     constants = new Constants();
 
     //robot = new ElphabaOld("elphaba");

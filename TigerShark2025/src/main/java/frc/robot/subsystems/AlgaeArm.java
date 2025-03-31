@@ -85,7 +85,7 @@ public class AlgaeArm extends GenericSubsystem {
         public double zPos = 16.25;
         public GenericPID pid = new GenericPID(2, 0.0, 0.0);
         public MotorFeedFwdConstants feedFwd = new MotorFeedFwdConstants(0.02728, 0.11622, 0.00094272);
-        public double statorCurrentLimit = 160.0;
+        public double statorCurrentLimit = 60.0;
         public double supplyCurrentLimit = 50.0;
         public double maxVelocity = 83.333;
         public double maxAcceleration = 16.66;

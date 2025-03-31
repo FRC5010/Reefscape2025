@@ -25,6 +25,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.FloatArraySubscriber;
@@ -64,6 +65,7 @@ public class QuestNav implements PoseProvider {
     private FloatArraySubscriber eulerAngles;
     private DoubleSubscriber battery;
     private double startTimestamp;
+    private BooleanSubscriber isTracking;
 
     private ChassisSpeeds velocity;
     private Pose3d previousPose;
@@ -126,6 +128,7 @@ public class QuestNav implements PoseProvider {
         quaternion = networkTable.getFloatArrayTopic("quaternion").subscribe(new float[4]);
         eulerAngles = networkTable.getFloatArrayTopic("eulerAngles").subscribe(new float[3]);
         battery = networkTable.getDoubleTopic("battery").subscribe(0.0);
+        isTracking = networkTable.getBooleanTopic("device/isTracking").subscribe(false);
 
         heartbeatRequestSub = networkTable.getDoubleTopic("heartbeat/quest_to_robot").subscribe(0.0);
         heartbeatResponsePub = networkTable.getDoubleTopic("heartbeat/robot_to_quest").publish();
@@ -225,7 +228,7 @@ public class QuestNav implements PoseProvider {
         boolean disabled = DriverStation.isDisabled();
         double frame = frameCount.get();
         double previousFrame = previousFrameCount;
-        if (t == 0 || simulation || previousFrame == frame) {
+        if (t == 0 || simulation || previousFrame == frame || !isTracking.get()) {
             isActive = false;
             return false;
         }

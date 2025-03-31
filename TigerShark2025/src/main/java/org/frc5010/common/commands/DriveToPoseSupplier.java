@@ -66,7 +66,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   private Supplier<ChassisSpeeds> initialVelocity = () -> new ChassisSpeeds();
 
   private final double maxAngularSpeed = 3.14;
-  private final double MAX_ANGULAR_ACCELERATION = 6.0;
+  private final double MAX_ANGULAR_ACCELERATION = 5.0;
 
   /** The speed that the robot will drive at in the X direction */
   private double translationalSpeed;
@@ -74,7 +74,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   private double thetaSpeed;
 
   private final double MAX_VELOCITY = 4.0;
-  private final double MAX_ACCELERATION = 4.0;
+  private final double MAX_ACCELERATION = 4.5;
 
   private Translation2d lastSetpointTranslation = Translation2d.kZero;
   private Rotation2d lastSetpointRotation = Rotation2d.kZero;

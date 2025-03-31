@@ -4,5 +4,9 @@
 
 package frc.robot.auto_routines;
 
+import org.frc5010.common.auto.AutoSequence;
+
 /** Add your docs here. */
-public class LudicrousMode {}
+public class LudicrousMode extends AutoSequence {
+    
+}
