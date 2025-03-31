@@ -14,7 +14,6 @@ import org.frc5010.common.utils.AllianceFlip;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.auto_routines.Right4Coral;
 
 
 public class Pancake extends GenericRobot {
@@ -124,7 +123,6 @@ public class Pancake extends GenericRobot {
     @Override
     public void buildAutoCommands() {
         super.buildAutoCommands();
-        addAutoToChooser("Right 4 Coral", new Right4Coral().raceWith(new AutoErrorTracker()));
         // addAutoToChooser("Auto New", new ExampleAuto());
     }
 }
