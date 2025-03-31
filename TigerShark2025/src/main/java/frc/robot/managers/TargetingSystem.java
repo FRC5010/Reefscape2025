@@ -95,11 +95,10 @@ public class TargetingSystem {
         Distance level = elevator.selectElevatorLevel(() -> ScoringLevel.INTAKE);
 
         return drivetrain.driveToPosePrecise(targetPose, StationOffset).get()
-                .alongWith(Commands.runOnce(() -> SmartDashboard.putNumber("Elevator Level:", level.in(Meters))),
-                        elevator.pidControlCommand(level));
+                .alongWith(elevator.pidControlCommand(level));
     }
 
-    public static Command createAutoLoadingSequence(Pose2d targetPose) {
+    public static Command createAutoLoadingSequence(Pose2d targetPose, double feedtimeout) {
         Distance l3Level = elevator.selectElevatorLevel(() -> ScoringLevel.L3);
         Distance intakeLevel = elevator.selectElevatorLevel(() -> ScoringLevel.INTAKE);
 
@@ -115,6 +114,10 @@ public class TargetingSystem {
                                         .get(),
                                 shooter.intakeCoral()
                                         )).until(shooter.coralCapturedOrAligned())).until(shooter.coralCapturedOrAligned()).withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
+    }
+
+    public static Command createAutoLoadingSequence(Pose2d targetPose) {
+        return createAutoLoadingSequence(targetPose, 15.0);
     }
 
     public static Command driveXMetersQuest(Distance distance) {

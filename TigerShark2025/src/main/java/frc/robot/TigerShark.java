@@ -28,6 +28,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.util.Color;
@@ -38,6 +39,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.ReefscapeButtonBoard.ScoringLocation;
 import frc.robot.auto_routines.AutoChoosers;
 import frc.robot.auto_routines.CustomAuto;
+import frc.robot.auto_routines.OneCoralCustom;
 import frc.robot.managers.TargetingSystem;
 import frc.robot.subsystems.AlgaeArm;
 import frc.robot.subsystems.ClimbSubsystem;
@@ -61,7 +63,6 @@ public class TigerShark extends GenericRobot {
         boolean safetyOverride = false;
 
         private final Distance ROBOT_WIDTH = Inches.of(34.75);
-        Pose2d startingPose1, startingPose2, startingPose3;
         RobotStates robotStates;
 
         public TigerShark(String directory) {
@@ -83,7 +84,10 @@ public class TigerShark extends GenericRobot {
                 shooter = new ShooterSystem(mechVisual, new ShooterSystem.Config());
                 algaeArm = new AlgaeArm(mechVisual, new AlgaeArm.Config());
 
-                elevatorSystem.setUpAccelerationConstraints(-2.5, 1.0, 6, -2.5, 1.0, 6.0, -2.5, 1.0, 6.0); // T0-DO: Setup correct parameters
+                elevatorSystem.setUpAccelerationConstraints(-2.5, 1.0, 6, -2.5, 1.0, 6.0, -2.5, 1.0, 6.0); // T0-DO:
+                                                                                                           // Setup
+                                                                                                           // correct
+                                                                                                           // parameters
                 elevatorSystem.setUpElevatorVelocityFunction(1.0, 0.9, 0.0);
 
                 shooter.setLoadZoneSupplier(() -> elevatorSystem.atLoading());
@@ -116,57 +120,6 @@ public class TigerShark extends GenericRobot {
                                                 .plus(Inches.of(113).minus(ROBOT_WIDTH.div(2))),
                                 Inches.of(146.5).minus(ROBOT_WIDTH.div(2)), Rotation2d.fromDegrees(180));
                 resetPositionToCenterLine();
-
-                // segmentedLED = new SegmentedLedSystem(0, 30, mechVisual);
-                // LEDStripSegment providerSegment = segmentedLED.addLedSegment("Pose
-                // Providers", 0, 10, Color.WHITE);
-
-                // ((YAGSLSwerveDrivetrain)
-                // drivetrain).getPoseEstimator().displayOnLEDSegment(providerSegment, 10);
-
-                // Pose2d obstaclePosition = DriverStation.getAlliance().get() == Alliance.Blue
-                // ? new Pose2d(4.48945, 4.0259, new Rotation2d())
-                // : new Pose2d(13.065, 4.0259, new Rotation2d());
-                // Pose2d[] blueVertices = new Pose2d[] { new Pose2d(3.325, 3.313, new
-                // Rotation2d()),
-                // new Pose2d(3.325, 4.698, new Rotation2d()), new Pose2d(4.490, 5.332, new
-                // Rotation2d()),
-                // new Pose2d(5.655, 4.689, new Rotation2d()), new Pose2d(5.655, 3.332, new
-                // Rotation2d()),
-                // new Pose2d(4.490, 2.700, new Rotation2d()) };
-                // Pose2d[] redVertices = new Pose2d[] { new Pose2d(11.905, 3.313, new
-                // Rotation2d()),
-                // new Pose2d(11.905, 4.698, new Rotation2d()), new Pose2d(13.07, 5.332, new
-                // Rotation2d()),
-                // new Pose2d(14.235, 4.689, new Rotation2d()), new Pose2d(14.235, 3.332, new
-                // Rotation2d()),
-                // new Pose2d(13.07, 2.700, new Rotation2d()) };
-                // Pose2d[] vertices = DriverStation.getAlliance().get() == Alliance.Blue ?
-                // blueVertices : redVertices;
-                // Distance obstacleRadius = Inches.of(37.621),
-                // maximumObstacleDimensionDeviation = Inches.of(4.8755),
-                // robotRadius = Inches.of(24.22), maximumRobotDimensionDeviation =
-                // Inches.of(7.0934);
-
-                // ((YAGSLSwerveDrivetrain) drivetrain).setUpCircularObstacle(obstaclePosition,
-                // vertices,
-                // obstacleRadius.in(Meters), robotRadius.in(Meters),
-                // maximumRobotDimensionDeviation.in(Meters),
-                // maximumObstacleDimensionDeviation.in(Meters), 100);
-                startingPose1 = new Pose2d(
-                                FieldConstants.innerStartingLineX.plus(Inches.of(1.0)).minus(Inches.of(17.875))
-                                                .in(Meters),
-                                FieldConstants.fieldDimensions.fieldWidth.minus(Inches.of(17.875)).in(Meters),
-                                new Rotation2d(Degrees.of(180)));
-                startingPose2 = new Pose2d(
-                                FieldConstants.innerStartingLineX.plus(Inches.of(1.0)).minus(Inches.of(17.875))
-                                                .in(Meters),
-                                FieldConstants.fieldDimensions.fieldWidth.in(Meters) / 2,
-                                new Rotation2d(Degrees.of(180)));
-                startingPose3 = new Pose2d(
-                                FieldConstants.innerStartingLineX.plus(Inches.of(1.0)).minus(Inches.of(17.875))
-                                                .in(Meters),
-                                Inches.of(17.875).in(Meters), new Rotation2d(Degrees.of(180)));
 
                 robotStates = new RobotStates(shooter, algaeArm, elevatorSystem, climb,
                                 () -> drivetrain.getPoseEstimator().getCurrentPose());
@@ -209,11 +162,10 @@ public class TigerShark extends GenericRobot {
                 operator.createAButton()
                                 .whileTrue(drivetrain.getPoseEstimator().getCalibrationCommand(drivetrain, 1));
 
-
                 driver.createUpPovButton().whileTrue(Commands
                                 .run(() -> ((YAGSLSwerveDrivetrain) drivetrain)
                                                 .drive(new ChassisSpeeds(0.1, 0, 0)), drivetrain));
-                //operator.createXButton().whileTrue(algaeArm.getSysIdCommand());
+                // operator.createXButton().whileTrue(algaeArm.getSysIdCommand());
 
                 operator.createYButton().onTrue(TargetingSystem.driveXMetersQuest(Meters.of(1.0)));
         }
@@ -244,50 +196,51 @@ public class TigerShark extends GenericRobot {
 
                 driver.createRightPovButton().onTrue(Commands.runOnce(() -> {
                         safetyOverride = !safetyOverride;
-                }).andThen(Commands.startEnd(() -> driver.setRumble(0.5), () -> driver.setRumble(0.0)).withTimeout(0.5).onlyIf(() -> safetyOverride)));
+                }).andThen(Commands.startEnd(() -> driver.setRumble(0.5), () -> driver.setRumble(0.0)).withTimeout(0.5)
+                                .onlyIf(() -> safetyOverride)));
 
-                
                 Trigger safetiesOverrided = new Trigger(() -> safetyOverride);
                 Trigger elevatorOkToRun = (shooter.entrySensorIsBroken().negate()).or(safetiesOverrided);
-                
-               
-                elevatorSystem.isLoadingTrigger().and(shooter.coralCapturedOrAligned().negate())
-                        .whileTrue(shooter.intakeCoral());
+                Trigger isAuto = new Trigger(RobotState::isAutonomous);
+                Trigger itAintAuto = isAuto.negate();
+
+                elevatorSystem.isLoadingTrigger().and(shooter.coralCapturedOrAligned().negate()).and(itAintAuto)
+                                .whileTrue(shooter.intakeCoral());
                 driver.createLeftBumper().and(elevatorOkToRun).whileTrue(Commands.deferredProxy(() -> elevatorSystem
                                 .pidControlCommand(
                                                 elevatorSystem.selectElevatorLevel(
                                                                 () -> ReefscapeButtonBoard.getScoringLevel()))));
-
-                
 
                 driver.LEFT_BUMPER.and(AlgaeArm.algaeSelected).and(ReefscapeButtonBoard.algaeLevelIsSelected)
                                 .whileTrue(algaeArm.getDeployCommand());
 
                 driver.createAButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
 
-
-                operator.createAButton().onTrue(Commands.runOnce(() -> ReefscapeButtonBoard.setScoringLocation(ScoringLocation.PID_TEST)));
+                operator.createAButton().onTrue(Commands
+                                .runOnce(() -> ReefscapeButtonBoard.setScoringLocation(ScoringLocation.PID_TEST)));
 
                 driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
                                 .pidControlCommand(
                                                 elevatorSystem.selectElevatorLevel(
-                                                                () -> ReefscapeButtonBoard.ScoringLevel.INTAKE))
-                                ).finallyDo(() -> elevatorSystem.elevatorPositionZeroSequence().andThen(elevatorSystem.holdElevatorDown().withTimeout(1.0)).schedule()
-                                ));
-
+                                                                () -> ReefscapeButtonBoard.ScoringLevel.INTAKE)))
+                                .finallyDo(() -> elevatorSystem.elevatorPositionZeroSequence()
+                                                .andThen(elevatorSystem.holdElevatorDown().withTimeout(1.0))
+                                                .schedule()));
 
                 driver.createDownPovButton().whileTrue(elevatorSystem.elevatorPositionZeroSequence());
-
 
                 reefscapeButtonBoard.getFireButton()
                                 .whileTrue(Commands.deferredProxy(
                                                 () -> shooter.getShootCommand(ReefscapeButtonBoard.getScoringLevel())));
-                // shooter.coralHasEntered().whileTrue(shooter.intakeCoral());
-                // shooter.isFullyCaptured()
-                // .whileTrue(elevatorSystem
-                // .pidControlCommand(ElevatorSystem.Position.CORAL_EXTENSION.position())
-                // .until(() -> elevatorSystem.isAtLocation(
-                // ElevatorSystem.Position.CORAL_EXTENSION.position())).andThen(shooter.alignCoral()));
+
+
+                // TODO: Try out this code 
+                // itAintAuto.and(shooter.coralHasEntered()).and(elevatorSystem.isLoadingTrigger()).whileTrue(shooter.intakeCoral());
+                // itAintAuto.and(shooter.isFullyCaptured())
+                //                 .onTrue(elevatorSystem
+                //                                 .pidControlCommand(ElevatorSystem.Position.CORAL_EXTENSION.position())
+                //                                 .until(() -> elevatorSystem.isAtLocation(
+                //                                                 ElevatorSystem.Position.CORAL_EXTENSION.position())));
 
                 Trigger elevatorAtCoralExtendPosition = new Trigger(() -> elevatorSystem
                                 .isAtLocationImproved(ElevatorSystem.Position.CORAL_EXTENSION.position()));
@@ -297,15 +250,6 @@ public class TigerShark extends GenericRobot {
                                                 .until(() -> elevatorSystem.isAtLocation(
                                                                 ElevatorSystem.Position.CORAL_EXTENSION.position()))
                                                 .andThen(shooter.runMotors(() -> 0.5)));
-
-                // operator.createUpPovButton().onTrue(Commands.runOnce(() ->
-                // resetPositionToStart()).ignoringDisable(true));
-                // operator.createRightPovButton().onTrue(Commands.runOnce(() ->
-                // resetPosition(startingPose1)).ignoringDisable(true));
-                // operator.createDownPovButton().onTrue(Commands.runOnce(() ->
-                // resetPosition(startingPose2)).ignoringDisable(true));
-                // operator.createLeftPovButton().onTrue(Commands.runOnce(() ->
-                // resetPosition(startingPose3)).ignoringDisable(true));
 
                 climb.setDefaultCommand(climb.runClimb(operator::getRightYAxis));
 
@@ -380,6 +324,7 @@ public class TigerShark extends GenericRobot {
         public void buildAutoCommands() {
                 super.buildAutoCommands();
                 addAutoToChooser("Custom Auto", new CustomAuto());
+                addAutoToChooser("One Coral Custom", new OneCoralCustom());
 
         }
 }
