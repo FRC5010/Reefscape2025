@@ -22,6 +22,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import frc.robot.ReefscapeButtonBoard.ScoringLevel;
 import frc.robot.subsystems.AlgaeArm;
@@ -92,9 +93,12 @@ public class TargetingSystem {
         Distance intakeLevel = elevator.selectElevatorLevel(() -> ScoringLevel.INTAKE);
         BooleanSupplier closeAndSlow = () -> (targetPose.getTranslation().getDistance(drivetrain.getPose().getTranslation()) < 0.5) && Math.abs(drivetrain.getChassisSpeeds().vxMetersPerSecond) < 1.0;
         BooleanSupplier notCloseAndSlow = () -> !closeAndSlow.getAsBoolean();
+        BooleanSupplier closeEnough = () -> (targetPose.getTranslation().getDistance(drivetrain.getPose().getTranslation()) < 0.3) && Math.abs(drivetrain.getChassisSpeeds().vxMetersPerSecond) < 0.5;
+        BooleanSupplier elevatorNotAboveFinalLineupLevel = () -> elevator.getElevatorPosition().in(Meters) < finalLineupLevel.in(Meters);
+        Trigger closeEnoughOrNotAboveFinalLineupLevel = new Trigger(() -> closeEnough.getAsBoolean() || elevatorNotAboveFinalLineupLevel.getAsBoolean());
         return drivetrain.driveToPoseAuton(() -> targetPose, CoralOffset, Seconds.of(5)).get().raceWith(
             elevator.pidControlCommand(prescoreLevel).until(closeAndSlow)
-            .andThen(elevator.pidControlCommand(finalLineupLevel).onlyWhile(closeAndSlow)).andThen(Commands.idle())
+            .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)).onlyWhile(closeEnoughOrNotAboveFinalLineupLevel)).andThen(Commands.idle())
 
             )
                 .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level))
@@ -121,7 +125,7 @@ public class TargetingSystem {
                 .andThen(elevator.holdElevatorDown())
                         )
                 .alongWith(
-                        Commands.idle().until(() -> elevator.getElevatorPosition().in(Meters) < l3Level.in(Meters)+0.8).andThen(
+                        Commands.idle().until(() -> elevator.getElevatorPosition().in(Meters) < l3Level.in(Meters) + 0.8).andThen(
                         Commands.parallel(
                                 drivetrain.driveToPoseAuton(() -> targetPose, StationOffset, Seconds.of(3), constraints)
                                         .get(),

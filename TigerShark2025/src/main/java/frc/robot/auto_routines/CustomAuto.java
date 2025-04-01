@@ -26,9 +26,9 @@ public class CustomAuto extends AutoSequence {
           ReefscapeButtonBoard.getScoringPose(location.get(), alignment.get()), level.get()));
   }
 
-  private Command scoreCoralNotDefereed(Supplier<ScoringLocation> location, Supplier<ScoringAlignment> alignment, Supplier<ScoringLevel> level) {
+  private Command scoreCoralNotDefereed(SendableChooser<ScoringLocations> chooser, SendableChooser<ScoringLevel> level) {
     return TargetingSystem.createAutoCoralScoringSequence(
-      ReefscapeButtonBoard.getScoringPose(location.get(), alignment.get()), level.get());
+      ReefscapeButtonBoard.getScoringPose(chooser.getSelected().location, chooser.getSelected().align), level.getSelected());
   }
 
   private Command scoreCoral(SendableChooser<ScoringLocations> chooser, SendableChooser<ScoringLevel> level) {
@@ -39,6 +39,7 @@ public class CustomAuto extends AutoSequence {
     return Commands.deferredProxy(() -> TargetingSystem.createAutoLoadingSequence(
       ReefscapeButtonBoard.getLoadingPose(location.get())));
   }
+  
 
   private Command loadCoral(SendableChooser<LoadingStationLocation> chooser) {
     return loadCoral(() -> chooser.getSelected());

@@ -174,9 +174,8 @@ public class ElevatorSystem extends GenericSubsystem {
                 new Rotation3d()));
 
         elevator.setMotorFeedFwd(new MotorFeedFwdConstants(0.26329, 0.38506, 0.04261));
-        elevator.setProfiledMaxVelocity(5.5);
-        elevator.setProfiledMaxAcceleration(18);
-        elevator.setValues(new GenericPID(3, 0.0, 0.0));
+        elevator.setProfiledMaxVelocity(6.5);
+        elevator.setProfiledMaxAcceleration(20);
         elevator.setValues(new GenericPID(3.0, 0.0, 0.0));
         elevator.setOutputRange(-1, 1);
 
