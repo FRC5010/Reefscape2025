@@ -143,6 +143,15 @@ public class ReefscapeButtonBoard {
                 Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d(0.0, 0.0, Rotation2d.kZero
                 ))
             )
+        ),
+        Map.entry(
+            ScoringLocation.PID_TEST,
+            Map.ofEntries(
+                Map.entry(ScoringAlignment.REEF_LEFT, new Transform2d(-0.0, 0.0, Rotation2d.kZero)),
+                Map.entry(ScoringAlignment.ALGAE, new Transform2d()),
+                Map.entry(ScoringAlignment.REEF_RIGHT, new Transform2d(0.0, 0.0, Rotation2d.kZero
+                ))
+            )
         )
     );
 
