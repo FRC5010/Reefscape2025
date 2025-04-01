@@ -364,21 +364,26 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   }
 
   public Supplier<Command> driveToPoseAuton(Supplier<Pose2d> pose, Transform2d PathPlanOffset, Time timeout) {
+    PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond() * 1.0,
+        8.0,
+        getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond(),
+        getSwerveConstants().getkTeleDriveMaxAngularAccelerationUnitsPerSecond());
+    return driveToPoseAuton(pose, PathPlanOffset, timeout, constraints);
+  }
+
+
+  public Supplier<Command> driveToPoseAuton(Supplier<Pose2d> pose, Transform2d PathPlanOffset, Time timeout, PathConstraints driveConstraints) {
     Supplier<Pose3d> pose3D = () -> new Pose3d(pose.get());
     Supplier<DriveToPoseSupplier> finishDriving = () -> new DriveToPoseSupplier((SwerveDrivetrain) this, this::getPose, () -> pose3D.get().toPose2d(),
         new Transform2d()).withInitialVelocity(() -> getFieldVelocity()); // TO-DO: Change to Distance-Based PID+
     // Create the constraints to use while pathfinding
-    PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond() * 1.0,
-        7.0,
-        getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond(),
-        getSwerveConstants().getkTeleDriveMaxAngularAccelerationUnitsPerSecond());
     // PathConstraints constraints = new PathConstraints(
     // swerveDrive.getMaximumChassisVelocity(), 4.0,
     // swerveDrive.getMaximumChassisAngularVelocity(), Units.degreesToRadians(720));
     // Since AutoBuilder is configured, we can use it to build pathfinding commands
     return () -> new PathfindingCommand5010(
         pose.get().transformBy(PathPlanOffset),
-        constraints,
+        driveConstraints,
         0.0,
         this::getPose,
         this::getChassisSpeeds,
@@ -393,7 +398,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
           poseEstimator.setTargetPoseOnField(pose.get().transformBy(PathPlanOffset), "Auto Drive Pose");
           SmartDashboard.putBoolean("Running AutoDrive", true);
         })
-        .until(() -> getPose().getTranslation().getDistance(pose.get().getTranslation()) < 2.2)
+        .until(() -> getPose().getTranslation().getDistance(pose.get().getTranslation()) < 2.0)
         .andThen(finishDriving.get().withTimeout(timeout).beforeStarting(() -> {
           // poseEstimator.setState(State.ENABLED_FIELD);
           poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose");

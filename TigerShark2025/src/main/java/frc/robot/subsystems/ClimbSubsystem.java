@@ -33,8 +33,8 @@ public class ClimbSubsystem extends GenericSubsystem {
   private final Distance PIVOT_TO_ATTACHMENT = Inches.of(10);
   private final Translation2d PIVOT_LOCATION = new Translation2d(Inches.of(20), Inches.of(20));
 
-  private final double CLIMB_LIMIT_PEAK = 2.83;
-  private final double CLIMB_LIMIT_MIN = -4.5;
+  private final double CLIMB_LIMIT_PEAK = 2.70;
+  private final double CLIMB_LIMIT_MIN = -4.4;
 
   public static enum ClimbPosition {
     RETRACTED(Rotations.of(-10.0)),

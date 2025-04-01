@@ -37,7 +37,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   private DisplayDouble rotationkP;
   private DisplayDouble rotationkD;
 
-  private final GenericPID pidTranslation = new GenericPID(5.0, 0, 0.0);
+  private final GenericPID pidTranslation = new GenericPID(5.5, 0, 0.0);
   /** The PID constants for rotation */
   private final GenericPID pidRotation = new GenericPID(4.0, 0, 0);
 
@@ -74,7 +74,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   private double thetaSpeed;
 
   private final double MAX_VELOCITY = 4.0;
-  private final double MAX_ACCELERATION = 4.5;
+  private final double MAX_ACCELERATION = 4.3;
 
   private Translation2d lastSetpointTranslation = Translation2d.kZero;
   private Rotation2d lastSetpointRotation = Rotation2d.kZero;

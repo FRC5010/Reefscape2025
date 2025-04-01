@@ -7,9 +7,12 @@ package frc.robot.managers;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
+
+import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -36,7 +39,7 @@ public class TargetingSystem {
     public static Supplier<Distance> maxHeight;
 
     private static Distance MAX_NO_TIPPY_HEIGHT = Meters.of(0.5);
-    private static Transform2d CoralOffset = new Transform2d(-0.05, 0.0, new Rotation2d());
+    private static Transform2d CoralOffset = new Transform2d(-0.02, 0.0, new Rotation2d());
     private static Transform2d StationOffset = new Transform2d(0.0, 0.0, new Rotation2d());
 
     public static void setupParameters(YAGSLSwerveDrivetrain drivetrain, ShooterSystem shooter, ElevatorSystem elevator,
@@ -85,8 +88,15 @@ public class TargetingSystem {
     public static Command createAutoCoralScoringSequence(Pose2d targetPose, ScoringLevel scoringLevel) {
         Distance level = elevator.selectElevatorLevel(() -> scoringLevel);
         Distance prescoreLevel = Meters.of(0.6);
+        Distance finalLineupLevel = Meters.of(1.2);
         Distance intakeLevel = elevator.selectElevatorLevel(() -> ScoringLevel.INTAKE);
-        return drivetrain.driveToPoseAuton(() -> targetPose, CoralOffset, Seconds.of(5)).get().raceWith(elevator.pidControlCommand(prescoreLevel))
+        BooleanSupplier closeAndSlow = () -> (targetPose.getTranslation().getDistance(drivetrain.getPose().getTranslation()) < 0.5) && Math.abs(drivetrain.getChassisSpeeds().vxMetersPerSecond) < 1.0;
+        BooleanSupplier notCloseAndSlow = () -> !closeAndSlow.getAsBoolean();
+        return drivetrain.driveToPoseAuton(() -> targetPose, CoralOffset, Seconds.of(5)).get().raceWith(
+            elevator.pidControlCommand(prescoreLevel).until(closeAndSlow)
+            .andThen(elevator.pidControlCommand(finalLineupLevel).onlyWhile(closeAndSlow)).andThen(Commands.idle())
+
+            )
                 .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level))
                         .andThen(shooter.getShootCommand(scoringLevel)).until(shooter.isEmpty()));
     }
@@ -101,19 +111,22 @@ public class TargetingSystem {
     public static Command createAutoLoadingSequence(Pose2d targetPose, double feedtimeout) {
         Distance l3Level = elevator.selectElevatorLevel(() -> ScoringLevel.L3);
         Distance intakeLevel = elevator.selectElevatorLevel(() -> ScoringLevel.INTAKE);
-
+        PathConstraints constraints = new PathConstraints(4.3,
+        8.0,
+        6.0,
+        6.0);
         return Commands.sequence(
                 elevator.pidControlCommand(intakeLevel).until(() -> elevator.isAtLocation(intakeLevel))
                 .andThen(elevator.elevatorPositionZeroSequence())
                 .andThen(elevator.holdElevatorDown())
                         )
                 .alongWith(
-                        Commands.idle().until(() -> elevator.getElevatorPosition().in(Meters) < l3Level.in(Meters)+0.5).andThen(
+                        Commands.idle().until(() -> elevator.getElevatorPosition().in(Meters) < l3Level.in(Meters)+0.8).andThen(
                         Commands.parallel(
-                                drivetrain.driveToPoseAuton(() -> targetPose, StationOffset, Seconds.of(3))
+                                drivetrain.driveToPoseAuton(() -> targetPose, StationOffset, Seconds.of(3), constraints)
                                         .get(),
                                 shooter.intakeCoral()
-                                        )).until(shooter.coralCapturedOrAligned())).until(shooter.coralCapturedOrAligned()).withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
+                                        )).until(shooter.coralCapturedOrAligned())).until(shooter.coralCapturedOrAligned());
     }
 
     public static Command createAutoLoadingSequence(Pose2d targetPose) {
