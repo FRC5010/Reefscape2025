@@ -332,7 +332,7 @@ public class ReefscapeButtonBoard {
 
     public void configureOperatorButtonBindings(Controller operator) {
         operator.createDownPovButton().onTrue(Commands.runOnce(() -> setScoringLevel(ScoringLevel.INTAKE)));
-        //operator.createAButton().onTrue(Commands.runOnce(() -> setScoringLevel(ScoringLevel.L1)));
+        operator.createAButton().onTrue(Commands.runOnce(() -> setScoringLevel(ScoringLevel.L1)));
         operator.createXButton().onTrue(Commands.runOnce(() -> setScoringLevel(ScoringLevel.L2)));
         operator.createYButton().onTrue(Commands.runOnce(() -> setScoringLevel(ScoringLevel.L3)));
         operator.createBButton().onTrue(Commands.runOnce(() -> setScoringLevel(ScoringLevel.L4)));

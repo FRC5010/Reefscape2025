@@ -86,7 +86,7 @@ public class TargetingSystem {
                 .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocationImproved(level)));
     }
 
-    public static Command createTeleCoralScoringSequence(Pose2d targetPose, ScoringLevel scoringLevel) {
+    public static Command createAutoCoralScoringSequence(Pose2d targetPose, ScoringLevel scoringLevel) {
         Distance level = elevator.selectElevatorLevel(() -> scoringLevel);
         Distance prescoreLevel = Meters.of(0.6);
         Distance finalLineupLevel = Meters.of(1.2);
@@ -101,10 +101,8 @@ public class TargetingSystem {
             .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)).onlyWhile(closeEnoughOrNotAboveFinalLineupLevel)).andThen(Commands.idle())
 
             )
-                .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)));
-    }
-    public static Command createAutoCoralScoringSequence(Pose2d targetPose, ScoringLevel scoringLevel) {
-        return createTeleCoralScoringSequence(targetPose, scoringLevel).andThen(shooter.getShootCommand(scoringLevel)).until(shooter.isEmpty());
+                .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level))
+                        .andThen(shooter.getShootCommand(scoringLevel)).until(shooter.isEmpty()));
     }
 
     public static Command createLoadingSequence(Pose2d targetPose) {

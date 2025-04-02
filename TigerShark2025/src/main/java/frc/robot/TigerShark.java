@@ -58,8 +58,7 @@ public class TigerShark extends GenericRobot {
         DigitalInput brainZero, brainOne;
         DigitalInput centerLineZero;
         Pose2d centerLineResetPose;
-        NewLEDSubsystem rightLeds;
-        //NewLEDSubsystem leftLeds;
+        NewLEDSubsystem leds;
 
         boolean safetyOverride = false;
 
@@ -75,9 +74,7 @@ public class TigerShark extends GenericRobot {
                 brainZero = new DigitalInput(0);
                 brainOne = new DigitalInput(1);
 
-                rightLeds = new NewLEDSubsystem(1, 24, Inches.of(27.0));
-                //leftLeds = new NewLEDSubsystem(2, 24, Inches.of(27));
-
+                leds = new NewLEDSubsystem(1, 28, Inches.of(27.0));
 
                 gyro = (GenericGyro) subsystems.get(ConfigConstants.GYRO);
 
@@ -188,10 +185,13 @@ public class TigerShark extends GenericRobot {
                                                 ReefscapeButtonBoard.getScoringPose(),
                                                 ReefscapeButtonBoard.getScoringLevel())));
                 // Auto drive to station
-                driver.createYButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1), algaeArm));
+                driver.createYButton().whileTrue(
+                                Commands.deferredProxy(
+                                                () -> TargetingSystem.createLoadingSequence(
+                                                                ReefscapeButtonBoard.getStationPose())));
 
                 driver.createAButton()
-                                .whileTrue(Commands.deferredProxy(() -> TargetingSystem.createTeleCoralScoringSequence(
+                                .whileTrue(Commands.deferredProxy(() -> TargetingSystem.createAutoCoralScoringSequence(
                                                 ReefscapeButtonBoard.getScoringPose(),
                                                 ReefscapeButtonBoard.getScoringLevel())));
 
@@ -219,7 +219,7 @@ public class TigerShark extends GenericRobot {
                 driver.LEFT_BUMPER.and(AlgaeArm.algaeSelected).and(ReefscapeButtonBoard.algaeLevelIsSelected)
                                 .whileTrue(algaeArm.getDeployCommand());
 
-                operator.createAButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1), algaeArm));
+                operator.createAButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
 
                 // operator.createAButton().onTrue(Commands
                 //                 .runOnce(() -> ReefscapeButtonBoard.setScoringLocation(ScoringLocation.PID_TEST)));
@@ -268,11 +268,11 @@ public class TigerShark extends GenericRobot {
 
                 driver.createBackButton().onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true));
                 new Trigger(brainZero::get).onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true)
-                                .andThen(Commands.runOnce(() -> rightLeds.setPattern(rightLeds.getRainbowPattern(1.0))))
+                                .andThen(Commands.runOnce(() -> leds.setPattern(leds.getRainbowPattern(1.0))))
                                 .withTimeout(Seconds.of(3.0)));
                 new Trigger(brainOne::get).onTrue(Commands.runOnce(() -> resetPositionToDiagonalStart())
                                 .ignoringDisable(true)
-                                .andThen(Commands.runOnce(() -> rightLeds.setPattern(rightLeds.getRainbowPattern(1.0))))
+                                .andThen(Commands.runOnce(() -> leds.setPattern(leds.getRainbowPattern(1.0))))
                                 .withTimeout(Seconds.of(3.0)));
 
                 Trigger driverFire = new Trigger(() -> driver.getRightTrigger() > 0.15);
@@ -281,10 +281,10 @@ public class TigerShark extends GenericRobot {
 
                 // TODO: Fix logix
                 QuestNav.isQuestOn().and(() -> DriverStation.isDisabled()).whileTrue(
-                                Commands.run(() -> rightLeds.setPattern(rightLeds.getSolidPattern(Color.kGreen)))
+                                Commands.run(() -> leds.setPattern(leds.getSolidPattern(Color.kGreen)))
                                                 .ignoringDisable(true));
                 QuestNav.isQuestOn().negate().and(() -> DriverStation.isDisabled()).whileTrue(
-                                Commands.run(() -> rightLeds.setPattern(rightLeds.getSolidPattern(Color.kRed)))
+                                Commands.run(() -> leds.setPattern(leds.getSolidPattern(Color.kRed)))
                                                 .ignoringDisable(true));
                 // QuestNav.hasHardReset().onTrue(
                 // Commands.runOnce(() ->
