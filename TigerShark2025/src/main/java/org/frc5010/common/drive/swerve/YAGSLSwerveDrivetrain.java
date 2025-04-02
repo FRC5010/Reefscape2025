@@ -378,8 +378,6 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     Supplier<DriveToPoseSupplier> finishDriving = () -> new DriveToPoseSupplier((SwerveDrivetrain) this, this::getPose, () -> pose3D.get().toPose2d(),
         new Transform2d()).withInitialVelocity(() -> getFieldVelocity()); // TO-DO: Change to Distance-Based PID+
     // Create the constraints to use while pathfinding
-<<<<<<< Updated upstream
-=======
     PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond() * 1.0,
         7.0,
         getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond(),
@@ -393,7 +391,6 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     BooleanSupplier straightLineToReef = () -> pose.get().getX() * getPose().getX() + pose.get().getY() * getPose().getY() > 0;
     BooleanSupplier closeEnoughToStation = () -> Math.min(pose.get().getTranslation().getDistance(centerStation1.getTranslation()), pose.get().getTranslation().getDistance(centerStation2.getTranslation())) < 3.75;
     BooleanSupplier engagePID = () -> (goingToReef.getAsBoolean() && straightLineToReef.getAsBoolean()) || (notGoingToReef.getAsBoolean() && closeEnoughToStation.getAsBoolean());
->>>>>>> Stashed changes
     // PathConstraints constraints = new PathConstraints(
     // swerveDrive.getMaximumChassisVelocity(), 4.0,
     // swerveDrive.getMaximumChassisAngularVelocity(), Units.degreesToRadians(720));
@@ -414,12 +411,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         this).beforeStarting(() -> {
           poseEstimator.setTargetPoseOnField(pose.get().transformBy(PathPlanOffset), "Auto Drive Pose");
           SmartDashboard.putBoolean("Running AutoDrive", true);
-<<<<<<< Updated upstream
-        })
-        .until(() -> getPose().getTranslation().getDistance(pose.get().getTranslation()) < 2.0)
-=======
-        }).until(engagePID)
->>>>>>> Stashed changes
+        }).until(goingToReef)
         .andThen(finishDriving.get().withTimeout(timeout).beforeStarting(() -> {
           // poseEstimator.setState(State.ENABLED_FIELD);
           poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose");
