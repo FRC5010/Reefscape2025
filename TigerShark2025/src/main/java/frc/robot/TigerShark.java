@@ -190,6 +190,11 @@ public class TigerShark extends GenericRobot {
                                                 () -> TargetingSystem.createLoadingSequence(
                                                                 ReefscapeButtonBoard.getStationPose())));
 
+                driver.createAButton()
+                                .whileTrue(Commands.deferredProxy(() -> TargetingSystem.createAutoCoralScoringSequence(
+                                                ReefscapeButtonBoard.getScoringPose(),
+                                                ReefscapeButtonBoard.getScoringLevel())));
+
                 // driver.createLeftBumper().whileTrue(Commands.run(() ->
                 // elevatorSystem.setElevatorPosition(elevatorSystem.selectElevatorLevel(() ->
                 // ReefscapeButtonBoard.getScoringLevel())), elevatorSystem));
@@ -214,10 +219,10 @@ public class TigerShark extends GenericRobot {
                 driver.LEFT_BUMPER.and(AlgaeArm.algaeSelected).and(ReefscapeButtonBoard.algaeLevelIsSelected)
                                 .whileTrue(algaeArm.getDeployCommand());
 
-                driver.createAButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
+                operator.createAButton().whileTrue(Commands.run(() -> algaeArm.armSpeed(1)));
 
-                operator.createAButton().onTrue(Commands
-                                .runOnce(() -> ReefscapeButtonBoard.setScoringLocation(ScoringLocation.PID_TEST)));
+                // operator.createAButton().onTrue(Commands
+                //                 .runOnce(() -> ReefscapeButtonBoard.setScoringLocation(ScoringLocation.PID_TEST)));
 
                 driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
                                 .pidControlCommand(
@@ -233,14 +238,13 @@ public class TigerShark extends GenericRobot {
                                 .whileTrue(Commands.deferredProxy(
                                                 () -> shooter.getShootCommand(ReefscapeButtonBoard.getScoringLevel())));
 
-
-                // TODO: Try out this code 
+                // TODO: Try out this code
                 // itAintAuto.and(shooter.coralHasEntered()).and(elevatorSystem.isLoadingTrigger()).whileTrue(shooter.intakeCoral());
                 // itAintAuto.and(shooter.isFullyCaptured())
-                //                 .onTrue(elevatorSystem
-                //                                 .pidControlCommand(ElevatorSystem.Position.CORAL_EXTENSION.position())
-                //                                 .until(() -> elevatorSystem.isAtLocation(
-                //                                                 ElevatorSystem.Position.CORAL_EXTENSION.position())));
+                // .onTrue(elevatorSystem
+                // .pidControlCommand(ElevatorSystem.Position.CORAL_EXTENSION.position())
+                // .until(() -> elevatorSystem.isAtLocation(
+                // ElevatorSystem.Position.CORAL_EXTENSION.position())));
 
                 Trigger elevatorAtCoralExtendPosition = new Trigger(() -> elevatorSystem
                                 .isAtLocationImproved(ElevatorSystem.Position.CORAL_EXTENSION.position()));
