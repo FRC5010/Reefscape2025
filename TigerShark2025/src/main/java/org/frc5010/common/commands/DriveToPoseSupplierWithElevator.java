@@ -44,7 +44,7 @@ public class DriveToPoseSupplierWithElevator extends GenericCommand {
   private DisplayDouble rotationkD;
 
   private final ProfiledPIDController thetaController;
-  private final GenericPID pidRotation = new GenericPID(15.0, 0, 0); // TO-DO: Fix PID
+  private final GenericPID pidRotation = new GenericPID(8.0, 0, 0);
   private final TrapezoidProfile.Constraints thetaConstraints;
 
   private int onTargetCounter = 0;
@@ -197,7 +197,7 @@ public class DriveToPoseSupplierWithElevator extends GenericCommand {
 
   private double calculateNewStartBrakingDistance(double currentVelocity, double intermediateBrakingTime,
       double extensionTime, double a, double b, double c) {
-    return elevatorAverageVelocity == 0.0 ? 0.0 : ((extensionTime - intermediateBrakingTime) * (currentVelocity
+    return ((extensionTime - intermediateBrakingTime) * (currentVelocity
         + ((a * (Math.pow((elevatorAverageVelocity * intermediateBrakingTime) + initialHeight, b + 1)
             - Math.pow((elevatorAverageVelocity * elevatorLowerBoundTime) + initialHeight, b + 1)))
             / (elevatorAverageVelocity * (b + 1)))
@@ -223,7 +223,7 @@ public class DriveToPoseSupplierWithElevator extends GenericCommand {
 
   private double calculateNewElevatorEngagementDistance(double currentVelocity, double intermediateBrakingTime,
       double extensionTime, double a, double b, double c) {
-    return elevatorAverageVelocity == 0 ? 0.0 : (currentVelocity * (intermediateBrakingTime - extensionTime)) + ((a * (Math
+    return (currentVelocity * (intermediateBrakingTime - extensionTime)) + ((a * (Math
         .pow((elevatorAverageVelocity * intermediateBrakingTime) + initialHeight, b + 2)
         - Math.pow((elevatorAverageVelocity * elevatorLowerBoundTime) + initialHeight, b + 2))) / (Math
             .pow(elevatorAverageVelocity, 2) * (b + 1) * (b + 2)))
@@ -275,8 +275,8 @@ public class DriveToPoseSupplierWithElevator extends GenericCommand {
   }
 
   private void updateVitalCalculations() {
-    if (Math.abs(Math.abs(verticalDistance) - verticalElevatorEngagementDistance) > 0.03
-        + (Math.abs(verticalVelocity) * deltaTime) && Math.abs(verticalDistance) < verticalElevatorEngagementDistance) {
+    if (Math.abs(verticalDistance - verticalElevatorEngagementDistance) > 0.03
+        + (Math.abs(verticalVelocity) * deltaTime) && verticalDistance < verticalElevatorEngagementDistance) {
       verticalElevatorEngagementDistance = calculateNewElevatorEngagementDistance(verticalVelocity,
           verticalIntermediateBrakingTime, elevatorVerticalExtensionTime, verticalA, verticalB, verticalC);
       double[] newTimes = updateElevatorExtensionTime(verticalDistance, verticalElevatorEngagementDistance,
@@ -286,8 +286,8 @@ public class DriveToPoseSupplierWithElevator extends GenericCommand {
       verticalIntermediateBrakingTime = newTimes[1];
     }
 
-    if (Math.abs(Math.abs(horizontalDistance) - horizontalElevatorEngagementDistance) > 0.03
-        + (Math.abs(horizontalVelocity) * deltaTime) && Math.abs(horizontalDistance) < horizontalElevatorEngagementDistance) {
+    if (Math.abs(horizontalDistance - horizontalElevatorEngagementDistance) > 0.03
+        + (Math.abs(horizontalVelocity) * deltaTime) && horizontalDistance < horizontalElevatorEngagementDistance) {
       horizontalElevatorEngagementDistance = calculateNewElevatorEngagementDistance(horizontalVelocity,
           horizontalIntermediateBrakingTime, elevatorHorizontalExtensionTime, horizontalA, horizontalB, horizontalC);
       double[] newTimes = updateElevatorExtensionTime(horizontalDistance, horizontalElevatorEngagementDistance,
@@ -354,7 +354,7 @@ public class DriveToPoseSupplierWithElevator extends GenericCommand {
 
   private void limitVerticalVelocityToVelocityCurve() {
     verticalVelocity += Math.signum(Math.abs(verticalDistance) - verticalStartBrakingDistance)
-        * Math.signum(verticalDistance) * maxVerticalAcceleration * deltaTime;
+        * Math.signum(verticalDistance) * maxVerticalAcceleration;
     verticalVelocity = Math.signum(verticalDistance) * Math.max(Math.abs(verticalVelocity), MIN_VELOCITY);
     limitVelocity();
   }
@@ -399,21 +399,6 @@ public class DriveToPoseSupplierWithElevator extends GenericCommand {
     verticalIntermediateBrakingTime = elevatorLowerBoundTime;
   }
 
-  private void updateDistanceVelocityAndMaxAcceleration(Pose2d robotPose2d, Pose2d targetPose) {
-    pathVector = targetPose.getTranslation().minus(robotPose2d.getTranslation());
-    currentVelocity = new Translation2d(velocitySupplier.get().vxMetersPerSecond,
-        velocitySupplier.get().vyMetersPerSecond).rotateBy(targetPose.getRotation().minus(robotPose2d.getRotation()));
-    forwardVector = new Translation2d(1.0, 0.0).rotateBy(targetPose.getRotation());
-    rightVector = new Translation2d(0.0, 1.0).rotateBy(targetPose.getRotation()); // TO-DO: Ensure this code rotates the correctly
-    verticalDistance = (forwardVector.getX() * pathVector.getX()) + (forwardVector.getY() * pathVector.getY());
-    SmartDashboard.putNumber("Psuedo Vertical Distance", pathVector.getX());
-    horizontalDistance = (rightVector.getX() * pathVector.getX()) + (rightVector.getY() * pathVector.getY());
-    maxVerticalAcceleration = Math.min(MAX_ORDINAL_ACCELERATION,
-        getMaximumAcceleration(verticalA, verticalB, verticalC));
-    maxHorizontalAcceleration = Math.min(MAX_ORDINAL_ACCELERATION,
-        getMaximumAcceleration(horizontalA, horizontalB, horizontalC));
-  }
-
   // Called when the command is initially scheduled.
   @Override
   public void init() {
@@ -423,6 +408,9 @@ public class DriveToPoseSupplierWithElevator extends GenericCommand {
 
     Pose2d robotPose = poseProvider.get();
     onTargetCounter = 0;
+    currentVelocity = new Translation2d(velocitySupplier.get().vxMetersPerSecond,
+        velocitySupplier.get().vyMetersPerSecond).rotateBy(targetPose.getRotation().minus(robotPose.getRotation()));
+    thetaController.reset(robotPose.getRotation().getRadians(), velocitySupplier.get().omegaRadiansPerSecond);
 
     thetaController.setP(rotationkP.getValue());
     thetaController.setD(rotationkD.getValue());
@@ -436,7 +424,6 @@ public class DriveToPoseSupplierWithElevator extends GenericCommand {
     elevator.setControlType(PIDControlType.NONE); // TO-DO: Eventually take unnecessary logic out
     finalHeight = elevator.selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()).in(Meters);
     resetElevatorCalculations();
-    updateDistanceVelocityAndMaxAcceleration(robotPose, targetPoseProvider.get());
     verticalVelocity = currentVelocity.getX();
     horizontalVelocity = currentVelocity.getY();
     updateVitalCalculations();
@@ -461,10 +448,23 @@ public class DriveToPoseSupplierWithElevator extends GenericCommand {
     }
 
     // elevatorHeight = elevator.getElevatorPosition().in(Meters);
-    updateDistanceVelocityAndMaxAcceleration(robotPose2d, providedTargetPose);
-    // thetaSpeed = thetaController.calculate(robotPose2d.getRotation().getRadians());
-    thetaSpeed = 0.0;
-    ffInclusionFactor = MathUtil.clamp((pathVector.getNorm() - MIN_FF_RADIUS) / (MAX_FF_RADIUS - MIN_FF_RADIUS), 0.0, 1.0);
+    thetaSpeed = thetaController.calculate(robotPose2d.getRotation().getRadians());
+    currentVelocity = new Translation2d(velocitySupplier.get().vxMetersPerSecond,
+        velocitySupplier.get().vyMetersPerSecond).rotateBy(targetPose.getRotation().minus(robotPose2d.getRotation()));
+    forwardVector = new Translation2d(1.0, 0.0).rotateBy(providedTargetPose.getRotation());
+    rightVector = new Translation2d(0.0, 1.0).rotateBy(providedTargetPose.getRotation()); // TO-DO: Ensure this code
+                                                                                          // rotates the vectors
+                                                                                          // correctly
+    pathVector = targetPose.getTranslation().minus(robotPose2d.getTranslation());
+    ffInclusionFactor = MathUtil.clamp((pathVector.getNorm() - MIN_FF_RADIUS) / (MAX_FF_RADIUS - MIN_FF_RADIUS), 0.0,
+        1.0);
+    verticalDistance = (forwardVector.getX() * pathVector.getX()) + (forwardVector.getY() * pathVector.getY());
+    SmartDashboard.putNumber("Psuedo Vertical Distance", pathVector.getX());
+    horizontalDistance = (rightVector.getX() * pathVector.getX()) + (rightVector.getY() * pathVector.getY());
+    maxVerticalAcceleration = Math.min(MAX_ORDINAL_ACCELERATION,
+        getMaximumAcceleration(verticalA, verticalB, verticalC));
+    maxHorizontalAcceleration = Math.min(MAX_ORDINAL_ACCELERATION,
+        getMaximumAcceleration(horizontalA, horizontalB, horizontalC));
 
     deltaTime = (System.nanoTime() / 1E9) - previousTime;
     previousTime = System.nanoTime() / 1E9;
@@ -547,14 +547,9 @@ public class DriveToPoseSupplierWithElevator extends GenericCommand {
     SmartDashboard.putNumber("Forward Vector X", forwardVector.getX());
     SmartDashboard.putNumber("Right Vector Y", rightVector.getY());
     SmartDashboard.putNumber("Pseudo Elevator Height", elevatorHeight);
-    SmartDashboard.putNumber("Horizontal Extension Time", elevatorHorizontalExtensionTime);
-    SmartDashboard.putNumber("Vertical Extension Time", elevatorVerticalExtensionTime);
-    SmartDashboard.putNumber("Horizontal Intermediate Time", horizontalIntermediateBrakingTime);
-    SmartDashboard.putNumber("Vertical Intermediate Time", verticalIntermediateBrakingTime);
     SmartDashboard.putBoolean("Vertical Controller At Setpoint", verticalControllerAtTarget());
     SmartDashboard.putBoolean("Horizontal Controller At Setpoint", horizontalControllerAttarget());
     SmartDashboard.putBoolean("Theta Controller at Setpoint", thetaController.atGoal());
-
     swerveSubsystem.drive(robotChassisSpeeds, null);
   }
 

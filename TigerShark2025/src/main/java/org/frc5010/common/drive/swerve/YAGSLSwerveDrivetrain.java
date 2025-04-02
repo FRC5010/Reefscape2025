@@ -46,7 +46,6 @@ import org.frc5010.common.drive.swerve_utils.PathConstraints5010;
 import org.frc5010.common.drive.swerve_utils.SwerveSetpointGenerator5010;
 import org.frc5010.common.sensors.Controller;
 import org.frc5010.common.telemetry.DisplayBoolean;
-import org.frc5010.common.utils.AllianceFlip;
 import org.ironmaple.simulation.SimulatedArena;
 import org.json.simple.parser.ParseException;
 
@@ -378,22 +377,6 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     Supplier<DriveToPoseSupplier> finishDriving = () -> new DriveToPoseSupplier((SwerveDrivetrain) this, this::getPose, () -> pose3D.get().toPose2d(),
         new Transform2d()).withInitialVelocity(() -> getFieldVelocity()); // TO-DO: Change to Distance-Based PID+
     // Create the constraints to use while pathfinding
-<<<<<<< Updated upstream
-=======
-    PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond() * 1.0,
-        7.0,
-        getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond(),
-        getSwerveConstants().getkTeleDriveMaxAngularAccelerationUnitsPerSecond());
-    Pose2d centerOfReef = DriverStation.getAlliance().get() == Alliance.Blue ? new Pose2d(4.48945, 4.0259, new Rotation2d())
-        : new Pose2d(13.065, 4.0259, new Rotation2d());
-    Pose2d centerStation1 = DriverStation.getAlliance().get() == Alliance.Blue ? new Pose2d(1.180, 7.009, new Rotation2d()) : AllianceFlip.flipPose(new Pose2d(1.180, 7.009, new Rotation2d()));
-    Pose2d centerStation2 = DriverStation.getAlliance().get() == Alliance.Blue ? new Pose2d(1.131, 1.071, new Rotation2d()) : AllianceFlip.flipPose(new Pose2d(1.131, 1.071, new Rotation2d()));
-    BooleanSupplier goingToReef = () -> pose.get().getTranslation().getDistance(centerOfReef.getTranslation()) < 2.0;
-    BooleanSupplier notGoingToReef = () -> !goingToReef.getAsBoolean();
-    BooleanSupplier straightLineToReef = () -> pose.get().getX() * getPose().getX() + pose.get().getY() * getPose().getY() > 0;
-    BooleanSupplier closeEnoughToStation = () -> Math.min(pose.get().getTranslation().getDistance(centerStation1.getTranslation()), pose.get().getTranslation().getDistance(centerStation2.getTranslation())) < 3.75;
-    BooleanSupplier engagePID = () -> (goingToReef.getAsBoolean() && straightLineToReef.getAsBoolean()) || (notGoingToReef.getAsBoolean() && closeEnoughToStation.getAsBoolean());
->>>>>>> Stashed changes
     // PathConstraints constraints = new PathConstraints(
     // swerveDrive.getMaximumChassisVelocity(), 4.0,
     // swerveDrive.getMaximumChassisAngularVelocity(), Units.degreesToRadians(720));
@@ -414,12 +397,8 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         this).beforeStarting(() -> {
           poseEstimator.setTargetPoseOnField(pose.get().transformBy(PathPlanOffset), "Auto Drive Pose");
           SmartDashboard.putBoolean("Running AutoDrive", true);
-<<<<<<< Updated upstream
         })
         .until(() -> getPose().getTranslation().getDistance(pose.get().getTranslation()) < 2.0)
-=======
-        }).until(engagePID)
->>>>>>> Stashed changes
         .andThen(finishDriving.get().withTimeout(timeout).beforeStarting(() -> {
           // poseEstimator.setState(State.ENABLED_FIELD);
           poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose");
