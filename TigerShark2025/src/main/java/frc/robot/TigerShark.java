@@ -199,6 +199,11 @@ public class TigerShark extends GenericRobot {
                 }).andThen(Commands.startEnd(() -> driver.setRumble(0.5), () -> driver.setRumble(0.0)).withTimeout(0.5)
                                 .onlyIf(() -> safetyOverride)));
 
+                operator.createLeftPovButton().onTrue(Commands.runOnce(() -> {
+                        climb.setOverride(!climb.getOverride());
+                }).andThen(Commands.startEnd(() -> operator.setRumble(0.5), () -> operator.setRumble(0.0)).withTimeout(0.5)
+                .onlyIf(climb::getOverride)));
+
                 Trigger safetiesOverrided = new Trigger(() -> safetyOverride);
                 Trigger elevatorOkToRun = (shooter.entrySensorIsBroken().negate()).or(safetiesOverrided);
                 Trigger isAuto = new Trigger(RobotState::isAutonomous);

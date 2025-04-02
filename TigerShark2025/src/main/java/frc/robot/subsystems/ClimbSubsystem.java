@@ -36,6 +36,8 @@ public class ClimbSubsystem extends GenericSubsystem {
   private final double CLIMB_LIMIT_PEAK = 2.70;
   private final double CLIMB_LIMIT_MIN = -4.4;
 
+  private boolean override = false;
+
   public static enum ClimbPosition {
     RETRACTED(Rotations.of(-10.0)),
     EXTENDED(Rotations.of(10.0)); // TODO: Fix number of rotations
@@ -78,7 +80,7 @@ public class ClimbSubsystem extends GenericSubsystem {
   }
 
   public void runMotor(double speed) {
-    if (speed > 0 && isAtMax() || speed < 0 && isAtMin()) {
+    if (!override && speed > 0 && (isAtMax() || speed < 0 && isAtMin()) ) {
       climbMotor.set(0);
       return;
     }
@@ -111,6 +113,14 @@ public class ClimbSubsystem extends GenericSubsystem {
 
   public boolean isClimbing() {
     return Math.abs(climbMotorEncoder.getVelocity()) > 0.01;
+  }
+
+  public void setOverride(boolean value) {
+    override = value;
+  }
+
+  public boolean getOverride() {
+    return override;
   }
 
   @Override
