@@ -185,10 +185,14 @@ public class TigerShark extends GenericRobot {
                                                 ReefscapeButtonBoard.getScoringPose(),
                                                 ReefscapeButtonBoard.getScoringLevel())));
                 // Auto drive to station
-                driver.createYButton().whileTrue(
-                                Commands.deferredProxy(
-                                                () -> TargetingSystem.createLoadingSequence(
-                                                                ReefscapeButtonBoard.getStationPose())));
+                // driver.createYButton().whileTrue(
+                //                 Commands.deferredProxy(
+                //                                 () -> TargetingSystem.createLoadingSequence(
+                //                                                 ReefscapeButtonBoard.getStationPose())));
+
+                driver.createYButton().whileTrue(Commands.deferredProxy(() -> TargetingSystem.createAutoCoralScoringSequence(
+                        ReefscapeButtonBoard.getScoringPose(),
+                        ReefscapeButtonBoard.getScoringLevel())));
 
                 // driver.createLeftBumper().whileTrue(Commands.run(() ->
                 // elevatorSystem.setElevatorPosition(elevatorSystem.selectElevatorLevel(() ->
