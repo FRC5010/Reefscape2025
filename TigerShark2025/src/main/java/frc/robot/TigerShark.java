@@ -6,8 +6,10 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 
 import org.frc5010.common.arch.GenericRobot;
+import org.frc5010.common.auto.AutoSequence;
 import org.frc5010.common.commands.calibration.WheelRadiusCharacterization;
 import org.frc5010.common.config.ConfigConstants;
+import org.frc5010.common.config.json.YAGSLDriveModuleJson;
 import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.drive.pose.DrivePoseEstimator.State;
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
@@ -16,6 +18,8 @@ import org.frc5010.common.sensors.camera.QuestNav;
 import org.frc5010.common.sensors.gyro.GenericGyro;
 import org.frc5010.common.subsystems.NewLEDSubsystem;
 import org.frc5010.common.utils.AllianceFlip;
+
+import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -40,6 +44,7 @@ import frc.robot.ReefscapeButtonBoard.ScoringLocation;
 import frc.robot.auto_routines.AutoChoosers;
 import frc.robot.auto_routines.CustomAuto;
 import frc.robot.auto_routines.OneCoralCustom;
+import frc.robot.auto_routines.WheelCalibrationAuto;
 import frc.robot.managers.TargetingSystem;
 import frc.robot.subsystems.AlgaeArm;
 import frc.robot.subsystems.ClimbSubsystem;
@@ -190,7 +195,7 @@ public class TigerShark extends GenericRobot {
                 //                                 () -> TargetingSystem.createLoadingSequence(
                 //                                                 ReefscapeButtonBoard.getStationPose())));
 
-                driver.createYButton().whileTrue(Commands.deferredProxy(() -> TargetingSystem.createAutoCoralScoringSequence(
+                driver.createYButton().whileTrue(Commands.deferredProxy(() -> TargetingSystem.createNewTeleopCoralScoringSequence(
                         ReefscapeButtonBoard.getScoringPose(),
                         ReefscapeButtonBoard.getScoringLevel())));
 
@@ -334,6 +339,6 @@ public class TigerShark extends GenericRobot {
                 super.buildAutoCommands();
                 addAutoToChooser("Custom Auto", new CustomAuto());
                 addAutoToChooser("One Coral Custom", new OneCoralCustom());
-
+                addAutoToChooser("Wheel Calibration Auto", new WheelCalibrationAuto((YAGSLSwerveDrivetrain) drivetrain));
         }
 }

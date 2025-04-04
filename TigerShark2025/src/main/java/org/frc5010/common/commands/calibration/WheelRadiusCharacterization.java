@@ -35,7 +35,7 @@ public class WheelRadiusCharacterization extends GenericCommand {
 
 
   private final double RAMP_RATE = 1.0;
-  private final double ROTATION_SPEED = 6.0;
+  private final double ROTATION_SPEED = 2.0;
   private SlewRateLimiter rampEnforcer = new SlewRateLimiter(RAMP_RATE);
   private SwerveDrivetrain drivetrain;
   private Supplier<Rotation2d> gyroOverride = null;

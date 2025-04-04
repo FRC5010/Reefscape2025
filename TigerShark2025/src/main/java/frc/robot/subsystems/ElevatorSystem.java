@@ -80,12 +80,12 @@ public class ElevatorSystem extends GenericSubsystem {
         L1(Meters.of(0.72)),
         L2Algae(Meters.of(0.11)),
         L2Shoot(Meters.of(0.87)),
-        L2(Meters.of(0.8579)),
+        L2(Meters.of(0.8779)),
         L3Algae(Meters.of(1.1)),
         L3Shoot(Meters.of(1.27)),
-        L3(Meters.of(1.25)),
+        L3(Meters.of(1.27)),
         L4Shoot(Meters.of(1.765)),
-        L4(Meters.of(1.87)),
+        L4(Meters.of(1.88)),
         NET(Meters.of(1.9));
 
         private final Distance position;
@@ -164,7 +164,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
         elevator.setupSimulatedMotor(config.gearing, Pounds.of(30), Inches.of(1.1),
                 LOAD.getLength(), Inches.of(83.475 - 6.725), LOAD.getLength(),
-                Meters.of(0.2), RobotBase.isSimulation() ? 0.75 : 0.37);
+                Meters.of(0.2), RobotBase.isSimulation() ? 0.75 : 0.375);
         elevatorFollower.setCurrentLimit(config.MAX_ELEVATOR_STATOR_CURRENT_LIMIT);
         ((GenericTalonFXMotor) elevatorFollower.getMotorController())
                 .setSupplyCurrent(config.MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT);
@@ -281,6 +281,16 @@ public class ElevatorSystem extends GenericSubsystem {
         }).finallyDo(() -> {
             elevator.set(0);
             elevator.setControlType(controlType);
+        });
+    }
+
+    public Command newPidControlCommand(Distance position) {
+        return Commands.run(() -> {
+            runControllerToSetpoint();
+
+        }, this).beforeStarting(() -> {
+            resetController(position);
+            elevator.setControlType(PIDControlType.NONE);
         });
     }
 
@@ -569,11 +579,6 @@ public class ElevatorSystem extends GenericSubsystem {
         elevator.draw();
 
         SmartDashboard.putNumber("Elevator Current", Math.abs(elevator.getOutputCurrent()));
-        SmartDashboard.putNumber("forward acceleration", getMaxForwardAcceleration());
-        SmartDashboard.putNumber("backward acceleration", getMaxBackwardAcceleration());
-        SmartDashboard.putNumber("left acceleration", getMaxLeftAcceleration());
-        SmartDashboard.putNumber("right acceleration", getMaxRightAcceleration());
-        SmartDashboard.putNumber("Center of Mass Z", getCenterOfMassZ());
         SmartDashboard.putNumber("Elevator Position Setpoint", profiledPID.getSetpoint().position);
         SmartDashboard.putNumber("Elevator Velocity Setpoint", profiledPID.getSetpoint().velocity);
 

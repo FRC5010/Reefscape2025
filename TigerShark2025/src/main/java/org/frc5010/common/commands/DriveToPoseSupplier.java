@@ -74,7 +74,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   private double thetaSpeed;
 
   private final double MAX_VELOCITY = 4.0;
-  private final double MAX_ACCELERATION = 4.3;
+  private double maxAcceleration = 4.3;
 
   private Translation2d lastSetpointTranslation = Translation2d.kZero;
   private Rotation2d lastSetpointRotation = Rotation2d.kZero;
@@ -95,9 +95,10 @@ public class DriveToPoseSupplier extends GenericCommand {
       Supplier<Pose2d> poseProvider,
       Supplier<Pose2d> targetPoseProvider,
       Transform2d offset) {
+    this.maxAcceleration = 4.3;
     translationConstraints = new TrapezoidProfile.Constraints(
         MAX_VELOCITY,
-        MAX_ACCELERATION);
+        maxAcceleration);
   
     thetaConstraints = new TrapezoidProfile.Constraints(
         maxAngularSpeed,
@@ -139,6 +140,15 @@ public class DriveToPoseSupplier extends GenericCommand {
 
     addRequirements(swerveSubsystem);
   }
+
+  public DriveToPoseSupplier(
+      SwerveDrivetrain swerveSubsystem,
+      Supplier<Pose2d> poseProvider,
+      Supplier<Pose2d> targetPoseProvider,
+      Transform2d offset, double maxAcceleration) {
+        this(swerveSubsystem, poseProvider, targetPoseProvider, offset);
+        this.maxAcceleration = maxAcceleration;
+      }
 
   public Translation2d getVectorToTarget() {
     Transform2d toTarget = targetPoseProvider.get().minus(poseProvider.get());

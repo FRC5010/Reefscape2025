@@ -28,6 +28,8 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -167,8 +169,8 @@ public class ShooterSystem extends GenericSubsystem {
      // Entry
      (isEntryActive.or(isEmpty())).and(alignmentBroken).and(entryBroken.negate()).onTrue(setCoralState(CoralState.FULLY_CAPTURED));
      // Fully Captured
-
-
+    
+     alignmentBroken.and(() -> DriverStation.isFMSAttached()).and(() -> RobotState.isDisabled()).whileTrue(setCoralState(CoralState.FULLY_CAPTURED));
     
   }
 
@@ -206,7 +208,7 @@ public class ShooterSystem extends GenericSubsystem {
 
   public Command shootL1() {
     return Commands.run(() -> {
-      shooterLeftSpeed(0.25);
+      shooterLeftSpeed(0.3);
       shooterRightSpeed(0.1);
     }, this);
   }
@@ -250,7 +252,7 @@ public class ShooterSystem extends GenericSubsystem {
 
  
   public Command setCoralState(CoralState state) {
-    return Commands.runOnce(() -> coralState = state);
+    return Commands.runOnce(() -> coralState = state).ignoringDisable(true);
   }
 
   public CoralState getCoralState() {
@@ -310,17 +312,18 @@ public class ShooterSystem extends GenericSubsystem {
     entryBeamBreakDisplay.setValue(entryBroken.getAsBoolean());
     alignmentBeamBreakDisplay.setValue(alignmentBroken.getAsBoolean());
 
+    
+
+
     SmartDashboard.putString("Coral State", coralState.name());
     SmartDashboard.putNumber("Shooter Left Current", shooterLeft.getOutputCurrent());
     SmartDashboard.putNumber("Shooter Right Current", shooterRight.getOutputCurrent());
     SmartDashboard.putBoolean("Spark Limit Forward", beambreakLimit.getForwardLimit());
-    SmartDashboard.putBoolean("Spark Limit Reverse", beambreakLimit.getReverseLimit());
     SmartDashboard.putNumber("Shooter Encoder Difference",
         Math.abs(captureEncoderCount - shooterLeft.getMotorEncoder().getPosition()));
     SmartDashboard.putNumber("Shooter Left Speed", shooterLeft.getMotorEncoder().getVelocity());
     SmartDashboard.putNumber("Shooter Right Speed", shooterRight.getMotorEncoder().getVelocity());
-    SmartDashboard.putNumber("Stop Counter", stoppedCount);
-    SmartDashboard.putBoolean("Current Threshold Exceeded", currentSwitch.getTrigger().getAsBoolean());
+
   }
 
   @Override

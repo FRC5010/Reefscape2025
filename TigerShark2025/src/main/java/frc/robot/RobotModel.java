@@ -209,12 +209,7 @@ public class RobotModel {
         Pose2d coralRayStart = coralRayEnd.transformBy(new Transform2d(Meters.of(1.0), Meters.of(0.0), new Rotation2d())); // Point 3
         double numerator = (coralRayStart.getX() - frontLeftCorner.getX()) * (coralRayEnd.getY() - coralRayStart.getY()) - (coralRayStart.getY() - frontLeftCorner.getY()) * (coralRayEnd.getX() - coralRayStart.getX());
         double denominator = (frontRightCorner.getX() - frontLeftCorner.getX()) * (coralRayEnd.getY() - coralRayStart.getY()) - (frontRightCorner.getY() - frontLeftCorner.getY()) * (coralRayEnd.getX() - coralRayStart.getX());
-        SmartDashboard.putNumber("Percentage Intersect Numerator", numerator);
-        SmartDashboard.putNumber("Percentage Intersect Denominator", denominator);
-        SmartDashboard.putNumberArray("Percentage Intersect Front Left", new double[] {frontLeftCorner.getX(), frontLeftCorner.getY()});
-        SmartDashboard.putNumberArray("Percentage Intersect Front Right", new double[] {frontRightCorner.getX(), frontRightCorner.getY()});
-        SmartDashboard.putNumberArray("Percentage Intersect Coral Ray Start", new double[] {coralRayStart.getX(), coralRayStart.getY()});
-        SmartDashboard.putNumberArray("Percentage Intersect Coral Ray End", new double[] {coralRayEnd.getX(), coralRayEnd.getY()});
+    
         
         SmartDashboard.putNumber("Percentage Intersect Denominator", denominator);
         if (denominator == 0 || numerator / denominator > 1.0 || numerator / denominator < 0.0) {

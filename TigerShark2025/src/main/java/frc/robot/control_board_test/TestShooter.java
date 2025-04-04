@@ -216,7 +216,7 @@ public class TestShooter extends GenericSubsystem {
 
       SmartDashboard.putString("Coral State", coralState.name());
       SmartDashboard.putNumber("Shooter Left Current", shooterLeft.getOutputCurrent());
-      SmartDashboard.putNumber("Shooter Right Current", shooterRight.getOutputCurrent());
+    
   }
 
   @Override
