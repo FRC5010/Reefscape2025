@@ -314,7 +314,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   public Supplier<Command> driveToPosePrecise(Supplier<Pose2d> pose, Transform2d PathPlanOffset, Time timeout) {
     Supplier<Pose3d> pose3D = () -> new Pose3d(pose.get());
     Supplier<DriveToPoseSupplier> finishDriving = () -> new DriveToPoseSupplier((SwerveDrivetrain) this, this::getPose, () -> pose3D.get().toPose2d(),
-        new Transform2d()).withInitialVelocity(() -> getFieldVelocity()); // TO-DO: Change to Distance-Based PID+
+        new Transform2d(), 4.3).withInitialVelocity(() -> getFieldVelocity()); // TO-DO: Change to Distance-Based PID+
     // Supplier<DriveToPoseSupplierWithElevator> finishDriving = () -> new DriveToPoseSupplierWithElevator((SwerveDrivetrain) this, this::getPose, () -> pose3D.get().toPose2d(),
     //     new Transform2d(), elevator, () -> getRobotVelocity());
     
@@ -382,7 +382,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
   public Supplier<Command> driveToPoseAuton(Supplier<Pose2d> pose, Transform2d PathPlanOffset, Time timeout, PathConstraints driveConstraints) {
     Supplier<Pose3d> pose3D = () -> new Pose3d(pose.get());
     Supplier<DriveToPoseSupplier> finishDriving = () -> new DriveToPoseSupplier((SwerveDrivetrain) this, this::getPose, () -> pose3D.get().toPose2d(),
-        new Transform2d()).withInitialVelocity(() -> getFieldVelocity()); // TO-DO: Change to Distance-Based PID+
+        new Transform2d(), 4.3).withInitialVelocity(() -> getFieldVelocity()); // TO-DO: Change to Distance-Based PID+
     // Create the constraints to use while pathfinding
     // PathConstraints constraints = new PathConstraints(
     // swerveDrive.getMaximumChassisVelocity(), 4.0,

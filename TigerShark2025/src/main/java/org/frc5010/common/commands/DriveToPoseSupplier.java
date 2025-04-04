@@ -85,7 +85,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   private double speedTowardsTarget = 0.0;
   private Translation2d currentVelocity = new Translation2d();
   private double previousTime = 0.0, deltaTime = 0.0;
-  private final int NUM_CYCLES = 1;
+  private final int NUM_CYCLES = 0;
 
   /**
    * Creates a new DriveToPosition command.
@@ -99,8 +99,8 @@ public class DriveToPoseSupplier extends GenericCommand {
       SwerveDrivetrain swerveSubsystem,
       Supplier<Pose2d> poseProvider,
       Supplier<Pose2d> targetPoseProvider,
-      Transform2d offset) {
-    this.maxAcceleration = 4.3;
+      Transform2d offset, double maxAcceleration) {
+    this.maxAcceleration = maxAcceleration;
     translationConstraints = new TrapezoidProfile.Constraints(
         MAX_VELOCITY,
         maxAcceleration);
@@ -145,15 +145,6 @@ public class DriveToPoseSupplier extends GenericCommand {
 
     addRequirements(swerveSubsystem);
   }
-
-  public DriveToPoseSupplier(
-      SwerveDrivetrain swerveSubsystem,
-      Supplier<Pose2d> poseProvider,
-      Supplier<Pose2d> targetPoseProvider,
-      Transform2d offset, double maxAcceleration) {
-        this(swerveSubsystem, poseProvider, targetPoseProvider, offset);
-        this.maxAcceleration = maxAcceleration;
-      }
 
   public Translation2d getVectorToTarget() {
     Transform2d toTarget = targetPoseProvider.get().minus(poseProvider.get());
