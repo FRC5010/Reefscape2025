@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.drive.pose.DrivePoseEstimator;
@@ -48,6 +49,7 @@ public class QuestNav implements PoseProvider {
     public static boolean isActive = false;
     private String networkTableRoot = "questnav";
     private NetworkTableInstance networkTableInstance = NetworkTableInstance.getDefault();
+    private Supplier<ChassisSpeeds> robotVelocity = null;
     private NetworkTable networkTable;
     private Transform3d robotToQuest;
     private Pose3d initPose = new Pose3d();
@@ -142,6 +144,10 @@ public class QuestNav implements PoseProvider {
         return raw.rotateBy(rotation);
     }
 
+    public void withRobotSpeedSupplier(Supplier<ChassisSpeeds> robotSpeed) {
+        robotVelocity = robotSpeed;
+    }
+
     private Translation3d correctWorldAxis(Translation3d rawPosition) {
         return rotateAxes(rawPosition, robotToQuest.getRotation());
     }
@@ -164,6 +170,14 @@ public class QuestNav implements PoseProvider {
     public List<PoseObservation> getObservations() {
         List<PoseObservation> observations = new ArrayList<>();
         double calib = getConfidence();
+        if (null != robotVelocity) {
+            Translation2d questVelVector = new Translation2d(getVelocity().vxMetersPerSecond, getVelocity().vyMetersPerSecond);
+            Translation2d robotVelVector = new Translation2d(robotVelocity.get().vxMetersPerSecond, robotVelocity.get().vyMetersPerSecond);
+            if (Math.abs(questVelVector.getNorm() - robotVelVector.getNorm()) > 1.0) {
+                calib = 10;
+            } 
+        }
+
         if (isActive) {
             observations.add(new PoseObservation(getCaptureTime(), 0, 0, VecBuilder.fill(calib, calib, calib*0.2),
                     new Pose3d(getPosition(), getRotation())));

@@ -12,6 +12,7 @@ import java.util.List;
 import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.config.ConfigConstants;
 import org.frc5010.common.drive.GenericDrivetrain;
+import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 import org.frc5010.common.sensors.camera.GenericCamera;
 import org.frc5010.common.sensors.camera.LimeLightCamera;
 import org.frc5010.common.sensors.camera.PhotonVisionCamera;
@@ -221,6 +222,8 @@ public class CameraConfigurationJson {
         QuestNav questNav = new QuestNav(robotToCamera);
         questNav.resetPose();
         if (drivetrain != null) {
+          // FIX: Undo this
+          questNav.withRobotSpeedSupplier(((YAGSLSwerveDrivetrain)drivetrain)::getFieldVelocity);
           drivetrain.getPoseEstimator().registerPoseProvider(questNav);
         }
         break;
