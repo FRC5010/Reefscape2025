@@ -14,6 +14,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.function.Supplier;
@@ -81,6 +82,10 @@ public class DriveToPoseSupplier extends GenericCommand {
   private double lastTime = 0.0;
   private double driveErrorAbs = 0.0;
   private double thetaErrorAbs = 0.0;
+  private double speedTowardsTarget = 0.0;
+  private Translation2d currentVelocity = new Translation2d();
+  private double previousTime = 0.0, deltaTime = 0.0;
+  private final int NUM_CYCLES = 1;
 
   /**
    * Creates a new DriveToPosition command.
@@ -159,8 +164,21 @@ public class DriveToPoseSupplier extends GenericCommand {
     return targetPoseProvider.get().getTranslation().getDistance(poseProvider.get().getTranslation());
   }
 
+  public double getFutureDistanceToTarget() {
+    return targetPoseProvider.get().getTranslation().getDistance(getFuturePosition());
+  }
+
+  public Translation2d getFuturePosition() {
+    return poseProvider.get().getTranslation().plus(currentVelocity.times(deltaTime * NUM_CYCLES));
+  }
+
   public Rotation2d getAngleToTarget() {
-    return new Translation2d(targetPoseProvider.get().getX() - poseProvider.get().getX(), targetPoseProvider.get().getY() - poseProvider.get().getY()).getAngle().plus(Rotation2d.k180deg);
+    return new Translation2d(targetPoseProvider.get().getX() - poseProvider.get().getX(), targetPoseProvider.get().getY() - poseProvider.get().getY()).getAngle();
+  }
+
+  public Rotation2d getFutureAngleToTarget() {
+    Translation2d futurePose = getFuturePosition();
+    return new Translation2d(targetPoseProvider.get().getX() - futurePose.getX(), targetPoseProvider.get().getY() - futurePose.getY()).getAngle().plus(Rotation2d.k180deg);
   }
 
   public DriveToPoseSupplier withInitialVelocity(Supplier<ChassisSpeeds> speedSupplier) {
@@ -174,6 +192,21 @@ public class DriveToPoseSupplier extends GenericCommand {
     distanceController.setGoal(0);
     thetaController.setGoal(targetPose.getRotation().getRadians());
     swerveSubsystem.getPoseEstimator().setTargetPoseOnField(targetPose, "Target Pose");
+  }
+
+  private void updateSpeedTowardsTarget() {
+    currentVelocity = new Translation2d(initialVelocity.get().vxMetersPerSecond, initialVelocity.get().vyMetersPerSecond);
+    speedTowardsTarget = Math.min(
+            0.0,
+            -currentVelocity
+                .rotateBy(
+                    targetPoseProvider
+                        .get()
+                        .getTranslation()
+                        .minus(poseProvider.get().getTranslation())
+                        .getAngle()
+                        .unaryMinus())
+                .getX());
   }
 
   // Called when the command is initially scheduled.
@@ -190,19 +223,9 @@ public class DriveToPoseSupplier extends GenericCommand {
 
     Translation2d toTarget = getVectorToTarget();
     thetaController.reset(robotPose.getRotation().getRadians(), initialVelocity.get().omegaRadiansPerSecond);
-    Translation2d initialVel = new Translation2d(initialVelocity.get().vxMetersPerSecond, initialVelocity.get().vyMetersPerSecond);
-    double initialSpeedTowardsTarget = Math.min(
-            0.0,
-            -initialVel
-                .rotateBy(
-                    targetPoseProvider
-                        .get()
-                        .getTranslation()
-                        .minus(robotPose.getTranslation())
-                        .getAngle()
-                        .unaryMinus())
-                .getX());
-    distanceController.reset(getDistanceToTarget(), initialSpeedTowardsTarget);
+    updateSpeedTowardsTarget();
+    
+    distanceController.reset(getDistanceToTarget(), speedTowardsTarget);
 
     lastSetpointTranslation = robotPose.getTranslation();
     lastSetpointRotation = targetPoseProvider.get().getRotation();
@@ -212,6 +235,8 @@ public class DriveToPoseSupplier extends GenericCommand {
     if (null != targetPoseProvider.get()) {
       updateTargetPose(targetPoseProvider.get().transformBy(targetTransform));
     }
+    
+    previousTime = Timer.getFPGATimestamp();
   }
 
 
@@ -219,7 +244,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    var robotPose2d = poseProvider.get();
+    Pose2d robotPose2d = poseProvider.get();
 
     Pose2d providedTargetPose = targetPoseProvider.get();
     if (null != providedTargetPose) {
@@ -239,13 +264,19 @@ public class DriveToPoseSupplier extends GenericCommand {
  
     double minFFRadius = 0.05;
     double maxFFRadius = 0.1;
+    currentVelocity = new Translation2d(initialVelocity.get().vxMetersPerSecond, initialVelocity.get().vyMetersPerSecond);
     double distanceToGoal = getDistanceToTarget();
+    double futureDistanceToGoal = getFutureDistanceToTarget();
     double ffInclusionFactor = MathUtil.clamp((distanceToGoal - minFFRadius) / (maxFFRadius - minFFRadius), 0.0, 1.0);
-    distanceController.reset(
-        lastSetpointTranslation.getDistance(targetPose.getTranslation()),
-        distanceController.getSetpoint().velocity);
-    double translationalSpeed =
-        distanceController.calculate(distanceToGoal, 0.0);
+    // distanceController.reset(
+    //     lastSetpointTranslation.getDistance(targetPose.getTranslation()),
+    //     distanceController.getSetpoint().velocity);
+    deltaTime = Timer.getFPGATimestamp() - previousTime;
+    previousTime = Timer.getFPGATimestamp();
+    double futureDistanceToGoalPIDCalculation = distanceController.calculate(futureDistanceToGoal, 0.0);
+    double distanceToGoalPIDCalculation = distanceController.calculate(distanceToGoal, 0.0);
+
+    double translationalSpeed = distanceToGoal > 1.0 ? futureDistanceToGoalPIDCalculation : distanceToGoalPIDCalculation;
     Rotation2d movementAngle = getAngleToTarget();
 
     lastSetpointTranslation =
