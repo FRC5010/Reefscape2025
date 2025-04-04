@@ -134,6 +134,10 @@ public class PhotonVisionPoseCamera extends PhotonVisionCamera {
           angularStdDev = 1000.0;
         }
 
+        if ((averageDistance > 2.5 && RobotState.isEnabled() && tagCount < 2)) {
+          linearStdDev = 100.0;
+        }
+
 
         SmartDashboard.putNumber("Total Distance To Tag "+name, totalTagDistance);
         SmartDashboard.putNumber("Photon Ambiguity "+name,  camResult.getBestTarget().poseAmbiguity);
