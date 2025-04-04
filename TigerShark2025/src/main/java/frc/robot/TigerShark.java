@@ -43,6 +43,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.ReefscapeButtonBoard.ScoringLocation;
 import frc.robot.auto_routines.AutoChoosers;
 import frc.robot.auto_routines.CustomAuto;
+import frc.robot.auto_routines.DriveOnlyCustom;
 import frc.robot.auto_routines.OneCoralCustom;
 import frc.robot.auto_routines.WheelCalibrationAuto;
 import frc.robot.managers.TargetingSystem;
@@ -338,6 +339,7 @@ public class TigerShark extends GenericRobot {
         public void buildAutoCommands() {
                 super.buildAutoCommands();
                 addAutoToChooser("Custom Auto", new CustomAuto());
+                addAutoToChooser("No Elevator Custom", new DriveOnlyCustom());
                 addAutoToChooser("One Coral Custom", new OneCoralCustom());
                 addAutoToChooser("Wheel Calibration Auto", new WheelCalibrationAuto((YAGSLSwerveDrivetrain) drivetrain));
         }
