@@ -164,7 +164,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
         elevator.setupSimulatedMotor(config.gearing, Pounds.of(30), Inches.of(1.1),
                 LOAD.getLength(), Inches.of(83.475 - 6.725), LOAD.getLength(),
-                Meters.of(0.2), RobotBase.isSimulation() ? 0.75 : 0.375);
+                Meters.of(0.2), RobotBase.isSimulation() ? 0.75 : 0.37);
         elevatorFollower.setCurrentLimit(config.MAX_ELEVATOR_STATOR_CURRENT_LIMIT);
         ((GenericTalonFXMotor) elevatorFollower.getMotorController())
                 .setSupplyCurrent(config.MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT);
