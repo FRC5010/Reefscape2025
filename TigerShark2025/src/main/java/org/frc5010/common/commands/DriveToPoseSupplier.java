@@ -85,7 +85,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   private double speedTowardsTarget = 0.0;
   private Translation2d currentVelocity = new Translation2d();
   private double previousTime = 0.0, deltaTime = 0.0;
-  private final int NUM_CYCLES = 0;
+  private final int NUM_CYCLES = 1;
 
   /**
    * Creates a new DriveToPosition command.
@@ -265,7 +265,7 @@ public class DriveToPoseSupplier extends GenericCommand {
     deltaTime = Timer.getFPGATimestamp() - previousTime;
     previousTime = Timer.getFPGATimestamp();
 
-    double translationalSpeed = distanceToGoal > 1.0 ? distanceController.calculate(futureDistanceToGoal, 0.0) : distanceController.calculate(distanceToGoal, 0.0);
+    double translationalSpeed = distanceToGoal > 0.25 ? distanceController.calculate(futureDistanceToGoal, 0.0) : distanceController.calculate(distanceToGoal, 0.0);
     Rotation2d movementAngle = getAngleToTarget();
 
     lastSetpointTranslation =
