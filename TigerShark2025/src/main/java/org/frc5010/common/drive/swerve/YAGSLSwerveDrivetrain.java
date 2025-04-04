@@ -371,12 +371,12 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     return driveToPoseAuton(pose, PathPlanOffset, timeout, constraints);
   }
 
-  public Supplier<Command> newDriveToPoseAuton(Supplier<Pose2d> pose, Transform2d PathPlanOffset, Time timeout, double maxAcceleration) {
+  public Supplier<Command> newDriveToPoseAuton(Supplier<Pose2d> pose, Transform2d PathPlanOffset, Time timeout, double maxAcceleration, DoubleSupplier distance, DoubleSupplier stoppingDistance) {
     PathConstraints constraints = new PathConstraints(getSwerveConstants().getkTeleDriveMaxSpeedMetersPerSecond() * 1.0,
         8.0,
         getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond(),
         getSwerveConstants().getkTeleDriveMaxAngularAccelerationUnitsPerSecond());
-    return newDriveToPoseAuton(pose, PathPlanOffset, timeout, constraints, maxAcceleration);
+    return newDriveToPoseAuton(pose, PathPlanOffset, timeout, constraints, maxAcceleration, distance, stoppingDistance);
   }
 
   public Supplier<Command> driveToPoseAuton(Supplier<Pose2d> pose, Transform2d PathPlanOffset, Time timeout, PathConstraints driveConstraints) {
@@ -416,7 +416,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
         });
   }
 
-  public Supplier<Command> newDriveToPoseAuton(Supplier<Pose2d> pose, Transform2d PathPlanOffset, Time timeout, PathConstraints driveConstraints, double maxAcceleration) {
+  public Supplier<Command> newDriveToPoseAuton(Supplier<Pose2d> pose, Transform2d PathPlanOffset, Time timeout, PathConstraints driveConstraints, double maxAcceleration, DoubleSupplier distance, DoubleSupplier stoppingDistance) {
     Supplier<Pose3d> pose3D = () -> new Pose3d(pose.get());
     Supplier<DriveToPoseSupplier> finishDriving = () -> new DriveToPoseSupplier((SwerveDrivetrain) this, this::getPose, () -> pose3D.get().toPose2d(),
         new Transform2d(), maxAcceleration).withInitialVelocity(() -> getFieldVelocity()); // TO-DO: Change to Distance-Based PID+
@@ -442,7 +442,7 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
           poseEstimator.setTargetPoseOnField(pose.get().transformBy(PathPlanOffset), "Auto Drive Pose");
           SmartDashboard.putBoolean("Running AutoDrive", true);
         })
-        .until(() -> getPose().getTranslation().getDistance(pose.get().getTranslation()) < 2.2)
+        .until(() -> getPose().getTranslation().getDistance(pose.get().getTranslation()) < 2.2 || Math.abs(stoppingDistance.getAsDouble() - distance.getAsDouble()) < 0.1)
         .andThen(finishDriving.get().withTimeout(timeout).beforeStarting(() -> {
           // poseEstimator.setState(State.ENABLED_FIELD);
           poseEstimator.setTargetPoseOnField(pose.get(), "Auto Drive Pose");

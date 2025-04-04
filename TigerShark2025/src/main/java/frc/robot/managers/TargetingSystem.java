@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
@@ -109,12 +110,15 @@ public class TargetingSystem {
         Distance prescoreLevel = Meters.of(0.6);
         Distance finalLineupLevel = Meters.of(1.2);
         Distance intakeLevel = elevator.selectElevatorLevel(() -> ScoringLevel.INTAKE);
+        double maxAcceleration = 3.8;
+        DoubleSupplier stoppingDistance = () -> (Math.pow(drivetrain.getChassisSpeeds().vxMetersPerSecond, 2) + Math.pow(drivetrain.getChassisSpeeds().vyMetersPerSecond, 2)) / (2 * maxAcceleration);
+        DoubleSupplier distanceToTarget = () -> targetPose.getTranslation().getDistance(drivetrain.getPose().getTranslation());
         BooleanSupplier closeAndSlow = () -> (targetPose.getTranslation().getDistance(drivetrain.getPose().getTranslation()) < 0.5) && Math.abs(drivetrain.getChassisSpeeds().vxMetersPerSecond) < 1.0;
         BooleanSupplier notCloseAndSlow = () -> !closeAndSlow.getAsBoolean();
         BooleanSupplier closeEnough = () -> (targetPose.getTranslation().getDistance(drivetrain.getPose().getTranslation()) < 0.3) && Math.abs(drivetrain.getChassisSpeeds().vxMetersPerSecond) < 0.5;
         BooleanSupplier elevatorNotAboveFinalLineupLevel = () -> elevator.getElevatorPosition().in(Meters) < finalLineupLevel.in(Meters);
         Trigger closeEnoughOrNotAboveFinalLineupLevel = new Trigger(() -> closeEnough.getAsBoolean() || elevatorNotAboveFinalLineupLevel.getAsBoolean());
-        return drivetrain.newDriveToPoseAuton(() -> targetPose, CoralOffset, Seconds.of(5), 3.8).get().raceWith(
+        return drivetrain.newDriveToPoseAuton(() -> targetPose, CoralOffset, Seconds.of(5), maxAcceleration, distanceToTarget, stoppingDistance).get().raceWith(
             elevator.pidControlCommand(prescoreLevel).until(closeAndSlow)
             .andThen(elevator.newPidControlCommand(level).until(() -> elevator.isAtLocation(level)).onlyWhile(closeEnoughOrNotAboveFinalLineupLevel)).andThen(Commands.idle())
             )
@@ -127,12 +131,15 @@ public class TargetingSystem {
         Distance prescoreLevel = Meters.of(0.6);
         Distance finalLineupLevel = Meters.of(1.2);
         Distance intakeLevel = elevator.selectElevatorLevel(() -> ScoringLevel.INTAKE);
+        double maxAcceleration = 3.8;
         BooleanSupplier closeAndSlow = () -> (targetPose.getTranslation().getDistance(drivetrain.getPose().getTranslation()) < 0.5) && Math.abs(drivetrain.getChassisSpeeds().vxMetersPerSecond) < 1.0;
         BooleanSupplier notCloseAndSlow = () -> !closeAndSlow.getAsBoolean();
         BooleanSupplier closeEnough = () -> (targetPose.getTranslation().getDistance(drivetrain.getPose().getTranslation()) < 0.3) && Math.abs(drivetrain.getChassisSpeeds().vxMetersPerSecond) < 0.5;
         BooleanSupplier elevatorNotAboveFinalLineupLevel = () -> elevator.getElevatorPosition().in(Meters) < finalLineupLevel.in(Meters);
+        DoubleSupplier stoppingDistance = () -> (Math.pow(drivetrain.getChassisSpeeds().vxMetersPerSecond, 2) + Math.pow(drivetrain.getChassisSpeeds().vyMetersPerSecond, 2)) / (2 * maxAcceleration);
+        DoubleSupplier distanceToTarget = () -> targetPose.getTranslation().getDistance(drivetrain.getPose().getTranslation());
         Trigger closeEnoughOrNotAboveFinalLineupLevel = new Trigger(() -> closeEnough.getAsBoolean() || elevatorNotAboveFinalLineupLevel.getAsBoolean());
-        return drivetrain.newDriveToPoseAuton(() -> targetPose, CoralOffset, Seconds.of(5), 2.0).get().raceWith(
+        return drivetrain.newDriveToPoseAuton(() -> targetPose, CoralOffset, Seconds.of(5), maxAcceleration, distanceToTarget, stoppingDistance).get().raceWith(
             elevator.pidControlCommand(prescoreLevel).until(closeAndSlow)
             .andThen(elevator.newPidControlCommand(level).until(() -> elevator.isAtLocation(level)).onlyWhile(closeEnoughOrNotAboveFinalLineupLevel)).andThen(Commands.idle())
             ).andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)));
