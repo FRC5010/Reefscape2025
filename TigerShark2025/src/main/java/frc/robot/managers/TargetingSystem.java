@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
+import frc.robot.ReefscapeButtonBoard;
 import frc.robot.ReefscapeButtonBoard.ScoringLevel;
 import frc.robot.subsystems.AlgaeArm;
 import frc.robot.subsystems.ElevatorSystem;
@@ -120,7 +121,7 @@ public class TargetingSystem {
         Trigger closeEnoughOrNotAboveFinalLineupLevel = new Trigger(() -> closeEnough.getAsBoolean() || elevatorNotAboveFinalLineupLevel.getAsBoolean());
         return drivetrain.newDriveToPoseAuton(() -> targetPose, CoralOffset, Seconds.of(5), maxAcceleration, distanceToTarget, stoppingDistance).get().raceWith(
             elevator.newPidControlCommand(prescoreLevel).until(closeAndSlow)
-            .andThen(elevator.newPidControlCommand(level).until(() -> elevator.isAtLocation(level)).onlyWhile(closeEnoughOrNotAboveFinalLineupLevel)).andThen(Commands.idle())
+            .andThen(elevator.newPidControlCommand(Meters.of(Math.min(level.in(Meters), ElevatorSystem.Position.L3.position().in(Meters)))).until(() -> elevator.isAtLocation(level)).onlyWhile(closeEnoughOrNotAboveFinalLineupLevel)).andThen(Commands.idle())
             )
                 .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level))
                         .andThen(shooter.getShootCommand(scoringLevel)).until(shooter.isEmpty()));
@@ -131,7 +132,7 @@ public class TargetingSystem {
         Distance prescoreLevel = Meters.of(0.6);
         Distance finalLineupLevel = Meters.of(1.2);
         Distance intakeLevel = elevator.selectElevatorLevel(() -> ScoringLevel.INTAKE);
-        double maxAcceleration = 3.8;
+        double maxAcceleration = 4.3;
         BooleanSupplier closeAndSlow = () -> (targetPose.getTranslation().getDistance(drivetrain.getPose().getTranslation()) < 0.75) && Math.abs(drivetrain.getChassisSpeeds().vxMetersPerSecond) < 1.0;
         BooleanSupplier notCloseAndSlow = () -> !closeAndSlow.getAsBoolean();
         BooleanSupplier closeEnough = () -> (targetPose.getTranslation().getDistance(drivetrain.getPose().getTranslation()) < 0.5) && Math.abs(drivetrain.getChassisSpeeds().vxMetersPerSecond) < 0.75;
@@ -141,7 +142,7 @@ public class TargetingSystem {
         Trigger closeEnoughOrNotAboveFinalLineupLevel = new Trigger(() -> closeEnough.getAsBoolean() || elevatorNotAboveFinalLineupLevel.getAsBoolean());
         return drivetrain.newDriveToPoseAuton(() -> targetPose, CoralOffset, Seconds.of(5), maxAcceleration, distanceToTarget, stoppingDistance).get().raceWith(
             elevator.newPidControlCommand(prescoreLevel).until(closeAndSlow)
-            .andThen(elevator.newPidControlCommand(level).until(() -> elevator.isAtLocation(level)).onlyWhile(closeEnoughOrNotAboveFinalLineupLevel)).andThen(Commands.idle())
+            .andThen(elevator.newPidControlCommand(Meters.of(Math.min(level.in(Meters), ElevatorSystem.Position.L3.position().in(Meters)))).until(() -> elevator.isAtLocation(level)).onlyWhile(closeEnoughOrNotAboveFinalLineupLevel)).andThen(Commands.idle())
             ).andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)));
     }
 
