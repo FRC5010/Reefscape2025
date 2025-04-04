@@ -173,7 +173,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   }
 
   public Rotation2d getAngleToTarget() {
-    return new Translation2d(targetPoseProvider.get().getX() - poseProvider.get().getX(), targetPoseProvider.get().getY() - poseProvider.get().getY()).getAngle();
+    return new Translation2d(targetPoseProvider.get().getX() - poseProvider.get().getX(), targetPoseProvider.get().getY() - poseProvider.get().getY()).getAngle().plus(Rotation2d.k180deg);
   }
 
   public Rotation2d getFutureAngleToTarget() {
@@ -273,10 +273,8 @@ public class DriveToPoseSupplier extends GenericCommand {
     //     distanceController.getSetpoint().velocity);
     deltaTime = Timer.getFPGATimestamp() - previousTime;
     previousTime = Timer.getFPGATimestamp();
-    double futureDistanceToGoalPIDCalculation = distanceController.calculate(futureDistanceToGoal, 0.0);
-    double distanceToGoalPIDCalculation = distanceController.calculate(distanceToGoal, 0.0);
 
-    double translationalSpeed = distanceToGoal > 1.0 ? futureDistanceToGoalPIDCalculation : distanceToGoalPIDCalculation;
+    double translationalSpeed = distanceToGoal > 1.0 ? distanceController.calculate(futureDistanceToGoal, 0.0) : distanceController.calculate(distanceToGoal, 0.0);
     Rotation2d movementAngle = getAngleToTarget();
 
     lastSetpointTranslation =
