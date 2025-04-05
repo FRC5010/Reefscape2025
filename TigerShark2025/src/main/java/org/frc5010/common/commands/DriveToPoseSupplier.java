@@ -120,7 +120,7 @@ public class DriveToPoseSupplier extends GenericCommand {
     this.targetPoseProvider = targetPoseProvider;
 
     distanceController.setTolerance(0.02);
-    thetaController.setTolerance(Units.degreesToRadians(1.5));
+    thetaController.setTolerance(Units.degreesToRadians(1.0));
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
     targetTransform = offset;
