@@ -100,8 +100,7 @@ public class TargetingSystem {
         Trigger closeEnoughOrNotAboveFinalLineupLevel = new Trigger(() -> closeEnough.getAsBoolean() || elevatorNotAboveFinalLineupLevel.getAsBoolean());
         return drivetrain.driveToPoseAuton(() -> targetPose, CoralOffset, Seconds.of(5)).get().raceWith(
             elevator.pidControlCommand(prescoreLevel).until(closeAndSlow)
-            .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)).onlyWhile(closeEnoughOrNotAboveFinalLineupLevel)).andThen(Commands.idle())
-
+            .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)).onlyWhile(closeEnough)).andThen(Commands.idle())
             )
                 .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)));
     }
@@ -123,7 +122,7 @@ public class TargetingSystem {
         Trigger closeEnoughOrNotAboveFinalLineupLevel = new Trigger(() -> closeEnough.getAsBoolean() || elevatorNotAboveFinalLineupLevel.getAsBoolean());
         return drivetrain.newDriveToPoseAuton(() -> targetPose, CoralOffset, Seconds.of(5), maxAcceleration, distanceToTarget, stoppingDistance).get().raceWith(
             elevator.newPidControlCommand(prescoreLevel).until(closeAndSlow)
-            .andThen(elevator.newPidControlCommand(level).until(() -> elevator.getElevatorPosition().in(Meters) > Math.min(level.in(Meters), ElevatorSystem.Position.L3.position().in(Meters))).onlyWhile(closeEnoughOrNotAboveFinalLineupLevel)).andThen(Commands.idle())
+            .andThen(elevator.newPidControlCommand(level).until(() -> elevator.getElevatorPosition().in(Meters) > Math.min(level.in(Meters), ElevatorSystem.Position.L3.position().in(Meters))).onlyWhile(closeEnough)).andThen(Commands.idle())
             )
                 .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level))
                         .andThen(shooter.getShootCommand(scoringLevel)).until(shooter.isEmpty()));
@@ -146,7 +145,7 @@ public class TargetingSystem {
         Trigger closeEnoughOrNotAboveFinalLineupLevel = new Trigger(() -> closeEnough.getAsBoolean() || elevatorNotAboveFinalLineupLevel.getAsBoolean());
         return drivetrain.newDriveToPoseAuton(() -> targetPose, CoralOffset, Seconds.of(5), maxAcceleration, distanceToTarget, stoppingDistance).get().raceWith(
             elevator.newPidControlCommand(prescoreLevel).until(closeAndSlow)
-            .andThen(elevator.newPidControlCommand(level).until(() -> elevator.getElevatorPosition().in(Meters) > Math.min(level.in(Meters), ElevatorSystem.Position.L3.position().in(Meters))).onlyWhile(closeEnoughOrNotAboveFinalLineupLevel)).andThen(Commands.idle())
+            .andThen(elevator.newPidControlCommand(level).until(() -> elevator.getElevatorPosition().in(Meters) > Math.min(level.in(Meters), ElevatorSystem.Position.L3.position().in(Meters))).onlyWhile(closeEnough)).andThen(Commands.idle())
             )
                 .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level))
                         .andThen(shooter.getShootCommand(scoringLevel)).until(shooter.isEmpty()));
@@ -169,7 +168,7 @@ public class TargetingSystem {
         Trigger closeEnoughOrNotAboveFinalLineupLevel = new Trigger(() -> closeEnough.getAsBoolean() || elevatorNotAboveFinalLineupLevel.getAsBoolean());
         return drivetrain.newDriveToPoseAuton(() -> targetPose, CoralOffset, Seconds.of(5), maxAcceleration, distanceToTarget, stoppingDistance).get().raceWith(
             elevator.newPidControlCommand(prescoreLevel).until(closeAndSlow)
-            .andThen(elevator.newPidControlCommand(level).until(() -> elevator.getElevatorPosition().in(Meters) > Math.min(level.in(Meters), ElevatorSystem.Position.L3.position().in(Meters))).onlyWhile(closeEnoughOrNotAboveFinalLineupLevel)).andThen(Commands.idle())
+            .andThen(elevator.newPidControlCommand(level).until(() -> elevator.getElevatorPosition().in(Meters) > Math.min(level.in(Meters), ElevatorSystem.Position.L3.position().in(Meters))).onlyWhile(closeEnough)).andThen(Commands.idle())
             ).andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)));
     }
 
