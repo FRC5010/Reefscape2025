@@ -319,8 +319,6 @@ public class DriveToPoseSupplier extends GenericCommand {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-
-
     return distanceController.atGoal() && thetaController.atGoal();
   }
 }

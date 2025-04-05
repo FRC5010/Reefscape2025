@@ -379,6 +379,8 @@ public class YAGSLSwerveDrivetrain extends SwerveDrivetrain {
     return newDriveToPoseAuton(pose, PathPlanOffset, timeout, constraints, maxAcceleration, distance, stoppingDistance);
   }
 
+  
+
   public Supplier<Command> driveToPoseAuton(Supplier<Pose2d> pose, Transform2d PathPlanOffset, Time timeout, PathConstraints driveConstraints) {
     Supplier<Pose3d> pose3D = () -> new Pose3d(pose.get());
     Supplier<DriveToPoseSupplier> finishDriving = () -> new DriveToPoseSupplier((SwerveDrivetrain) this, this::getPose, () -> pose3D.get().toPose2d(),

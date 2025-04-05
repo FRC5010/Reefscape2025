@@ -7,6 +7,7 @@ package frc.robot.auto_routines;
 import java.util.function.Supplier;
 
 import org.frc5010.common.auto.AutoSequence;
+import org.frc5010.common.utils.AllianceFlip;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -24,7 +25,7 @@ import frc.robot.managers.TargetingSystem;
 /** Add your docs here. */
 public class DriveOnlyCustom extends AutoSequence {
   private Command scoreCoral(Supplier<ScoringLocation> location, Supplier<ScoringAlignment> alignment, Supplier<ScoringLevel> level) {
-    return TargetingSystem.getDrivetrain().driveToPosePrecise(ReefscapeButtonBoard.getScoringPose(location.get(), alignment.get()), new Transform2d(-0.8, 0, new Rotation2d())).get();
+    return TargetingSystem.getDrivetrain().driveToPosePrecise(AllianceFlip.apply(ReefscapeButtonBoard.getScoringPose(location.get(), alignment.get())), new Transform2d(-0.8, 0, new Rotation2d())).get();
   }
 
   private Command scoreCoral(SendableChooser<ScoringLocations> chooser, SendableChooser<ScoringLevel> level) {
@@ -32,7 +33,7 @@ public class DriveOnlyCustom extends AutoSequence {
   }
 
   private Command loadCoral(Supplier<LoadingStationLocation> location) {
-    return TargetingSystem.getDrivetrain().driveToPosePrecise(ReefscapeButtonBoard.getLoadingPose(location.get()), new Transform2d(0.8, 0, new Rotation2d())).get();
+    return TargetingSystem.getDrivetrain().driveToPosePrecise(AllianceFlip.apply(ReefscapeButtonBoard.getLoadingPose(location.get())), new Transform2d(0.8, 0, new Rotation2d())).get();
   }
 
   private Command loadCoral(SendableChooser<LoadingStationLocation> chooser) {
