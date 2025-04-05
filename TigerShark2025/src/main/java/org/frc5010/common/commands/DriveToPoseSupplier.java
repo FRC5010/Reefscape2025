@@ -74,7 +74,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   /** The speed that the robot will rotate at */
   private double thetaSpeed;
 
-  private final double MAX_VELOCITY = 4.0;
+  private final double MAX_VELOCITY = 4.18;
   private double maxAcceleration = 4.3;
 
   private Translation2d lastSetpointTranslation = Translation2d.kZero;

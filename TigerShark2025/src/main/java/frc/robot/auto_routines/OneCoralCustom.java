@@ -22,12 +22,12 @@ import frc.robot.managers.TargetingSystem;
 /** Add your docs here. */
 public class OneCoralCustom extends AutoSequence {
   private Command scoreCoral(Supplier<ScoringLocation> location, Supplier<ScoringAlignment> alignment, Supplier<ScoringLevel> level) {
-    return Commands.deferredProxy(() ->TargetingSystem.createAutoCoralScoringSequence(
+    return Commands.deferredProxy(() ->TargetingSystem.createOneCoralAutoScoringSequence(
           ReefscapeButtonBoard.getScoringPose(location.get(), alignment.get()), level.get()));
   }
 
   private Command scoreCoralNotDefereed(Supplier<ScoringLocation> location, Supplier<ScoringAlignment> alignment, Supplier<ScoringLevel> level) {
-    return TargetingSystem.createAutoCoralScoringSequence(
+    return TargetingSystem.createOneCoralAutoScoringSequence(
       ReefscapeButtonBoard.getScoringPose(location.get(), alignment.get()), level.get());
   }
 
