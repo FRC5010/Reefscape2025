@@ -106,28 +106,6 @@ public class TargetingSystem {
                 .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)));
     }
 
-    public static Command createAutoCoralScoringSequenceFast(Pose2d targetPose, ScoringLevel scoringLevel, Trigger updateTrajectory) {
-        Distance level = elevator.selectElevatorLevel(() -> scoringLevel);
-        Distance prescoreLevel = Meters.of(0.6);
-        Distance finalLineupLevel = Meters.of(1.2);
-        Distance intakeLevel = elevator.selectElevatorLevel(() -> ScoringLevel.INTAKE);
-        double maxAcceleration = 4.3;
-        Supplier<Translation2d> vectorToTarget = () -> targetPose.getTranslation().minus(drivetrain.getPose().getTranslation());
-        DoubleSupplier relativeAngleTowardsTarget = () -> Math.acos(((vectorToTarget.get().getX() * drivetrain.getChassisSpeeds().vxMetersPerSecond) + (vectorToTarget.get().getY() * drivetrain.getChassisSpeeds().vyMetersPerSecond)) / (vectorToTarget.get().getNorm() * Math.pow(Math.pow(drivetrain.getChassisSpeeds().vxMetersPerSecond, 2) + Math.pow(drivetrain.getChassisSpeeds().vyMetersPerSecond, 2), 0.5)));
-        DoubleSupplier stoppingDistance = () -> ((Math.pow(drivetrain.getChassisSpeeds().vxMetersPerSecond, 2) + Math.pow(drivetrain.getChassisSpeeds().vyMetersPerSecond, 2)) * Math.pow(Math.cos(relativeAngleTowardsTarget.getAsDouble()), 2)) / (2 * maxAcceleration);
-        DoubleSupplier distanceToTarget = () -> targetPose.getTranslation().getDistance(drivetrain.getPose().getTranslation());
-        BooleanSupplier closeAndSlow = () -> (targetPose.getTranslation().getDistance(drivetrain.getPose().getTranslation()) < 0.75) && Math.abs(drivetrain.getChassisSpeeds().vxMetersPerSecond) < 1.0;
-        BooleanSupplier notCloseAndSlow = () -> !closeAndSlow.getAsBoolean();
-        BooleanSupplier closeEnough = () -> (targetPose.getTranslation().getDistance(drivetrain.getPose().getTranslation()) < 0.5) && Math.abs(drivetrain.getChassisSpeeds().vxMetersPerSecond) < 0.5;
-        BooleanSupplier elevatorNotAboveFinalLineupLevel = () -> elevator.getElevatorPosition().in(Meters) < finalLineupLevel.in(Meters);
-        Trigger closeEnoughOrNotAboveFinalLineupLevel = new Trigger(() -> closeEnough.getAsBoolean() || elevatorNotAboveFinalLineupLevel.getAsBoolean());
-        return drivetrain.newDriveToPoseAuton(() -> targetPose, CoralOffset, Seconds.of(5), maxAcceleration, distanceToTarget, stoppingDistance).get().raceWith(
-            elevator.newPidControlCommand(prescoreLevel).until(closeAndSlow)
-            .andThen(elevator.newPidControlCommand(level).until(() -> elevator.getElevatorPosition().in(Meters) > Math.min(level.in(Meters), ElevatorSystem.Position.L3.position().in(Meters))).onlyWhile(closeEnoughOrNotAboveFinalLineupLevel)).andThen(Commands.idle())
-            )
-                .andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level))
-                        .andThen(shooter.getShootCommand(scoringLevel)).until(shooter.isEmpty()));
-    }
 
     public static Command createAutoCoralScoringSequence(Pose2d targetPose, ScoringLevel scoringLevel) {
         Distance level = elevator.selectElevatorLevel(() -> scoringLevel);
