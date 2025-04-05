@@ -91,6 +91,10 @@ public class AutoSequence extends GenericCommandSequence {
         });
     }
 
+    public int getCurrentCommandIndex() {
+        return m_currentCommandIndex;
+    }
+
     /**
      * Constructs a trigger which mirrors the state of an event marker. Used with the EventMarkerFlag command.
      */

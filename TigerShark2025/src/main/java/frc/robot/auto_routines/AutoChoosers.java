@@ -4,12 +4,20 @@
 
 package frc.robot.auto_routines;
 
+import java.util.function.Supplier;
+
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.ReefscapeButtonBoard;
+import frc.robot.ReefscapeButtonBoard.LoadingStationLocation;
 
 /** Add your docs here. */
 public class AutoChoosers {
+    public static Supplier<Pose2d> pathfindingPose = () -> ReefscapeButtonBoard.getScoringPose(AutoChoosers.reef1.getSelected().location, AutoChoosers.reef1.getSelected().align);
+
     public static enum ScoringLocations {
         A(ReefscapeButtonBoard.ScoringLocation.FRONT_AB, ReefscapeButtonBoard.ScoringAlignment.REEF_LEFT),
         B(ReefscapeButtonBoard.ScoringLocation.FRONT_AB, ReefscapeButtonBoard.ScoringAlignment.REEF_RIGHT),
@@ -32,12 +40,35 @@ public class AutoChoosers {
         }
     }
 
+    public static void setCurrentChooser(Supplier<Pose2d> poseSupplier) {
+        pathfindingPose = poseSupplier;
+    }
+
+    public static Supplier<Pose2d> getSupplierScoring(SendableChooser<ScoringLocations> scoringChooser) {
+        return () -> ReefscapeButtonBoard.getScoringPose(scoringChooser.getSelected().location, scoringChooser.getSelected().align);
+        
+    }
+
+    public static Command setSupplierScoring(SendableChooser<ScoringLocations> station2) {
+        return Commands.runOnce(() -> setCurrentChooser(getSupplierScoring(station2))).ignoringDisable(true);
+    }
+
+    public static Command setLoadingSupplier(SendableChooser<LoadingStationLocation> scoringChooser) {
+        return Commands.runOnce(() -> setCurrentChooser(getSupplierLoading(scoringChooser))).ignoringDisable(true);
+    }
+
+    public static Supplier<Pose2d> getSupplierLoading(SendableChooser<LoadingStationLocation> loadingChooser) {
+        return () -> ReefscapeButtonBoard.getLoadingPose(loadingChooser.getSelected());
+    }
+
     public static SendableChooser<ScoringLocations> reef1 = new SendableChooser<>();
     public static SendableChooser<ScoringLocations> reef2 = new SendableChooser<>();
     public static SendableChooser<ScoringLocations> reef3 = new SendableChooser<>();
     public static SendableChooser<ScoringLocations> reef4 = new SendableChooser<>();
     public static SendableChooser<ReefscapeButtonBoard.LoadingStationLocation> station = new SendableChooser<>();
     public static SendableChooser<ReefscapeButtonBoard.ScoringLevel> level = new SendableChooser<>();
+
+
 
     public AutoChoosers(ShuffleboardTab tab) {
         for (ScoringLocations location : ScoringLocations.values()) {
