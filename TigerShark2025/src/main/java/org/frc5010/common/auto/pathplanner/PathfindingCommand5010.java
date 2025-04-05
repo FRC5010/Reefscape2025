@@ -317,7 +317,7 @@ public class PathfindingCommand5010 extends Command {
   }
 
   public static boolean isCommandRunning() {
-    return CommandRunning;
+    return CommandRunning; 
   }
 
   @Override

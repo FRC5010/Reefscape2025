@@ -9,6 +9,8 @@ import java.util.function.Supplier;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.ReefscapeButtonBoard;
 import frc.robot.ReefscapeButtonBoard.LoadingStationLocation;
 
@@ -46,6 +48,15 @@ public class AutoChoosers {
         return () -> ReefscapeButtonBoard.getScoringPose(scoringChooser.getSelected().location, scoringChooser.getSelected().align);
         
     }
+
+    public static Command setSupplierScoring(SendableChooser<ScoringLocations> station2) {
+        return Commands.runOnce(() -> setCurrentChooser(getSupplierScoring(station2))).ignoringDisable(true);
+    }
+
+    public static Command setLoadingSupplier(SendableChooser<LoadingStationLocation> scoringChooser) {
+        return Commands.runOnce(() -> setCurrentChooser(getSupplierLoading(scoringChooser))).ignoringDisable(true);
+    }
+
     public static Supplier<Pose2d> getSupplierLoading(SendableChooser<LoadingStationLocation> loadingChooser) {
         return () -> ReefscapeButtonBoard.getLoadingPose(loadingChooser.getSelected());
     }
@@ -56,6 +67,8 @@ public class AutoChoosers {
     public static SendableChooser<ScoringLocations> reef4 = new SendableChooser<>();
     public static SendableChooser<ReefscapeButtonBoard.LoadingStationLocation> station = new SendableChooser<>();
     public static SendableChooser<ReefscapeButtonBoard.ScoringLevel> level = new SendableChooser<>();
+
+
 
     public AutoChoosers(ShuffleboardTab tab) {
         for (ScoringLocations location : ScoringLocations.values()) {
