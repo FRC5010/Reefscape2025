@@ -74,7 +74,7 @@ public class DriveToPoseSupplier extends GenericCommand {
   /** The speed that the robot will rotate at */
   private double thetaSpeed;
 
-  private final double MAX_VELOCITY = 4.0;
+  private final double MAX_VELOCITY = 4.18;
   private double maxAcceleration = 4.3;
 
   private Translation2d lastSetpointTranslation = Translation2d.kZero;
@@ -120,7 +120,7 @@ public class DriveToPoseSupplier extends GenericCommand {
     this.targetPoseProvider = targetPoseProvider;
 
     distanceController.setTolerance(0.02);
-    thetaController.setTolerance(Units.degreesToRadians(1.5));
+    thetaController.setTolerance(Units.degreesToRadians(1.0));
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
     targetTransform = offset;
@@ -319,8 +319,6 @@ public class DriveToPoseSupplier extends GenericCommand {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-
-
     return distanceController.atGoal() && thetaController.atGoal();
   }
 }

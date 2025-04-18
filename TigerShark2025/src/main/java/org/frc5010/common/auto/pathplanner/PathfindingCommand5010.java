@@ -15,6 +15,7 @@ import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.PathPoint;
+import com.pathplanner.lib.pathfinding.Pathfinder;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
 import com.pathplanner.lib.util.DriveFeedforwards;
@@ -30,6 +31,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -51,6 +53,14 @@ public class PathfindingCommand5010 extends Command {
   private final PathFollowingController controller;
   private final RobotConfig robotConfig;
   private final BooleanSupplier shouldFlipPath;
+  private boolean pregeneratedPath = false;
+
+  private static PathPlannerTrajectory trajPregen;
+  private static PathPlannerPath pathPregen;
+  private static boolean pregenUsed;
+
+  private static boolean CommandRunning = false;
+
 
   private PathPlannerPath currentPath;
   private PathPlannerTrajectory currentTrajectory;
@@ -251,13 +261,40 @@ public class PathfindingCommand5010 extends Command {
         requirements);
   }
 
+  public static void setPregenPathfinding(Pose2d start, Pose2d end) {
+    Pathfinding.setStartPosition(start.getTranslation());
+    Pathfinding.setGoalPosition(end.getTranslation());
+  }
+
+  public static void updatePregen(PathConstraints constraints, Pose2d robotPose, GoalEndState endState, RobotConfig config) {
+    if (Pathfinding.isNewPathAvailable()) {
+      pathPregen = Pathfinding.getCurrentPath(constraints, endState);
+      if (null != pathPregen) {
+
+        trajPregen = new PathPlannerTrajectory(
+          pathPregen, new ChassisSpeeds(), robotPose.getRotation(), config);
+        pregenUsed = false;
+      }
+    }
+  }
+  
+  
+
+
   @Override
   public void initialize() {
+    CommandRunning = true;
     currentTrajectory = null;
     timeOffset = 0;
     finish = false;
 
     Pose2d currentPose = poseSupplier.get();
+
+    if (RobotState.isAutonomous() && !pregenUsed && null != trajPregen) {
+      currentPath = pathPregen;
+      currentTrajectory = trajPregen;
+      pregenUsed = true;
+    }
 
     controller.reset(currentPose, speedsSupplier.get());
 
@@ -273,10 +310,14 @@ public class PathfindingCommand5010 extends Command {
     if (currentPose.getTranslation().getDistance(targetPose.getTranslation()) < 0.1) {
       output.accept(new ChassisSpeeds(), DriveFeedforwards.zeros(robotConfig.numModules));
       finish = true;
-    } else {
+    } else if (null == currentTrajectory) {
       Pathfinding.setStartPosition(currentPose.getTranslation());
       Pathfinding.setGoalPosition(targetPose.getTranslation());
     }
+  }
+
+  public static boolean isCommandRunning() {
+    return CommandRunning; 
   }
 
   @Override
@@ -411,6 +452,8 @@ public class PathfindingCommand5010 extends Command {
 
   @Override
   public void end(boolean interrupted) {
+    CommandRunning = false;
+    pregeneratedPath = false;
     timer.stop();
 
     // Only output 0 speeds when ending a path that is supposed to stop, this allows interrupting
