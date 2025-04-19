@@ -6,10 +6,8 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 
 import org.frc5010.common.arch.GenericRobot;
-import org.frc5010.common.auto.AutoSequence;
 import org.frc5010.common.commands.calibration.WheelRadiusCharacterization;
 import org.frc5010.common.config.ConfigConstants;
-import org.frc5010.common.config.json.YAGSLDriveModuleJson;
 import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.drive.pose.DrivePoseEstimator.State;
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
@@ -18,8 +16,6 @@ import org.frc5010.common.sensors.camera.QuestNav;
 import org.frc5010.common.sensors.gyro.GenericGyro;
 import org.frc5010.common.subsystems.NewLEDSubsystem;
 import org.frc5010.common.utils.AllianceFlip;
-
-import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -33,12 +29,9 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.ReefscapeButtonBoard.ScoringLocation;
 import frc.robot.auto_routines.AutoChoosers;
@@ -130,6 +123,7 @@ public class TigerShark extends GenericRobot {
 
                 robotStates = new RobotStates(shooter, algaeArm, elevatorSystem, climb,
                                 () -> drivetrain.getPoseEstimator().getCurrentPose());
+                shooter.setElevatorHeightSupplier(() -> elevatorSystem.getElevatorPosition());
         }
 
         public void resetPositionToStart() {

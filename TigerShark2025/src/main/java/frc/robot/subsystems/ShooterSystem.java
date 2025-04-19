@@ -5,13 +5,18 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import org.frc5010.common.arch.GenericSubsystem;
+import org.frc5010.common.constants.Constants;
+import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.motors.function.VelocityControlMotor;
@@ -20,15 +25,24 @@ import org.frc5010.common.sensors.LaserCAN;
 import org.frc5010.common.sensors.SparkLimit;
 import org.frc5010.common.sensors.ValueSwitch;
 import org.frc5010.common.telemetry.DisplayBoolean;
+import org.ironmaple.simulation.IntakeSimulation;
+import org.ironmaple.simulation.IntakeSimulation.IntakeSide;
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.gamepieces.GamePieceOnFieldSimulation;
+import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFly;
+import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFly.CoralStationsSide;
 
 import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -52,7 +66,10 @@ public class ShooterSystem extends GenericSubsystem {
   private double captureEncoderCount = 0.0;
   private int stoppedCount = 0;
   private BooleanSupplier isInLoadZone = () -> true;
-
+  private IntakeSimulation intakeSimulation;
+  private SwerveDriveSimulation driveSimulation;
+  private Supplier<Distance> elevatorHeight = () -> Meters.zero();
+  
   public enum CoralState {
     EMPTY,
     ENTRY,
@@ -119,10 +136,9 @@ public class ShooterSystem extends GenericSubsystem {
 
     captureEncoderCount = shooterLeft.getMotorEncoder().getPosition();
 
-    
-    
     // isStopped.and(currentSwitch.getTrigger()).and(isInLoadZone)
-    //     .onTrue(setCoralState(CoralState.FULLY_CAPTURED)); // TODO: Calibrate threshold
+    // .onTrue(setCoralState(CoralState.FULLY_CAPTURED)); // TODO: Calibrate
+    // threshold
 
     setupStateMachine();
     // isEntryActive.whileTrue(captureCoral());
@@ -131,9 +147,21 @@ public class ShooterSystem extends GenericSubsystem {
     isCoralFullyCaptured
         .onTrue(Commands.runOnce(() -> captureEncoderCount = shooterLeft.getMotorEncoder().getPosition()));
 
-    // isCoralFullyCaptured.and(() -> Math.abs(captureEncoderCount - shooterLeft.getMotorEncoder().getPosition()) > 0.75)
-    //     .onTrue(setCoralState(CoralState.ALIGNED));
+    // isCoralFullyCaptured.and(() -> Math.abs(captureEncoderCount -
+    // shooterLeft.getMotorEncoder().getPosition()) > 0.75)
+    // .onTrue(setCoralState(CoralState.ALIGNED));
 
+    if (RobotBase.isSimulation()) {
+      driveSimulation = YAGSLSwerveDrivetrain.getSwerveDrive().getMapleSimDrive().get();
+
+      intakeSimulation = IntakeSimulation.InTheFrameIntake(Constants.Simulation.gamePieceA,
+          driveSimulation, Inches.of(19.113), IntakeSide.BACK, 1);
+      intakeSimulation.addGamePieceToIntake(); // Pre-load
+    }
+  }
+
+  public void setElevatorHeightSupplier(Supplier<Distance> supplier) {
+    this.elevatorHeight = supplier;
   }
 
   private void setupMotors(Mechanism2d mechanismSimulation) {
@@ -159,19 +187,21 @@ public class ShooterSystem extends GenericSubsystem {
   }
 
   private void setupStateMachine() {
-     Trigger coralOutOfShooter = entryBroken.negate().and(alignmentBroken.negate());
+    Trigger coralOutOfShooter = entryBroken.negate().and(alignmentBroken.negate());
 
-     coralOutOfShooter.onTrue(setCoralState(CoralState.EMPTY));
+    coralOutOfShooter.onTrue(setCoralState(CoralState.EMPTY));
 
-     // Empty
-     isEmpty().and(entryBroken).onTrue(setCoralState(CoralState.ENTRY));
-    
-     // Entry
-     (isEntryActive.or(isEmpty())).and(alignmentBroken).and(entryBroken.negate()).onTrue(setCoralState(CoralState.FULLY_CAPTURED));
-     // Fully Captured
-    
-     alignmentBroken.and(() -> DriverStation.isFMSAttached()).and(() -> RobotState.isDisabled()).whileTrue(setCoralState(CoralState.FULLY_CAPTURED));
-    
+    // Empty
+    isEmpty().and(entryBroken).onTrue(setCoralState(CoralState.ENTRY));
+
+    // Entry
+    (isEntryActive.or(isEmpty())).and(alignmentBroken).and(entryBroken.negate())
+        .onTrue(setCoralState(CoralState.FULLY_CAPTURED));
+    // Fully Captured
+
+    alignmentBroken.and(() -> DriverStation.isFMSAttached()).and(() -> RobotState.isDisabled())
+        .whileTrue(setCoralState(CoralState.FULLY_CAPTURED));
+
   }
 
   public Trigger coralCapturedOrAligned() {
@@ -182,6 +212,16 @@ public class ShooterSystem extends GenericSubsystem {
     SmartDashboard.putNumber("Shooter Left Set", speed);
     shooterLeft.set(speed);
   }
+
+  public Trigger obtainedGamePieceToScore = new Trigger(() -> {
+    return RobotBase.isSimulation()
+        ? intakeSimulation.getGamePiecesAmount() == 1 && intakeSimulation.obtainGamePieceFromIntake()
+        : false;
+  });
+
+  public Trigger gamePieceIsInsideIntake = new Trigger(() -> {
+    return RobotBase.isSimulation() ? intakeSimulation.getGamePiecesAmount() > 0 : false;
+  });
 
   public void shooterRightSpeed(double speed) {
     SmartDashboard.putNumber("Shooter Right Set", speed);
@@ -214,6 +254,32 @@ public class ShooterSystem extends GenericSubsystem {
   }
 
   public Command getShootCommand(ScoringLevel level) {
+    if (RobotBase.isSimulation() && intakeSimulation != null) {
+      if (intakeSimulation.getGamePiecesAmount() > 0) {
+        Distance height = elevatorHeight.get();
+        if (intakeSimulation.obtainGamePieceFromIntake()
+          // Add this to prevent shooting from low.
+          //&& height.compareTo(frc.robot.Constants.MIN_SHOOTER_HEIGHT.plus(Meters.of(0.05))) >= 0
+          ) {
+          SimulatedArena.getInstance()
+              .addGamePieceProjectile(new ReefscapeCoralOnFly(
+                  // Obtain robot position from drive simulation
+                  driveSimulation.getSimulatedDriveTrainPose().getTranslation(),
+                  // The scoring mechanism is installed at (0.46, 0) (meters) on the robot
+                  new Translation2d(0.125, 0),
+                  // Obtain robot speed from drive simulation
+                  driveSimulation.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
+                  // Obtain robot facing from drive simulation
+                  driveSimulation.getSimulatedDriveTrainPose().getRotation(),
+                  // The height at which the coral is ejected
+                  height.plus(frc.robot.Constants.MIN_SHOOTER_HEIGHT),
+                  // The initial speed of the coral
+                  MetersPerSecond.of(2),
+                  // The coral is ejected at a 45-degree slope
+                  Degrees.of(-45)));
+        }
+      }
+    }
     switch (level) {
       case L1:
         return shootL1();
@@ -226,7 +292,6 @@ public class ShooterSystem extends GenericSubsystem {
       default:
         return runMotors(() -> 0.4);
     }
-
   }
 
   public Command captureCoral() {
@@ -249,8 +314,6 @@ public class ShooterSystem extends GenericSubsystem {
     shooterRightSpeed(0.0);
   }
 
-
- 
   public Command setCoralState(CoralState state) {
     return Commands.runOnce(() -> coralState = state).ignoringDisable(true);
   }
@@ -260,12 +323,20 @@ public class ShooterSystem extends GenericSubsystem {
   }
 
   public Command intakeCoral() {
-    return runMotors(() -> 0.7).until(isFullyCaptured()).finallyDo(() -> {
-      shooterLeftSpeed(0);
-      shooterRightSpeed(0);
-    });
+    return runMotors(() -> 0.7)
+        .beforeStarting(() -> {
+          if (RobotBase.isSimulation()) {
+            intakeSimulation.startIntake();
+          }
+        })
+        .until(isFullyCaptured()).finallyDo(() -> {
+          if (RobotBase.isSimulation()) {
+            intakeSimulation.stopIntake();
+          }
+          shooterLeftSpeed(0);
+          shooterRightSpeed(0);
+        });
   }
-  
 
   public Trigger isEmpty() {
     return isEmpty;
@@ -311,9 +382,6 @@ public class ShooterSystem extends GenericSubsystem {
     shooterRight.draw();
     entryBeamBreakDisplay.setValue(entryBroken.getAsBoolean());
     alignmentBeamBreakDisplay.setValue(alignmentBroken.getAsBoolean());
-
-    
-
 
     SmartDashboard.putString("Coral State", coralState.name());
     SmartDashboard.putNumber("Shooter Left Current", shooterLeft.getOutputCurrent());

@@ -1,13 +1,11 @@
 package swervelib.encoders;
 
 import com.revrobotics.AbsoluteEncoder;
-import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import java.util.function.Supplier;
 import swervelib.motors.SparkFlexSwerve;
 import swervelib.motors.SwerveMotor;
 
@@ -26,10 +24,6 @@ public class SparkFlexEncoderSwerve extends SwerveAbsoluteEncoder
    */
   private Alert                failureConfiguring;
   /**
-   * An {@link Alert} for if there is a failure configuring the encoder offset.
-   */
-  private Alert                offsetFailure;
-  /**
    * {@link SparkFlexSwerve} instance.
    */
   private SwerveMotor sparkFlex;
@@ -46,37 +40,24 @@ public class SparkFlexEncoderSwerve extends SwerveAbsoluteEncoder
         "Encoders",
         "Failure configuring SparkFlex Absolute Encoder",
         AlertType.kWarning);
-    offsetFailure = new Alert(
-        "Encoders",
-        "Failure to set Absolute Encoder Offset",
-        AlertType.kWarning);
     if (motor.getMotor() instanceof SparkFlex)
     {
       sparkFlex = motor;
       encoder = ((SparkFlex) motor.getMotor()).getAbsoluteEncoder();
-      motor.setAbsoluteEncoder(this);
-      motor.configureIntegratedEncoder(conversionFactor);
+      setConversionFactor(conversionFactor);
     } else
     {
       throw new RuntimeException("Motor given to instantiate SparkFlexEncoder is not a CANSparkFlex");
     }
   }
 
-  /**
-   * Run the configuration until it succeeds or times out.
-   *
-   * @param config Lambda supplier returning the error state.
-   */
-  private void configureSparkFlex(Supplier<REVLibError> config)
+  @Override
+  public void close()
   {
-    for (int i = 0; i < maximumRetries; i++)
-    {
-      if (config.get() == REVLibError.kOk)
-      {
-        return;
-      }
-    }
-    failureConfiguring.set(true);
+    // SPARK Flex encoder gets closed with the motor
+    // I don't think an encoder getting closed should 
+    // close the entire motor so i will keep this empty
+    // sparkFlex.close();
   }
 
   /**
@@ -111,6 +92,23 @@ public class SparkFlexEncoderSwerve extends SwerveAbsoluteEncoder
       cfg.absoluteEncoder.inverted(inverted);
       ((SparkFlexSwerve) sparkFlex).updateConfig(cfg);
     }
+  }
+
+  /**
+   * Set the conversion factor of the {@link SparkFlexEncoderSwerve}.
+   *
+   * @param conversionFactor Position conversion factor from ticks to unit.
+   */
+  public void setConversionFactor(double conversionFactor)
+  {
+    SparkFlexConfig cfg = ((SparkFlexSwerve) sparkFlex).getConfig();
+    cfg.signals
+        .absoluteEncoderPositionAlwaysOn(true)
+        .absoluteEncoderPositionPeriodMs(20);
+    cfg.absoluteEncoder
+        .positionConversionFactor(conversionFactor)
+        .velocityConversionFactor(conversionFactor / 60);
+    ((SparkFlexSwerve) sparkFlex).updateConfig(cfg);
   }
 
   /**

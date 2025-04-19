@@ -85,6 +85,12 @@ public class Pigeon2Swerve extends SwerveIMU
     this(canid, "");
   }
 
+  @Override
+  public void close() {
+    imu.close();
+  }
+
+
   /**
    * Reset {@link Pigeon2} to factory default.
    */
@@ -146,7 +152,7 @@ public class Pigeon2Swerve extends SwerveIMU
   @Override
   public Rotation3d getRotation3d()
   {
-    return getRawRotation3d().minus(offset);
+    return getRawRotation3d().rotateBy(offset.unaryMinus());
   }
 
 

@@ -45,6 +45,12 @@ public class CanandgyroSwerve extends SwerveIMU
     imu = new Canandgyro(canid);
   }
 
+  @Override
+  public void close()
+  {
+    imu.close();
+  }
+
   /**
    * Reset {@link Canandgyro} to factory default.
    */
@@ -103,7 +109,7 @@ public class CanandgyroSwerve extends SwerveIMU
   @Override
   public Rotation3d getRotation3d()
   {
-    return getRawRotation3d().minus(offset);
+    return getRawRotation3d().rotateBy(offset.unaryMinus());
   }
 
   /**

@@ -42,6 +42,11 @@ public class ADXRS450Swerve extends SwerveIMU
     SmartDashboard.putData(imu);
   }
 
+  @Override
+  public void close() {
+    imu.close();
+  }
+
   /**
    * Reset IMU to factory default.
    */
@@ -100,7 +105,7 @@ public class ADXRS450Swerve extends SwerveIMU
   @Override
   public Rotation3d getRotation3d()
   {
-    return getRawRotation3d().minus(offset);
+    return getRawRotation3d().rotateBy(offset.unaryMinus());
   }
 
   /**
