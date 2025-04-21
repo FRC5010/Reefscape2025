@@ -154,7 +154,7 @@ public class TargetingSystem {
     public static Command createNewTeleopCoralScoringSequence(Pose2d targetPose, ScoringLevel scoringLevel) {
         Distance level = elevator.selectElevatorLevel(() -> scoringLevel);
         Distance prescoreLevel = Meters.of(0.6);
-        Distance finalLineupLevel = Meters.of(1.2);
+        Distance finalLineupLevel = Meters.of(Math.min(1.2, level.in(Meters)));
         Distance intakeLevel = elevator.selectElevatorLevel(() -> ScoringLevel.INTAKE);
         double maxAcceleration = 4.3;
         BooleanSupplier close = () -> (targetPose.getTranslation().getDistance(drivetrain.getPose().getTranslation()) < 0.25); //&& Math.abs(drivetrain.getChassisSpeeds().vxMetersPerSecond) < 1.0;
@@ -169,7 +169,7 @@ public class TargetingSystem {
         Trigger closeEnoughOrNotAboveFinalLineupLevel = new Trigger(() -> closeEnough.getAsBoolean() || elevatorNotAboveFinalLineupLevel.getAsBoolean());
         return (drivetrain.newDriveToPoseAuton(() -> targetPose, CoralOffset, Seconds.of(5), maxAcceleration, distanceToTarget, stoppingDistance).get().raceWith(
             elevator.newPidControlCommand(prescoreLevel).until(close)
-            .andThen(elevator.newPidControlCommand(level).until(() -> elevator.getElevatorPosition().in(Meters) > Math.min(level.in(Meters), ElevatorSystem.Position.L3.position().in(Meters))).onlyWhile(close)).andThen(Commands.idle())
+            .andThen(elevator.newPidControlCommand(level).until(() -> elevator.getElevatorPosition().in(Meters) > finalLineupLevel.in(Meters)).onlyWhile(close)).andThen(Commands.idle())
             ).andThen(elevator.pidControlCommand(level).until(() -> elevator.isAtLocation(level)))).onlyIf(robotHasCoral);
     }
 
