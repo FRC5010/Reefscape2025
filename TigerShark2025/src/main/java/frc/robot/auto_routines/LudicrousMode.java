@@ -95,7 +95,7 @@ public class LudicrousMode extends AutoSequence {
           PathfindingCommand5010.setPregenPathfinding(TargetingSystem.getDrivetrain().getPose(), endPose);
           PathfindingCommand5010.updatePregen(autoConstraints, TargetingSystem.getDrivetrain().getPose(), new GoalEndState(0, endPose.getRotation()), robotConfig);
         });
-        pregenPath.get().ignoringDisable(true).until(RobotState::isEnabled).schedule();
+        pregenPath.get().alongWith(AutoChoosers.setSupplierScoring(AutoChoosers.reef1).repeatedly()).ignoringDisable(true).until(RobotState::isEnabled).schedule();
 
         
         addCommands(
@@ -105,36 +105,21 @@ public class LudicrousMode extends AutoSequence {
                 .andThen(AutoChoosers.setLoadingSupplier(AutoChoosers.station))
                 .andThen(pregenPath.get())
             ),
-            loadCoral(AutoChoosers.station).raceWith(
-              Commands.waitSeconds(0.1)
-                .andThen(Commands.waitUntil(pathfindingCommandRunning.negate()))
-                .andThen(AutoChoosers.setSupplierScoring(AutoChoosers.reef2))
-                .andThen(pregenPath.get())
-            ),
+            loadCoral(AutoChoosers.station),
             scoreCoral(AutoChoosers.reef2, AutoChoosers.level).raceWith(
               Commands.waitSeconds(0.1)
                 .andThen(Commands.waitUntil(pathfindingCommandRunning.negate()))
                 .andThen(AutoChoosers.setLoadingSupplier(AutoChoosers.station))
                 .andThen(pregenPath.get())
             ),
-            loadCoral(AutoChoosers.station).raceWith(
-              Commands.waitSeconds(0.1)
-                .andThen(Commands.waitUntil(pathfindingCommandRunning.negate()))
-                .andThen(AutoChoosers.setSupplierScoring(AutoChoosers.reef3))
-                .andThen(pregenPath.get())
-            ),
+            loadCoral(AutoChoosers.station),
             scoreCoral(AutoChoosers.reef3, AutoChoosers.level).raceWith(
               Commands.waitSeconds(0.1)
                 .andThen(Commands.waitUntil(pathfindingCommandRunning.negate()))
                 .andThen(AutoChoosers.setLoadingSupplier(AutoChoosers.station))
                 .andThen(pregenPath.get())
             ),
-            loadCoral(AutoChoosers.station).raceWith(
-              Commands.waitSeconds(0.1)
-                .andThen(Commands.waitUntil(pathfindingCommandRunning.negate()))
-                .andThen(AutoChoosers.setSupplierScoring(AutoChoosers.reef4))
-                .andThen(pregenPath.get())
-            ),
+            loadCoral(AutoChoosers.station),
             scoreCoral(AutoChoosers.reef4, AutoChoosers.level)
           );
     }
