@@ -4,6 +4,14 @@
 
 package org.frc5010.common.commands;
 
+import java.util.function.Supplier;
+
+import org.frc5010.common.arch.GenericCommand;
+import org.frc5010.common.constants.GenericPID;
+import org.frc5010.common.drive.swerve.GenericSwerveDrivetrain;
+import org.frc5010.common.telemetry.DisplayDouble;
+import org.frc5010.common.telemetry.DisplayValuesHelper;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -13,19 +21,13 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import java.util.function.Supplier;
-import org.frc5010.common.arch.GenericCommand;
-import org.frc5010.common.constants.GenericPID;
-import org.frc5010.common.drive.swerve.SwerveDrivetrain;
-import org.frc5010.common.telemetry.DisplayDouble;
-import org.frc5010.common.telemetry.DisplayValuesHelper;
 
 /**
  * A command that will automatically drive the robot to a particular position
  */
 public class DriveToPosition extends GenericCommand {
   /** The subsystem that this command will run on */
-  private SwerveDrivetrain swerveSubsystem;
+  private GenericSwerveDrivetrain swerveSubsystem;
   /** The PID constants for translation */
 
   private DisplayValuesHelper displayValuesHelper = new DisplayValuesHelper("PID Values", logPrefix);
@@ -82,7 +84,7 @@ public class DriveToPosition extends GenericCommand {
    * @param offset             The offset of the target pose
    */
   public DriveToPosition(
-      SwerveDrivetrain swerveSubsystem,
+    GenericSwerveDrivetrain swerveSubsystem,
       Supplier<Pose2d> poseProvider,
       Supplier<Pose3d> targetPoseProvider,
       Transform2d offset) {
@@ -106,7 +108,7 @@ public class DriveToPosition extends GenericCommand {
         pidRotation.getkP(), pidRotation.getkI(), pidRotation.getkD(), thetaConstraints);
 
     // Use addRequirements() here to declare subsystem dependencies.
-    this.swerveSubsystem = (SwerveDrivetrain) swerveSubsystem;
+    this.swerveSubsystem = swerveSubsystem;
     this.poseProvider = poseProvider;
     this.targetPoseProvider = targetPoseProvider;
 
@@ -243,7 +245,7 @@ public class DriveToPosition extends GenericCommand {
     SmartDashboard.putBoolean("X Controller at Setpoins", xController.atGoal());
     SmartDashboard.putBoolean("Y Controller at Setpoins", yController.atGoal());
     SmartDashboard.putBoolean("Theta Controller at Setpoins", thetaController.atGoal());
-    swerveSubsystem.drive(chassisSpeeds, null);
+    swerveSubsystem.drive(chassisSpeeds);
   }
 
   // Called once the command ends or is interrupted.
@@ -252,7 +254,7 @@ public class DriveToPosition extends GenericCommand {
     onTargetCounter = 0;
     SmartDashboard.putBoolean("DriveToPositionInterrupted", interrupted);
     swerveSubsystem.drive(
-        new ChassisSpeeds(0, 0, 0), null);
+        new ChassisSpeeds(0, 0, 0));
   }
 
   // Returns true when the command should end.

@@ -16,7 +16,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import org.frc5010.common.constants.GenericPID;
-import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
+import org.frc5010.common.drive.swerve.GenericSwerveDrivetrain;
 import org.frc5010.common.drive.swerve_utils.PathConstraints5010;
 import org.frc5010.common.drive.swerve_utils.SwerveSetpointGenerator5010;
 import org.json.simple.parser.ParseException;
@@ -34,19 +34,16 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.ReefscapeButtonBoard.ScoringLocation;
-import swervelib.SwerveDrive;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ReefLineupDrive extends Command  {
   SwerveSetpointGenerator5010 setpointGenerator;
   AtomicReference<SwerveSetpoint> previousSetpoint;
   AtomicReference<Double> previousTime;
-  YAGSLSwerveDrivetrain drivetrain;
-  SwerveDrive swerveDrive;
-  PathConstraints5010 pathConstraints;
+  GenericSwerveDrivetrain drivetrain;
+   PathConstraints5010 pathConstraints;
 
   DoubleSupplier xInput;
   DoubleSupplier yInput;
@@ -60,17 +57,16 @@ public class ReefLineupDrive extends Command  {
   private final ProfiledPIDController thetaController;
 
   /** Creates a new ReefLineupDrive. */
-  public ReefLineupDrive(YAGSLSwerveDrivetrain drivetrain, DoubleSupplier xInput, DoubleSupplier yInput, ScoringLocation side) throws IOException, ParseException {
+  public ReefLineupDrive(GenericSwerveDrivetrain drivetrain, DoubleSupplier xInput, DoubleSupplier yInput, ScoringLocation side) throws IOException, ParseException {
     this.drivetrain = drivetrain;
     this.side = side;
     this.xInput = xInput;
     this.yInput = yInput;
-    swerveDrive = drivetrain.getSwerveDrive();
-    setpointGenerator = new SwerveSetpointGenerator5010(RobotConfig.fromGUISettings(), drivetrain.getSwerveDrive().getMaximumModuleAngleVelocity().in(RadiansPerSecond));
+    setpointGenerator = new SwerveSetpointGenerator5010(RobotConfig.fromGUISettings(), drivetrain.getMaximumModuleAngleVelocity().in(RadiansPerSecond));
     previousSetpoint = new AtomicReference<>(
-        new SwerveSetpoint(swerveDrive.getRobotVelocity(),
-            swerveDrive.getStates(),
-            DriveFeedforwards.zeros(swerveDrive.getModules().length)));
+        new SwerveSetpoint(drivetrain.getRobotVelocity(),
+            drivetrain.getStates(),
+            DriveFeedforwards.zeros(drivetrain.getModulePositions().length)));
 
     thetaConstraints = new TrapezoidProfile.Constraints(
               drivetrain.getSwerveConstants().getkTeleDriveMaxAngularSpeedRadiansPerSecond(),
@@ -149,7 +145,7 @@ public class ReefLineupDrive extends Command  {
         finalSpeed,
         pathConstraints,
         newTime - previousTime.get());
-    swerveDrive.drive(newSetpoint.robotRelativeSpeeds(),
+    drivetrain.drive(newSetpoint.robotRelativeSpeeds(),
         newSetpoint.moduleStates(),
         newSetpoint.feedforwards().linearForces());
 

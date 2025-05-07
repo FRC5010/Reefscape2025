@@ -4,10 +4,20 @@
 
 package org.frc5010.common.commands;
 
+import static edu.wpi.first.units.Units.Meters;
+
+import java.util.function.Supplier;
+
+import org.frc5010.common.arch.GenericCommand;
+import org.frc5010.common.constants.GenericPID;
+import org.frc5010.common.drive.swerve.GenericSwerveDrivetrain;
+import org.frc5010.common.motors.PIDController5010.PIDControlType;
+import org.frc5010.common.telemetry.DisplayDouble;
+import org.frc5010.common.telemetry.DisplayValuesHelper;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -21,23 +31,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.ReefscapeButtonBoard;
 import frc.robot.subsystems.ElevatorSystem;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Meters;
-
-import java.util.function.Supplier;
-import org.frc5010.common.arch.GenericCommand;
-import org.frc5010.common.constants.GenericPID;
-import org.frc5010.common.drive.swerve.SwerveDrivetrain;
-import org.frc5010.common.motors.PIDController5010.PIDControlType;
-import org.frc5010.common.telemetry.DisplayDouble;
-import org.frc5010.common.telemetry.DisplayValuesHelper;
-
 /**
  * A command that will automatically drive the robot to a particular position
  */
 public class DriveToPoseSupplierWithElevator extends GenericCommand {
   /** The subsystem that this command will run on */
-  private SwerveDrivetrain swerveSubsystem;
+  private GenericSwerveDrivetrain swerveSubsystem;
 
   private DisplayValuesHelper displayValuesHelper = new DisplayValuesHelper("PID Values", logPrefix);
   private DisplayDouble rotationkP;
@@ -99,12 +98,12 @@ public class DriveToPoseSupplierWithElevator extends GenericCommand {
    * @param offset             The offset of the target pose
    */
   public DriveToPoseSupplierWithElevator(
-      SwerveDrivetrain swerveSubsystem,
+      GenericSwerveDrivetrain swerveSubsystem,
       Supplier<Pose2d> poseProvider,
       Supplier<Pose2d> targetPoseProvider,
       Transform2d offset, ElevatorSystem elevator, Supplier<ChassisSpeeds> robotRelativeSpeedSupplier) {
     // Use addRequirements() here to declare subsystem dependencies.
-    this.swerveSubsystem = (SwerveDrivetrain) swerveSubsystem;
+    this.swerveSubsystem = swerveSubsystem;
     this.poseProvider = poseProvider;
     this.targetPoseProvider = targetPoseProvider;
     this.elevator = elevator;
@@ -388,7 +387,7 @@ public class DriveToPoseSupplierWithElevator extends GenericCommand {
     SmartDashboard.putBoolean("Vertical Controller At Setpoint", verticalControllerAtTarget());
     SmartDashboard.putBoolean("Horizontal Controller At Setpoint", horizontalControllerAttarget());
     SmartDashboard.putBoolean("Theta Controller at Setpoint", thetaController.atGoal());
-    swerveSubsystem.drive(robotChassisSpeeds, null);
+    swerveSubsystem.drive(robotChassisSpeeds);
   }
 
   // Called once the command ends or is interrupted.
@@ -397,7 +396,7 @@ public class DriveToPoseSupplierWithElevator extends GenericCommand {
     onTargetCounter = 0;
     SmartDashboard.putBoolean("DriveToPositionWithElevatorInterrupted", interrupted);
     swerveSubsystem.drive(
-        new ChassisSpeeds(0, 0, 0), null);
+        new ChassisSpeeds(0, 0, 0));
   }
 
   // Returns true when the command should end.

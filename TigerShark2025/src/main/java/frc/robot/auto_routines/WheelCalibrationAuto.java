@@ -6,15 +6,13 @@ package frc.robot.auto_routines;
 
 import org.frc5010.common.auto.AutoSequence;
 import org.frc5010.common.commands.calibration.WheelRadiusCharacterization;
-import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
-
-import com.ctre.phoenix6.swerve.SwerveDrivetrain;
+import org.frc5010.common.drive.swerve.GenericSwerveDrivetrain;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
 /** Add your docs here. */
 public class WheelCalibrationAuto extends AutoSequence  {
-    public WheelCalibrationAuto(YAGSLSwerveDrivetrain drivetrain) {
+    public WheelCalibrationAuto(GenericSwerveDrivetrain drivetrain) {
         Command wheelCalibrationCommand = new WheelRadiusCharacterization(drivetrain);
         addCommands(wheelCalibrationCommand);
     }

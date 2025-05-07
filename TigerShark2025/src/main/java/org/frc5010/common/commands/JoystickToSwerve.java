@@ -4,20 +4,22 @@
 
 package org.frc5010.common.commands;
 
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+
+import org.frc5010.common.drive.swerve.GenericSwerveDrivetrain;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
-import org.frc5010.common.drive.swerve.SwerveDrivetrain;
 
 public class JoystickToSwerve extends Command {
   /** Creates a new JoystickToSwerve. */
-  private SwerveDrivetrain swerveDrive;
+  private GenericSwerveDrivetrain swerveDrive;
 
   private DoubleSupplier xSpdFunction, ySpdFunction, turnSpdFunction;
   private BooleanSupplier fieldOrientedDrive;
@@ -25,7 +27,7 @@ public class JoystickToSwerve extends Command {
   private DoubleSupplier robotSpeedFactor = () -> 1.0;
 
   public JoystickToSwerve(
-      SwerveDrivetrain swerveSubsystem,
+      GenericSwerveDrivetrain swerveSubsystem,
       DoubleSupplier xSpdFunction,
       DoubleSupplier ySpdFunction,
       DoubleSupplier turnSpdFunction,
@@ -116,7 +118,7 @@ public class JoystickToSwerve extends Command {
     // SwerveDrivetrain.m_kinematics.toSwerveModuleStates(chassisSpeeds);
 
     // output each module speed into subsystem
-    swerveDrive.drive(chassisSpeeds, null);
+    swerveDrive.drive(chassisSpeeds);
   }
 
   // Called once the command ends or is interrupted.

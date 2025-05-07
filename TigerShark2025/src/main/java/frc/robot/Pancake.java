@@ -3,11 +3,9 @@ package frc.robot;
 import java.util.function.Consumer;
 
 import org.frc5010.common.arch.GenericRobot;
-import org.frc5010.common.auto.AutoErrorTracker;
 import org.frc5010.common.auto.RelayPIDAutoTuner;
 import org.frc5010.common.config.ConfigConstants;
-import org.frc5010.common.drive.GenericDrivetrain;
-import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
+import org.frc5010.common.drive.swerve.GenericSwerveDrivetrain;
 import org.frc5010.common.sensors.Controller;
 import org.frc5010.common.utils.AllianceFlip;
 
@@ -17,14 +15,14 @@ import edu.wpi.first.wpilibj2.command.Commands;
 
 
 public class Pancake extends GenericRobot {
-    GenericDrivetrain drivetrain;
+    GenericSwerveDrivetrain drivetrain;
     ReefscapeButtonBoard buttonBoard;
 
     public Pancake(String directory) {
         super(directory);
         AllianceFlip.configure(FieldConstants.fieldDimensions);
 
-        drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
+        drivetrain = (GenericSwerveDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
         buttonBoard = new ReefscapeButtonBoard(2, 3);
     }
 
@@ -37,9 +35,9 @@ public class Pancake extends GenericRobot {
         driver.createAButton().whileTrue(
             new RelayPIDAutoTuner(
                 (Consumer<Double>)((Double value) -> 
-                    ((YAGSLSwerveDrivetrain) drivetrain).driveFieldOriented(new ChassisSpeeds(value, 0, 0))
+                    drivetrain.driveFieldOriented(() ->new ChassisSpeeds(value, 0, 0))
                 ), 
-                () -> ((YAGSLSwerveDrivetrain) drivetrain).getPose().getTranslation().getX(),
+                () -> drivetrain.getPose().getTranslation().getX(),
                 3.5,
                 drivetrain)
         );
@@ -47,9 +45,9 @@ public class Pancake extends GenericRobot {
         driver.createBButton().whileTrue(
             new RelayPIDAutoTuner(
                 (Consumer<Double>)((Double value) -> 
-                    ((YAGSLSwerveDrivetrain) drivetrain).drive(new ChassisSpeeds(0, 0, value))
+                    drivetrain.drive(new ChassisSpeeds(0, 0, value))
                 ), 
-                () -> ((YAGSLSwerveDrivetrain) drivetrain).getPose().getRotation().getRadians(),
+                () -> drivetrain.getPose().getRotation().getRadians(),
                 3.14*5,
                 drivetrain)
         );
@@ -63,21 +61,21 @@ public class Pancake extends GenericRobot {
         //     );
 
         driver.createXButton().whileTrue( // Test drive to J Reef Location
-        Commands.deferredProxy(((YAGSLSwerveDrivetrain) drivetrain).driveToPosePrecise(() -> AllianceFlip.apply(ReefscapeButtonBoard.getScoringPose()))));
+        Commands.deferredProxy(drivetrain.driveToPosePrecise(() -> AllianceFlip.apply(ReefscapeButtonBoard.getScoringPose()))));
 
         // driver.createYButton().whileTrue( // Test drive to Top Station Position 1
         //     ((YAGSLSwerveDrivetrain) drivetrain).driveToPosePrecise(new Pose2d(1.740, 7.245, new Rotation2d(Degrees.of(-55.000))))
         //     );
         
         driver.createYButton().whileTrue( // Test drive to Top Station Position 1
-        Commands.deferredProxy(((YAGSLSwerveDrivetrain) drivetrain).driveToPosePrecise(() -> AllianceFlip.apply(ReefscapeButtonBoard.getStationPose()))));
+        Commands.deferredProxy(drivetrain.driveToPosePrecise(() -> AllianceFlip.apply(ReefscapeButtonBoard.getStationPose()))));
     }
 
     @Override
     public void setupDefaultCommands(Controller driver, Controller operator) {
-        ((YAGSLSwerveDrivetrain) drivetrain).setAccelerationSuppliers(() -> driver.getRightTrigger() * 5, () -> driver.getRightTrigger() * 5, () -> driver.getRightTrigger() * 5, () -> driver.getRightTrigger() * 5);
+        drivetrain.setAccelerationSuppliers(() -> driver.getRightTrigger() * 5, () -> driver.getRightTrigger() * 5, () -> driver.getRightTrigger() * 5, () -> driver.getRightTrigger() * 5);
 
-        Command driveCmd = ((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorFieldRelative(() -> ((YAGSLSwerveDrivetrain) drivetrain).getFieldVelocitiesFromJoystick(driver::getLeftYAxis, driver::getLeftXAxis, driver::getRightXAxis));
+        Command driveCmd = drivetrain.driveWithSetpointGeneratorFieldRelative(() -> drivetrain.getFieldVelocitiesFromJoystick(driver::getLeftYAxis, driver::getLeftXAxis, driver::getRightXAxis));
 
         drivetrain.setDefaultCommand(driveCmd);
         // drivetrain.setDefaultCommand(((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorFieldRelative(() ->

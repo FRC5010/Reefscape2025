@@ -4,32 +4,32 @@
 
 package org.frc5010.common.commands;
 
+import java.util.function.Supplier;
+
+import org.frc5010.common.arch.GenericCommand;
+import org.frc5010.common.constants.GenericPID;
+import org.frc5010.common.drive.swerve.GenericSwerveDrivetrain;
+import org.frc5010.common.telemetry.DisplayDouble;
+import org.frc5010.common.telemetry.DisplayValuesHelper;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import java.util.function.Supplier;
-import org.frc5010.common.arch.GenericCommand;
-import org.frc5010.common.constants.GenericPID;
-import org.frc5010.common.drive.swerve.SwerveDrivetrain;
-import org.frc5010.common.telemetry.DisplayDouble;
-import org.frc5010.common.telemetry.DisplayValuesHelper;
 
 /**
  * A command that will automatically drive the robot to a particular position
  */
 public class DriveToPoseSupplier extends GenericCommand {
   /** The subsystem that this command will run on */
-  private SwerveDrivetrain swerveSubsystem;
+  private GenericSwerveDrivetrain swerveSubsystem;
   /** The PID constants for translation */
 
   private DisplayValuesHelper displayValuesHelper = new DisplayValuesHelper("PID Values", logPrefix);
@@ -96,7 +96,7 @@ public class DriveToPoseSupplier extends GenericCommand {
    * @param offset             The offset of the target pose
    */
   public DriveToPoseSupplier(
-      SwerveDrivetrain swerveSubsystem,
+      GenericSwerveDrivetrain swerveSubsystem,
       Supplier<Pose2d> poseProvider,
       Supplier<Pose2d> targetPoseProvider,
       Transform2d offset, double maxAcceleration) {
@@ -115,7 +115,7 @@ public class DriveToPoseSupplier extends GenericCommand {
         pidRotation.getkP(), pidRotation.getkI(), pidRotation.getkD(), thetaConstraints);
 
     // Use addRequirements() here to declare subsystem dependencies.
-    this.swerveSubsystem = (SwerveDrivetrain) swerveSubsystem;
+    this.swerveSubsystem = swerveSubsystem;
     this.poseProvider = poseProvider;
     this.targetPoseProvider = targetPoseProvider;
 
@@ -304,7 +304,7 @@ public class DriveToPoseSupplier extends GenericCommand {
     SmartDashboard.putNumber("Theta Error", thetaController.getPositionError());
 
     SmartDashboard.putBoolean("Theta Controller at Setpoint", thetaController.atGoal());
-    swerveSubsystem.drive(chassisSpeeds, null);
+    swerveSubsystem.drive(chassisSpeeds);
   }
 
   // Called once the command ends or is interrupted.
@@ -313,7 +313,7 @@ public class DriveToPoseSupplier extends GenericCommand {
     onTargetCounter = 0;
     SmartDashboard.putBoolean("DriveToPositionInterrupted", interrupted);
     swerveSubsystem.drive(
-        new ChassisSpeeds(0, 0, 0), null);
+        new ChassisSpeeds(0, 0, 0));
   }
 
   // Returns true when the command should end.

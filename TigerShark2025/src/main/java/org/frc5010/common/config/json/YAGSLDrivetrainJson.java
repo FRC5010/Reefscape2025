@@ -13,6 +13,7 @@ import org.frc5010.common.config.ConfigConstants;
 import org.frc5010.common.constants.MotorFeedFwdConstants;
 import org.frc5010.common.constants.RobotConstantsDef;
 import org.frc5010.common.constants.SwerveConstants;
+import org.frc5010.common.drive.swerve.GenericSwerveDrivetrain;
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,14 +49,13 @@ public class YAGSLDrivetrainJson implements DrivetrainPropertiesJson {
       swerveConstants.getSwerveModuleConstants().addDriveMotorFF(moduleName, feedFwdConstants);
     }
     robot.setDrivetrainConstants(swerveConstants);
-        
-    if(RobotBase.isSimulation()) {
+
+    if (RobotBase.isSimulation()) {
       File fieldDirectory = new File(baseDirectory, "/field/");
       if (fieldDirectory.exists()) {
         File gamePiecesFile = new File(fieldDirectory, "game_pieces.json");
         if (gamePiecesFile.exists()) {
-          gamePiecesJson =
-              Optional.ofNullable(new ObjectMapper().readValue(gamePiecesFile, GamePiecesJson.class));
+          gamePiecesJson = Optional.ofNullable(new ObjectMapper().readValue(gamePiecesFile, GamePiecesJson.class));
         }
       }
     }
@@ -64,15 +64,16 @@ public class YAGSLDrivetrainJson implements DrivetrainPropertiesJson {
 
   @Override
   public void createDriveTrain(GenericRobot robot) {
-    YAGSLSwerveDrivetrain drivetrain = new YAGSLSwerveDrivetrain(
-        new Mechanism2d(RobotConstantsDef.robotVisualH, RobotConstantsDef.robotVisualV),
-        robot.getDrivetrainConstants(),
+    YAGSLSwerveDrivetrain yagsl = new YAGSLSwerveDrivetrain(robot.getDrivetrainConstants(),
         turningMotorGearRatio,
         directory);
+    GenericSwerveDrivetrain drivetrain = new GenericSwerveDrivetrain(
+        new Mechanism2d(RobotConstantsDef.robotVisualH, RobotConstantsDef.robotVisualV),
+        robot.getDrivetrainConstants(), yagsl);
     robot.addSubsystem(
         ConfigConstants.DRIVETRAIN, drivetrain);
     robot.setPoseSupplier(() -> drivetrain.getPoseEstimator().getCurrentPose());
-    robot.setSimulatedPoseSupplier(() -> drivetrain.getMapleSimPose());
+    robot.setSimulatedPoseSupplier(() -> yagsl.getMapleSimPose());
     gamePiecesJson.ifPresent(it -> it.createGamePieces(drivetrain));
   }
 }

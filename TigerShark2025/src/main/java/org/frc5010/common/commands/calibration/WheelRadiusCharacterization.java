@@ -9,9 +9,8 @@ import static edu.wpi.first.units.Units.Seconds;
 
 import java.util.function.Supplier;
 
-import org.dyn4j.geometry.Rotation;
 import org.frc5010.common.arch.GenericCommand;
-import org.frc5010.common.drive.swerve.SwerveDrivetrain;
+import org.frc5010.common.drive.swerve.GenericSwerveDrivetrain;
 import org.frc5010.common.telemetry.DisplayDouble;
 import org.frc5010.common.telemetry.DisplayLength;
 import org.frc5010.common.telemetry.DisplayValuesHelper;
@@ -22,7 +21,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.Command;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class WheelRadiusCharacterization extends GenericCommand {
@@ -37,7 +35,7 @@ public class WheelRadiusCharacterization extends GenericCommand {
   private final double RAMP_RATE = 1.0;
   private final double ROTATION_SPEED = 2.0;
   private SlewRateLimiter rampEnforcer = new SlewRateLimiter(RAMP_RATE);
-  private SwerveDrivetrain drivetrain;
+  private GenericSwerveDrivetrain drivetrain;
   private Supplier<Rotation2d> gyroOverride = null;
   private double robotRotationRadius = 0.0;
   private Timer time = new Timer();
@@ -52,7 +50,7 @@ public class WheelRadiusCharacterization extends GenericCommand {
   private double gyroChange;
 
   /** Creates a new WheelRadiusCharacterization. */
-  public WheelRadiusCharacterization(SwerveDrivetrain swerve) {
+  public WheelRadiusCharacterization(GenericSwerveDrivetrain swerve) {
     wheelRadius = displayValuesHelper.makeDisplayDouble("Wheel Radius");
     trackRadius = displayValuesHelper.makeDisplayDouble("Track Radius");
     currentConfigWheelRadius = displayValuesHelper.makeDisplayDouble("Current Config Wheel Radius");
@@ -108,7 +106,7 @@ public class WheelRadiusCharacterization extends GenericCommand {
 
   private void rotateRobot(double speed) {
     double slewedSpeed = rampEnforcer.calculate(speed);
-    drivetrain.drive(new ChassisSpeeds(0.0, 0.0, slewedSpeed), null);
+    drivetrain.drive(new ChassisSpeeds(0.0, 0.0, slewedSpeed));
   }
 
   // Called every time the scheduler runs while the command is scheduled.

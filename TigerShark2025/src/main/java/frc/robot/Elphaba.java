@@ -8,9 +8,8 @@ import static edu.wpi.first.units.Units.Seconds;
 import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.commands.calibration.WheelRadiusCharacterization;
 import org.frc5010.common.config.ConfigConstants;
-import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.drive.pose.DrivePoseEstimator.State;
-import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
+import org.frc5010.common.drive.swerve.GenericSwerveDrivetrain;
 import org.frc5010.common.sensors.Controller;
 import org.frc5010.common.sensors.camera.QuestNav;
 import org.frc5010.common.sensors.gyro.GenericGyro;
@@ -28,12 +27,9 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.auto_routines.AutoChoosers;
 import frc.robot.auto_routines.CustomAuto;
@@ -42,7 +38,7 @@ import frc.robot.subsystems.ElevatorSystem;
 import frc.robot.subsystems.ShooterSystem;
 
 public class Elphaba extends GenericRobot {
-        GenericDrivetrain drivetrain;
+        GenericSwerveDrivetrain drivetrain;
         ElevatorSystem elevatorSystem;
         ShooterSystem shooter;
         GenericGyro gyro;
@@ -64,7 +60,7 @@ public class Elphaba extends GenericRobot {
                 AllianceFlip.configure(FieldConstants.fieldDimensions);
 
                 CameraServer.startAutomaticCapture();
-                drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
+                drivetrain = (GenericSwerveDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
                 brainZero = new DigitalInput(0);
                 brainOne = new DigitalInput(1);
 
@@ -85,7 +81,7 @@ public class Elphaba extends GenericRobot {
 
                 shooter.setLoadZoneSupplier(() -> elevatorSystem.atLoading());
 
-                TargetingSystem.setupParameters((YAGSLSwerveDrivetrain) drivetrain, shooter, elevatorSystem, null);
+                TargetingSystem.setupParameters(drivetrain, shooter, elevatorSystem, null);
 
                 reefscapeButtonBoard = new ReefscapeButtonBoard(2, 3);
 
@@ -94,13 +90,13 @@ public class Elphaba extends GenericRobot {
                                 0.822008, 0.210722);
                 autoChoosers = new AutoChoosers(shuffleTab);
 
-                ((YAGSLSwerveDrivetrain) drivetrain).setAccelerationSuppliers(
+                drivetrain.setAccelerationSuppliers(
                                 () -> elevatorSystem.getMaxForwardAcceleration(),
                                 () -> elevatorSystem.getMaxBackwardAcceleration(),
                                 () -> elevatorSystem.getMaxLeftAcceleration(),
                                 () -> elevatorSystem.getMaxRightAcceleration());
 
-                ((YAGSLSwerveDrivetrain) drivetrain).setVelocitySuppliers(() -> elevatorSystem.getMaxForwardVelocity(),
+                drivetrain.setVelocitySuppliers(() -> elevatorSystem.getMaxForwardVelocity(),
                                 () -> elevatorSystem.getMaxBackwardVelocity(),
                                 () -> elevatorSystem.getMaxRightVelocity(),
                                 () -> elevatorSystem.getMaxLeftVelocity());
@@ -165,7 +161,7 @@ public class Elphaba extends GenericRobot {
                         }
 
         public void resetPositionToStart() {
-                ((YAGSLSwerveDrivetrain) drivetrain).resetPose(AllianceFlip.apply(new Pose2d(
+                drivetrain.resetPose(AllianceFlip.apply(new Pose2d(
                                 new Translation2d(
                                                 RobotModel.HALF_ROBOT_SIZE.plus(
                                                                 FieldConstants.Reef.Side.GH.centerFace.getMeasureX()),
@@ -174,24 +170,24 @@ public class Elphaba extends GenericRobot {
         }
 
         public void resetPositionToDiagonalStart() {
-                ((YAGSLSwerveDrivetrain) drivetrain)
+                drivetrain
                                 .resetPose(AllianceFlip
                                                 .apply(new Pose2d(new Translation2d(Meters.of(7.585), Meters.of(6.160)),
                                                                 Rotation2d.fromDegrees(-135))));
         }
 
         public void resetPositionToCenterLine() {
-                ((YAGSLSwerveDrivetrain) drivetrain).resetPose(AllianceFlip.apply(centerLineResetPose));
+                drivetrain.resetPose(AllianceFlip.apply(centerLineResetPose));
         }
 
         public void resetPosition(Pose2d position) {
-                ((YAGSLSwerveDrivetrain) drivetrain).resetPose(AllianceFlip.apply(position));
+                drivetrain.resetPose(AllianceFlip.apply(position));
         }
 
         private void configureTestButtonBindings(Controller driver, Controller operator) {
-                driver.createAButton().whileTrue(((YAGSLSwerveDrivetrain) drivetrain).sysIdDriveMotorCommand());
-                driver.createBButton().whileTrue(((YAGSLSwerveDrivetrain) drivetrain).sysIdAngleMotorCommand());
-                driver.createXButton().whileTrue(new WheelRadiusCharacterization((YAGSLSwerveDrivetrain) drivetrain));
+                driver.createAButton().whileTrue(drivetrain.sysIdDriveMotorCommand());
+                driver.createBButton().whileTrue(drivetrain.sysIdAngleMotorCommand());
+                driver.createXButton().whileTrue(new WheelRadiusCharacterization(drivetrain));
                 operator.createYButton().whileTrue(elevatorSystem.elevatorSysIdCommand());
 
                 QuestNav calibrationQuest = new QuestNav(new Transform3d(new Translation3d(),
@@ -203,7 +199,7 @@ public class Elphaba extends GenericRobot {
 
 
                 driver.createUpPovButton().whileTrue(Commands
-                                .run(() -> ((YAGSLSwerveDrivetrain) drivetrain)
+                                .run(() -> drivetrain
                                                 .drive(new ChassisSpeeds(0.1, 0, 0)), drivetrain));
 
                 operator.createYButton().onTrue(TargetingSystem.driveXMetersQuest(Meters.of(1.0)));
@@ -292,13 +288,12 @@ public class Elphaba extends GenericRobot {
                 // resetPosition(startingPose3)).ignoringDisable(true));
 
  
-                YAGSLSwerveDrivetrain yagsl = (YAGSLSwerveDrivetrain) drivetrain;
                 Trigger disabled = new Trigger(() -> DriverStation.isDisabled());
                 operator.createLeftPovButton().and(disabled).onTrue(
-                                Commands.runOnce(() -> yagsl.getPoseEstimator().setState(State.DISABLED_FIELD))
+                                Commands.runOnce(() -> drivetrain.getPoseEstimator().setState(State.DISABLED_FIELD))
                                                 .ignoringDisable(true));
                 operator.createRightPovButton().and(disabled)
-                                .onTrue(Commands.runOnce(() -> yagsl.getPoseEstimator().setState(State.ALL))
+                                .onTrue(Commands.runOnce(() -> drivetrain.getPoseEstimator().setState(State.ALL))
                                                 .ignoringDisable(true));
 
                 driver.createBackButton().onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true));
@@ -331,8 +326,8 @@ public class Elphaba extends GenericRobot {
         public void setupDefaultCommands(Controller driver, Controller operator) {
                 // JoystickToSwerve driveCmd =
                 // (JoystickToSwerve)drivetrain.createDefaultCommand(driver);
-                Command driveCmd = ((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorOrientationConsidered(
-                                () -> ((YAGSLSwerveDrivetrain) drivetrain).getFieldVelocitiesFromJoystick(
+                Command driveCmd = drivetrain.driveWithSetpointGeneratorOrientationConsidered(
+                                () -> drivetrain.getFieldVelocitiesFromJoystick(
                                                 driver::getLeftYAxis,
                                                 driver::getLeftXAxis, driver::getRightXAxis));
 

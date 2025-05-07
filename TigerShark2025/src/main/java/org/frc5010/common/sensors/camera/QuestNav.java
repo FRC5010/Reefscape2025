@@ -15,7 +15,7 @@ import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.drive.pose.DrivePoseEstimator;
 import org.frc5010.common.drive.pose.DrivePoseEstimator.State;
 import org.frc5010.common.drive.pose.PoseProvider;
-import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
+import org.frc5010.common.drive.swerve.GenericSwerveDrivetrain;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -37,7 +37,6 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -378,7 +377,7 @@ public class QuestNav implements PoseProvider {
         return Commands.repeatingSequence(
                 Commands.run(
                         () -> {
-                            drivetrain.drive(new ChassisSpeeds(0, 0, 0.314), null);
+                            drivetrain.drive(new ChassisSpeeds(0, 0, 0.314));
                         }, drivetrain).withTimeout(0.5),
                 Commands.runOnce(() -> {
                     // Update current offset
@@ -396,7 +395,7 @@ public class QuestNav implements PoseProvider {
                 }).onlyIf(() -> getRotation().getMeasureZ().in(Degrees) > 30));
     }
 
-    public Command calibrateWheelOdometry(YAGSLSwerveDrivetrain drivetrain) {
+    public Command calibrateWheelOdometry(GenericSwerveDrivetrain drivetrain) {
         DrivePoseEstimator poseEstimator = drivetrain.getPoseEstimator();
 
         return Commands.run(() -> {

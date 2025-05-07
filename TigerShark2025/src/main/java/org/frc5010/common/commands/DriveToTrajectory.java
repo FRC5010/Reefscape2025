@@ -5,7 +5,7 @@
 package org.frc5010.common.commands;
 
 import org.frc5010.common.constants.SwerveConstants;
-import org.frc5010.common.drive.swerve.SwerveDrivetrain;
+import org.frc5010.common.drive.swerve.GenericSwerveDrivetrain;
 import org.frc5010.common.vision.AprilTags;
 
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -26,7 +26,7 @@ public class DriveToTrajectory extends Command {
     right
   }
 
-  private SwerveDrivetrain swerveDrivetrain;
+  private GenericSwerveDrivetrain swerveDrivetrain;
 
   private PathPlannerTrajectory trajectory;
   //  private PathPlannerState currentSetpoint;
@@ -45,7 +45,7 @@ public class DriveToTrajectory extends Command {
   private Rotation2d desiredHeading;
 
   public DriveToTrajectory(
-      SwerveDrivetrain swerveDrivetrain,
+      GenericSwerveDrivetrain swerveDrivetrain,
       LCR relativePosition,
       SwerveConstants constants,
       double xOffset,

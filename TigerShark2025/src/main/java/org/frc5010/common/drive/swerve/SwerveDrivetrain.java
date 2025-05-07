@@ -4,42 +4,32 @@
 
 package org.frc5010.common.drive.swerve;
 
-import java.util.function.DoubleSupplier;
-
-import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.arch.Persisted;
-import org.frc5010.common.commands.JoystickToSwerve;
 import org.frc5010.common.constants.GenericDrivetrainConstants;
 import org.frc5010.common.constants.SwerveConstants;
-import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.drive.pose.DrivePoseEstimator;
 import org.frc5010.common.drive.pose.SwervePose;
 import org.frc5010.common.mechanisms.DriveConstantsDef;
-import org.frc5010.common.sensors.Controller;
 import org.frc5010.common.sensors.gyro.GenericGyro;
-import org.frc5010.common.subsystems.AprilTagPoseSystem;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Force;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import swervelib.SwerveModule;
 
 /** Add your docs here. */
-public class SwerveDrivetrain extends GenericDrivetrain {
+public class SwerveDrivetrain extends SwerveDriveFunctions {
 
   private ChassisSpeeds chassisSpeeds;
 
@@ -51,7 +41,7 @@ public class SwerveDrivetrain extends GenericDrivetrain {
 
   private boolean ready = false;
   private Persisted<Double> maxChassisVelocity;
-  private Command defaultDriveCommand;
+  private DrivePoseEstimator poseEstimator;
 
   public SwerveDrivetrain(
       Mechanism2d mechVisual,
@@ -60,9 +50,7 @@ public class SwerveDrivetrain extends GenericDrivetrain {
       GenericSwerveModule backLeft,
       GenericSwerveModule backRight,
       GenericGyro genericGyro,
-      AprilTagPoseSystem visonSystem,
       SwerveConstants swerveConstants) {
-    super(mechVisual);
     this.frontLeft = frontLeft;
     this.frontRight = frontRight;
     this.backLeft = backLeft;
@@ -73,82 +61,25 @@ public class SwerveDrivetrain extends GenericDrivetrain {
     this.gyro = genericGyro;
     this.chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0.0);
     poseEstimator = new DrivePoseEstimator(
-        new SwervePose(gyro, swerveConstants.getKinematics(), this), visonSystem);
+        new SwervePose(gyro, swerveConstants.getKinematics(), this));
     maxChassisVelocity = new Persisted<>(DriveConstantsDef.MAX_CHASSIS_VELOCITY, Double.class);
-
-    setDrivetrainPoseEstimator(poseEstimator);
 
     gyro.reset();
   }
 
   public SwerveDrivetrain(
       Mechanism2d mechVisual, GenericGyro genericGyro, SwerveConstants swerveConstants) {
-    super(mechVisual);
     this.gyro = genericGyro;
     this.swerveConstants = swerveConstants;
     gyro.reset();
   }
 
   public SwerveDrivetrain(Mechanism2d mechVisual, GenericDrivetrainConstants swerveConstants) {
-    super(mechVisual);
     this.swerveConstants = swerveConstants;
   }
 
-  public Command getDefaultCommand() {
-    return defaultDriveCommand;
-  }
-
-  public void setupDefaultCommands(Controller driver, Controller operator) {
-    // Handle real or simulation case for default commands
-    if (RobotBase.isReal()) {
-      if (defaultDriveCommand == null) {
-        this.defaultDriveCommand = createDefaultCommand(driver);
-        setDefaultCommand(defaultDriveCommand);
-      }
-    } else {
-      if (defaultDriveCommand == null) {
-        this.defaultDriveCommand = createDefaultCommand(driver);
-        setDefaultCommand(defaultDriveCommand);
-      }
-    }
-  }
-
-  /**
-   * Setup the default test commands
-   *
-   * @param driver   - driver
-   * @param operator - operator
-   */
-  public void setupTestDefaultCommands(Controller driver, Controller operator) {
-    if (RobotBase.isReal()) {
-      if (defaultDriveCommand == null) {
-        this.defaultDriveCommand = createDefaultTestCommand(driver);
-        setDefaultCommand(defaultDriveCommand);
-      }
-    } else {
-      if (defaultDriveCommand == null) {
-        this.defaultDriveCommand = createDefaultCommand(driver);
-        setDefaultCommand(defaultDriveCommand);
-      }
-    }
-  }
-
-  /**
-   * Drive Axis - Left X and Y, Right X Reset Orientation - Start Lock Wheels -
-   * Left Bumper Field
-   * Oriented - B Button
-   */
-  @Override
-  public void configureButtonBindings(Controller driver, Controller operator) {
-    // If there needs to be some commands that are real or simulation only use this
-    if (!DriverStation.isTest()) {
-      if (RobotBase.isReal()) {
-        driver.createStartButton().onTrue(Commands.runOnce(() -> resetOrientation()));
-      } else {
-
-      }
-      driver.createXButton().onTrue(Commands.runOnce(() -> toggleFieldOrientedDrive()));
-    }
+    public DrivePoseEstimator getPoseEstimator() {
+    return poseEstimator;
   }
 
   @Override
@@ -235,63 +166,88 @@ public class SwerveDrivetrain extends GenericDrivetrain {
     return chassisSpeeds;
   }
 
-  @Override
-  public void simulationPeriodic() {
-    Pose2d pose = poseEstimator.getCurrentPose();
-    Transform2d direction = new Transform2d(
-        new Translation2d(
-            chassisSpeeds.vxMetersPerSecond * 0.02, chassisSpeeds.vyMetersPerSecond * 0.02),
-        new Rotation2d(chassisSpeeds.omegaRadiansPerSecond * 0.02));
-    pose = pose.transformBy(direction);
-    poseEstimator.resetToPose(pose);
-  }
-
-  public void setAutoBuilder() {
-    AutoBuilder.configure(
-        () -> getPoseEstimator().getCurrentPose(), // Pose2d supplier
-        (Pose2d pose) -> getPoseEstimator().resetToPose(pose), // Pose2d consumer, used to reset odometry at the
-        this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-        this::drive,
-        new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic
-                                        // drive trains
-            new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-            new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
-        ),
-        config, // The robot configuration
-        () -> {
-          // Boolean supplier that controls when the path will be mirrored for the red
-          // alliance
-          // This will flip the path being followed to the red side of the field.
-          // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-
-          var alliance = DriverStation.getAlliance();
-          if (alliance.isPresent()) {
-            return alliance.get() == DriverStation.Alliance.Red;
-          }
-          return false;
-        },
-        this);
-  }
-
-  public Command createDefaultCommand(Controller driverXbox, DoubleSupplier rotationSupplier) {
-    // System.out.println("brrrrr");
-    DoubleSupplier leftX = () -> driverXbox.getLeftXAxis();
-    DoubleSupplier leftY = () -> driverXbox.getLeftYAxis();
-
-    return new JoystickToSwerve(
-        this,
-        leftY,
-        leftX,
-        rotationSupplier,
-        () -> isFieldOrientedDrive.getValue(),
-        () -> GenericRobot.getAlliance());
-    // return new TeleopDrive(this, leftX, leftY, rightX, isFieldOriented);
-  }
-
   public void disabledBehavior() {
     frontLeft.resetAbsoluteEncoder();
     frontRight.resetAbsoluteEncoder();
     backLeft.resetAbsoluteEncoder();
     backRight.resetAbsoluteEncoder();
+  }
+
+  @Override
+  public SwerveModule[] getModules() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getModules'");
+  }
+
+  @Override
+  public Field2d getField2d() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getField2d'");
+  }
+
+  @Override
+  public ChassisSpeeds getRobotVelocity() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getRobotVelocity'");
+  }
+
+  @Override
+  public ChassisSpeeds getFieldVelocity() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getFieldVelocity'");
+  }
+
+  @Override
+  public void driveFieldOriented(ChassisSpeeds velocity) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'driveFieldOriented'");
+  }
+
+  @Override
+  public void driveRobotRelative(ChassisSpeeds velocity) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'driveRobotRelative'");
+  }
+
+  @Override
+  public Command sysIdDriveMotorCommand(SubsystemBase swerveSubsystem) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'sysIdDriveMotorCommand'");
+  }
+
+  @Override
+  public Command sysIdAngleMotorCommand(SubsystemBase swerveSubsystem) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'sysIdAngleMotorCommand'");
+  }
+
+  @Override
+  public void drive(ChassisSpeeds robotRelativeVelocity, SwerveModuleState[] states, Force[] feedforwardForces) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'drive'");
+  }
+
+  @Override
+  public Pose2d getPose() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getPose'");
+  }
+
+  @Override
+  public SwerveModuleState[] getStates() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getStates'");
+  }
+
+  @Override
+  public AngularVelocity getMaximumModuleAngleVelocity() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getMaximumModuleAngleVelocity'");
+  }
+
+  @Override
+  public DrivePoseEstimator initializePoseEstimator() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'initializePoseEstimator'");
   }
 }

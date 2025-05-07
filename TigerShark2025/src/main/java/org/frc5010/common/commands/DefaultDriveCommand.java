@@ -1,5 +1,12 @@
 package org.frc5010.common.commands;
 
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+
+import org.frc5010.common.arch.Persisted;
+import org.frc5010.common.drive.GenericDrivetrain;
+import org.frc5010.common.mechanisms.DriveConstantsDef;
+
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -7,11 +14,6 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
-import org.frc5010.common.arch.Persisted;
-import org.frc5010.common.drive.GenericDrivetrain;
-import org.frc5010.common.mechanisms.DriveConstantsDef;
 
 /** A default driving command */
 public class DefaultDriveCommand extends Command {
@@ -88,15 +90,13 @@ public class DefaultDriveCommand extends Command {
           x * maxChassisVelocity.get(),
           y * maxChassisVelocity.get(),
           r * maxChassisRotation.get(),drivetrainSubsystem.getHeading());
-      drivetrainSubsystem.drive(chassisSpeeds,
-          null);
+      drivetrainSubsystem.drive(chassisSpeeds);
     } else {
       drivetrainSubsystem.drive(
           new ChassisSpeeds(
               x * maxChassisVelocity.get(),
               y * maxChassisVelocity.get(),
-              r * maxChassisRotation.get()),
-          null);
+              r * maxChassisRotation.get()));
     }
     // You can use `new ChassisSpeeds(...)` for robot-oriented movement instead of
     // field-oriented
@@ -109,6 +109,6 @@ public class DefaultDriveCommand extends Command {
 
   @Override
   public void end(boolean interrupted) {
-    drivetrainSubsystem.drive(new ChassisSpeeds(0.0, 0.0, 0.0), null);
+    drivetrainSubsystem.drive(new ChassisSpeeds(0.0, 0.0, 0.0));
   }
 }

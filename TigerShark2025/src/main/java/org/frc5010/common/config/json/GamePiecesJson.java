@@ -4,7 +4,7 @@
 
 package org.frc5010.common.config.json;
 
-import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
+import org.frc5010.common.drive.swerve.GenericSwerveDrivetrain;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.seasonspecific.crescendo2024.CrescendoNoteOnField;
 
@@ -14,7 +14,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 public class GamePiecesJson {
     public GamePieceJson[] gamePieces;
 
-    public void createGamePieces(YAGSLSwerveDrivetrain drivetrain) {
+    public void createGamePieces(GenericSwerveDrivetrain drivetrain) {
         SimulatedArena arena = SimulatedArena.getInstance();
         for (GamePieceJson gamePiece : gamePieces) {
             switch (gamePiece.type) {

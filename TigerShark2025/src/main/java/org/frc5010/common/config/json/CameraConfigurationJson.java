@@ -10,9 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.frc5010.common.arch.GenericRobot;
-import org.frc5010.common.config.ConfigConstants;
 import org.frc5010.common.drive.GenericDrivetrain;
-import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
+import org.frc5010.common.drive.swerve.GenericSwerveDrivetrain;
 import org.frc5010.common.sensors.camera.GenericCamera;
 import org.frc5010.common.sensors.camera.LimeLightCamera;
 import org.frc5010.common.sensors.camera.PhotonVisionCamera;
@@ -23,8 +22,6 @@ import org.frc5010.common.sensors.camera.QuestNav;
 import org.frc5010.common.sensors.camera.SimulatedCamera;
 import org.frc5010.common.sensors.camera.SimulatedFiducialTargetCamera;
 import org.frc5010.common.sensors.camera.SimulatedVisualTargetCamera;
-import org.frc5010.common.sensors.gyro.GenericGyro;
-import org.frc5010.common.subsystems.AprilTagPoseSystem;
 import org.frc5010.common.subsystems.VisibleTargetSystem;
 import org.frc5010.common.vision.AprilTags;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
@@ -88,12 +85,6 @@ public class CameraConfigurationJson {
     GenericDrivetrain drivetrain = (GenericDrivetrain) robot.getSubsystem("drivetrain");
     Transform3d robotToCamera = new Transform3d(new Translation3d(x, y, z),
         new Rotation3d(Degrees.of(roll), Degrees.of(pitch), Degrees.of(yaw)));
-    AprilTagPoseSystem atSystem = (AprilTagPoseSystem) robot.getSubsystem(APRIL_TAG);
-    if (atSystem == null) {
-      atSystem = new AprilTagPoseSystem(AprilTags.aprilTagFieldLayout);
-      robot.addSubsystem(APRIL_TAG, atSystem);
-      drivetrain.getPoseEstimator().addAprilTagPoseSystem(atSystem);// 158
-    }
 
     if (RobotBase.isReal()) {
       switch (type) {
@@ -223,7 +214,7 @@ public class CameraConfigurationJson {
         questNav.resetPose();
         if (drivetrain != null) {
           // FIX: Undo this
-          questNav.withRobotSpeedSupplier(((YAGSLSwerveDrivetrain)drivetrain)::getFieldVelocity);
+          questNav.withRobotSpeedSupplier(((GenericSwerveDrivetrain)drivetrain)::getFieldVelocity);
           drivetrain.getPoseEstimator().registerPoseProvider(questNav);
         }
         break;

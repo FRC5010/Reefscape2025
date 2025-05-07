@@ -16,7 +16,6 @@ import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.sensors.encoder.GenericEncoder;
 import org.frc5010.common.sensors.encoder.SimulatedEncoder;
 import org.frc5010.common.sensors.gyro.GenericGyro;
-import org.frc5010.common.subsystems.AprilTagPoseSystem;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.controllers.PPLTVController;
@@ -34,6 +33,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim.KitbotWheelSize;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 
 /** A class for differential drive. */
@@ -53,14 +53,12 @@ public class DifferentialDrivetrain extends GenericDrivetrain {
    * @param left       - requires the left motor as a template for the others
    * @param ports      - a list of ports (assumes all ports are given)
    * @param gyro       - the gyroscope
-   * @param vision     - the vision system
    * @param mechVisual - the visualizer
    */
   public DifferentialDrivetrain(
       MotorController5010 left,
       List<DrivePorts> ports,
       GenericGyro gyro,
-      AprilTagPoseSystem vision,
       Mechanism2d mechVisual) {
     super(mechVisual);
     assert (ports.size() == 4);
@@ -91,7 +89,7 @@ public class DifferentialDrivetrain extends GenericDrivetrain {
 
     setDrivetrainPoseEstimator(
         new DrivePoseEstimator(
-            new DifferentialPose(diffKinematics, gyro, leftEncoder, rightEncoder), vision));
+            new DifferentialPose(diffKinematics, gyro, leftEncoder, rightEncoder)));
     diffDrive = new DifferentialDrive((double speed) -> left.set(speed), (double speed) -> right.set(speed));
   }
 
@@ -109,7 +107,7 @@ public class DifferentialDrivetrain extends GenericDrivetrain {
   private Persisted<Double> maxChassisRotation = new Persisted<>(DriveConstantsDef.MAX_CHASSIS_ROTATION, Double.class);
 
   @Override
-  public void drive(ChassisSpeeds direction, DriveFeedforwards feedforwards) {
+  public void driveWithFeedforwards(ChassisSpeeds direction, DriveFeedforwards feedforwards) {
     chassisSpeeds = direction;
     // WARNING: TODO: this may not be the 'best' way to convert chassis speeds to
     // throttles
@@ -219,5 +217,23 @@ public class DifferentialDrivetrain extends GenericDrivetrain {
         },
         this // Reference to this subsystem to set requirements
     );
+  }
+
+  @Override
+  public void drive(ChassisSpeeds direction) {
+    chassisSpeeds = direction;
+    // WARNING: TODO: this may not be the 'best' way to convert chassis speeds to
+    // throttles
+    // For example - convert chassis speeds into left and right voltages based on
+    // SysID character
+    double throttle = Math.min(1, direction.vxMetersPerSecond / maxChassisVelocity.get());
+    double rotation = Math.min(1, direction.omegaRadiansPerSecond / maxChassisRotation.getDouble());
+    arcadeDrive(throttle, rotation);
+  }
+
+  @Override
+  public Field2d getField2d() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getField2d'");
   }
 }

@@ -10,6 +10,7 @@ import org.frc5010.common.commands.calibration.WheelRadiusCharacterization;
 import org.frc5010.common.config.ConfigConstants;
 import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.drive.pose.DrivePoseEstimator.State;
+import org.frc5010.common.drive.swerve.GenericSwerveDrivetrain;
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 import org.frc5010.common.sensors.Controller;
 import org.frc5010.common.sensors.camera.QuestNav;
@@ -47,7 +48,7 @@ import frc.robot.subsystems.ElevatorSystem;
 import frc.robot.subsystems.ShooterSystem;
 
 public class TigerShark extends GenericRobot {
-        GenericDrivetrain drivetrain;
+        GenericSwerveDrivetrain drivetrain;
         ElevatorSystem elevatorSystem;
         ShooterSystem shooter;
         AlgaeArm algaeArm;
@@ -70,7 +71,7 @@ public class TigerShark extends GenericRobot {
                 AllianceFlip.configure(FieldConstants.fieldDimensions);
 
                 CameraServer.startAutomaticCapture();
-                drivetrain = (GenericDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
+                drivetrain = (GenericSwerveDrivetrain) subsystems.get(ConfigConstants.DRIVETRAIN);
                 brainZero = new DigitalInput(0);
                 brainOne = new DigitalInput(1);
 
@@ -92,7 +93,7 @@ public class TigerShark extends GenericRobot {
 
                 shooter.setLoadZoneSupplier(() -> elevatorSystem.atLoading());
 
-                TargetingSystem.setupParameters((YAGSLSwerveDrivetrain) drivetrain, shooter, elevatorSystem, algaeArm);
+                TargetingSystem.setupParameters(drivetrain, shooter, elevatorSystem, algaeArm);
 
                 reefscapeButtonBoard = new ReefscapeButtonBoard(2, 3);
 
@@ -102,18 +103,16 @@ public class TigerShark extends GenericRobot {
                                 0.822008, 0.210722);
                 autoChoosers = new AutoChoosers(shuffleTab);
 
-                ((YAGSLSwerveDrivetrain) drivetrain).setAccelerationSuppliers(
+                drivetrain.setAccelerationSuppliers(
                                 () -> elevatorSystem.getMaxForwardAcceleration(),
                                 () -> elevatorSystem.getMaxBackwardAcceleration(),
                                 () -> elevatorSystem.getMaxLeftAcceleration(),
                                 () -> elevatorSystem.getMaxRightAcceleration());
 
-                ((YAGSLSwerveDrivetrain) drivetrain).setVelocitySuppliers(() -> elevatorSystem.getMaxForwardVelocity(),
+                drivetrain.setVelocitySuppliers(() -> elevatorSystem.getMaxForwardVelocity(),
                                 () -> elevatorSystem.getMaxBackwardVelocity(),
                                 () -> elevatorSystem.getMaxRightVelocity(),
                                 () -> elevatorSystem.getMaxLeftVelocity());
-
-                ((YAGSLSwerveDrivetrain) drivetrain).addElevator(elevatorSystem);
 
                 centerLineResetPose = new Pose2d(
                                 FieldConstants.Reef.Side.GH.getCenterFace().getTranslation().getMeasureX()
@@ -127,7 +126,7 @@ public class TigerShark extends GenericRobot {
         }
 
         public void resetPositionToStart() {
-                ((YAGSLSwerveDrivetrain) drivetrain).resetPose(AllianceFlip.apply(new Pose2d(
+                drivetrain.resetPose(AllianceFlip.apply(new Pose2d(
                                 new Translation2d(
                                                 RobotModel.HALF_ROBOT_SIZE.plus(
                                                                 FieldConstants.Reef.Side.GH.centerFace.getMeasureX()),
@@ -136,24 +135,23 @@ public class TigerShark extends GenericRobot {
         }
 
         public void resetPositionToDiagonalStart() {
-                ((YAGSLSwerveDrivetrain) drivetrain)
-                                .resetPose(AllianceFlip
-                                                .apply(new Pose2d(new Translation2d(Meters.of(7.585), Meters.of(6.160)),
-                                                                Rotation2d.fromDegrees(-135))));
+                drivetrain.resetPose(AllianceFlip
+                                .apply(new Pose2d(new Translation2d(Meters.of(7.585), Meters.of(6.160)),
+                                                Rotation2d.fromDegrees(-135))));
         }
 
         public void resetPositionToCenterLine() {
-                ((YAGSLSwerveDrivetrain) drivetrain).resetPose(AllianceFlip.apply(centerLineResetPose));
+                drivetrain.resetPose(AllianceFlip.apply(centerLineResetPose));
         }
 
         public void resetPosition(Pose2d position) {
-                ((YAGSLSwerveDrivetrain) drivetrain).resetPose(AllianceFlip.apply(position));
+                drivetrain.resetPose(AllianceFlip.apply(position));
         }
 
         private void configureTestButtonBindings(Controller driver, Controller operator) {
-                driver.createAButton().whileTrue(((YAGSLSwerveDrivetrain) drivetrain).sysIdDriveMotorCommand());
-                driver.createBButton().whileTrue(((YAGSLSwerveDrivetrain) drivetrain).sysIdAngleMotorCommand());
-                driver.createXButton().whileTrue(new WheelRadiusCharacterization((YAGSLSwerveDrivetrain) drivetrain));
+                driver.createAButton().whileTrue(drivetrain.sysIdDriveMotorCommand());
+                driver.createBButton().whileTrue(drivetrain.sysIdAngleMotorCommand());
+                driver.createXButton().whileTrue(new WheelRadiusCharacterization(drivetrain));
                 operator.createYButton().whileTrue(elevatorSystem.elevatorSysIdCommand());
 
                 QuestNav calibrationQuest = new QuestNav(new Transform3d(new Translation3d(),
@@ -164,7 +162,7 @@ public class TigerShark extends GenericRobot {
                                 .whileTrue(drivetrain.getPoseEstimator().getCalibrationCommand(drivetrain, 1));
 
                 driver.createUpPovButton().whileTrue(Commands
-                                .run(() -> ((YAGSLSwerveDrivetrain) drivetrain)
+                                .run(() -> drivetrain
                                                 .drive(new ChassisSpeeds(0.1, 0, 0)), drivetrain));
                 // operator.createXButton().whileTrue(algaeArm.getSysIdCommand());
 
@@ -187,13 +185,14 @@ public class TigerShark extends GenericRobot {
                                                 ReefscapeButtonBoard.getScoringLevel())));
                 // Auto drive to station
                 // driver.createYButton().whileTrue(
-                //                 Commands.deferredProxy(
-                //                                 () -> TargetingSystem.createLoadingSequence(
-                //                                                 ReefscapeButtonBoard.getStationPose())));
+                // Commands.deferredProxy(
+                // () -> TargetingSystem.createLoadingSequence(
+                // ReefscapeButtonBoard.getStationPose())));
 
-                driver.createYButton().whileTrue(Commands.deferredProxy(() -> TargetingSystem.createNewTeleopCoralScoringSequence(
-                        ReefscapeButtonBoard.getScoringPose(),
-                        ReefscapeButtonBoard.getScoringLevel())));
+                driver.createYButton().whileTrue(
+                                Commands.deferredProxy(() -> TargetingSystem.createNewTeleopCoralScoringSequence(
+                                                ReefscapeButtonBoard.getScoringPose(),
+                                                ReefscapeButtonBoard.getScoringLevel())));
 
                 // driver.createLeftBumper().whileTrue(Commands.run(() ->
                 // elevatorSystem.setElevatorPosition(elevatorSystem.selectElevatorLevel(() ->
@@ -206,8 +205,9 @@ public class TigerShark extends GenericRobot {
 
                 operator.createLeftPovButton().onTrue(Commands.runOnce(() -> {
                         climb.setOverride(!climb.getOverride());
-                }).andThen(Commands.startEnd(() -> operator.setRumble(0.5), () -> operator.setRumble(0.0)).withTimeout(0.5)
-                .onlyIf(climb::getOverride)));
+                }).andThen(Commands.startEnd(() -> operator.setRumble(0.5), () -> operator.setRumble(0.0))
+                                .withTimeout(0.5)
+                                .onlyIf(climb::getOverride)));
 
                 Trigger safetiesOverrided = new Trigger(() -> safetyOverride);
                 Trigger elevatorOkToRun = (shooter.entrySensorIsBroken().negate()).or(safetiesOverrided);
@@ -243,14 +243,13 @@ public class TigerShark extends GenericRobot {
                                 .whileTrue(Commands.deferredProxy(
                                                 () -> shooter.getShootCommand(ReefscapeButtonBoard.getScoringLevel())));
 
-
-                // TODO: Try out this code 
+                // TODO: Try out this code
                 // itAintAuto.and(shooter.coralHasEntered()).and(elevatorSystem.isLoadingTrigger()).whileTrue(shooter.intakeCoral());
                 // itAintAuto.and(shooter.isFullyCaptured())
-                //                 .onTrue(elevatorSystem
-                //                                 .pidControlCommand(ElevatorSystem.Position.CORAL_EXTENSION.position())
-                //                                 .until(() -> elevatorSystem.isAtLocation(
-                //                                                 ElevatorSystem.Position.CORAL_EXTENSION.position())));
+                // .onTrue(elevatorSystem
+                // .pidControlCommand(ElevatorSystem.Position.CORAL_EXTENSION.position())
+                // .until(() -> elevatorSystem.isAtLocation(
+                // ElevatorSystem.Position.CORAL_EXTENSION.position())));
 
                 Trigger elevatorAtCoralExtendPosition = new Trigger(() -> elevatorSystem
                                 .isAtLocationImproved(ElevatorSystem.Position.CORAL_EXTENSION.position()));
@@ -263,13 +262,12 @@ public class TigerShark extends GenericRobot {
 
                 climb.setDefaultCommand(climb.runClimb(operator::getRightYAxis));
 
-                YAGSLSwerveDrivetrain yagsl = (YAGSLSwerveDrivetrain) drivetrain;
                 Trigger disabled = new Trigger(() -> DriverStation.isDisabled());
                 operator.createLeftPovButton().and(disabled).onTrue(
-                                Commands.runOnce(() -> yagsl.getPoseEstimator().setState(State.DISABLED_FIELD))
+                                Commands.runOnce(() -> drivetrain.getPoseEstimator().setState(State.DISABLED_FIELD))
                                                 .ignoringDisable(true));
                 operator.createRightPovButton().and(disabled)
-                                .onTrue(Commands.runOnce(() -> yagsl.getPoseEstimator().setState(State.ALL))
+                                .onTrue(Commands.runOnce(() -> drivetrain.getPoseEstimator().setState(State.ALL))
                                                 .ignoringDisable(true));
 
                 driver.createBackButton().onTrue(Commands.runOnce(() -> resetPositionToStart()).ignoringDisable(true));
@@ -302,8 +300,8 @@ public class TigerShark extends GenericRobot {
         public void setupDefaultCommands(Controller driver, Controller operator) {
                 // JoystickToSwerve driveCmd =
                 // (JoystickToSwerve)drivetrain.createDefaultCommand(driver);
-                Command driveCmd = ((YAGSLSwerveDrivetrain) drivetrain).driveWithSetpointGeneratorOrientationConsidered(
-                                () -> ((YAGSLSwerveDrivetrain) drivetrain).getFieldVelocitiesFromJoystick(
+                Command driveCmd = drivetrain.driveWithSetpointGeneratorOrientationConsidered(
+                                () -> drivetrain.getFieldVelocitiesFromJoystick(
                                                 driver::getLeftYAxis,
                                                 driver::getLeftXAxis, driver::getRightXAxis));
 
@@ -337,6 +335,7 @@ public class TigerShark extends GenericRobot {
                 addAutoToChooser("No Delay Custom Auto", new LudicrousMode());
                 addAutoToChooser("No Elevator Custom", new DriveOnlyCustom());
                 addAutoToChooser("One Coral Custom", new OneCoralCustom());
-                addAutoToChooser("Wheel Calibration Auto", new WheelCalibrationAuto((YAGSLSwerveDrivetrain) drivetrain));
+                addAutoToChooser("Wheel Calibration Auto",
+                                new WheelCalibrationAuto(drivetrain));
         }
 }
