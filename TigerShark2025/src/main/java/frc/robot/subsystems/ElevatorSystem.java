@@ -18,20 +18,18 @@ import org.frc5010.common.constants.MotorFeedFwdConstants;
 import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.motors.PIDController5010.PIDControlType;
+import org.frc5010.common.motors.control.RioPIDController;
 import org.frc5010.common.motors.function.FollowerMotor;
 import org.frc5010.common.motors.function.VerticalPositionControlMotor;
 import org.frc5010.common.motors.hardware.GenericTalonFXMotor;
 import org.frc5010.common.sensors.CountingValueSwitch;
-import org.frc5010.common.sensors.ValueSwitch;
 import org.frc5010.common.telemetry.DisplayLength;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -46,7 +44,7 @@ import frc.robot.ReefscapeButtonBoard;
 /** Add your docs here. */
 public class ElevatorSystem extends GenericSubsystem {
     protected CountingValueSwitch hasHighCurrentLoad;
-    protected VerticalPositionControlMotor elevator;
+    protected VerticalPositionControlMotor controlledMotor;
     protected FollowerMotor elevatorFollower;
     protected PIDControlType controlType = PIDControlType.NONE;
     protected Distance safeDistance = Inches.of(0.5);
@@ -67,10 +65,8 @@ public class ElevatorSystem extends GenericSubsystem {
     // "MyTable");
     private double currentX = 0.0, lastX = 0.0, lastTime = 0.0, timeChange = 0.0, currentVelocity = 0.0,
             lastVelocity = 0.0, currentAcceleration = 0.0;
-    private double forwardA = 0.0, forwardB = 0.0, forwardC = 0.0, backwardA = 0.0, backwardB = 0.0, backwardC = 0.0, horizontalA = 0.0, horizontalB = 0.0, horizontalC = 0.0, elevatorA = 0.0, elevatorB = 0.0, elevatorC = 0.0;
-
-    private ProfiledPIDController profiledPID;
-    private TrapezoidProfile.Constraints PIDConstraints;
+    private double forwardA = 0.0, forwardB = 0.0, forwardC = 0.0, backwardA = 0.0, backwardB = 0.0, backwardC = 0.0,
+            horizontalA = 0.0, horizontalB = 0.0, horizontalC = 0.0, elevatorA = 0.0, elevatorB = 0.0, elevatorC = 0.0;
 
     public static enum Position {
         BOTTOM(Meters.of(0.0)),
@@ -149,66 +145,65 @@ public class ElevatorSystem extends GenericSubsystem {
         if (0 == NET.getLength().in(Meters))
             NET.setLength(Position.NET.position());
 
-        elevator = new VerticalPositionControlMotor(MotorFactory.TalonFX(9, Motor.KrakenX60), "elevator",
+        controlledMotor = new VerticalPositionControlMotor(MotorFactory.TalonFX(9, Motor.KrakenX60), "elevator",
                 displayValues);
         elevatorFollower = new FollowerMotor(MotorFactory.TalonFX(10, Motor.KrakenX60),
-                elevator, "elevatorFollower", true);
-        elevator.setControlType(controlType);
+                controlledMotor, "elevatorFollower", true);
+        controlledMotor.setControlType(controlType);
 
-        elevator.setMotorBrake(true);
-        elevator.setCurrentLimit(config.MAX_ELEVATOR_STATOR_CURRENT_LIMIT);
-        ((GenericTalonFXMotor) elevator.getMotorController())
+        controlledMotor.setMotorBrake(true);
+        controlledMotor.setCurrentLimit(config.MAX_ELEVATOR_STATOR_CURRENT_LIMIT);
+        ((GenericTalonFXMotor) controlledMotor.getMotorController())
                 .setSupplyCurrent(config.MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT);
 
         elevatorFollower.setMotorBrake(true);
 
-        elevator.setupSimulatedMotor(config.gearing, Pounds.of(30), Inches.of(1.1),
+        controlledMotor.setupSimulatedMotor(config.gearing, Pounds.of(30), Inches.of(1.1),
                 LOAD.getLength(), Inches.of(83.475 - 6.725), LOAD.getLength(),
                 Meters.of(0.2), RobotBase.isSimulation() ? 0.75 : 0.37);
         elevatorFollower.setCurrentLimit(config.MAX_ELEVATOR_STATOR_CURRENT_LIMIT);
         ((GenericTalonFXMotor) elevatorFollower.getMotorController())
                 .setSupplyCurrent(config.MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT);
 
-        elevator.setVisualizer(mechanismSimulation, new Pose3d(
+        controlledMotor.setVisualizer(mechanismSimulation, new Pose3d(
                 new Translation3d(Inches.of(5.75).in(Meters), Inches.of(4.75).in(Meters), Inches.of(6.725).in(Meters)),
                 new Rotation3d()));
 
-        elevator.setMotorFeedFwd(new MotorFeedFwdConstants(0.26329, 0.38506, 0.04261));
-        elevator.setProfiledMaxVelocity(6.5);
-        elevator.setProfiledMaxAcceleration(20);
-        elevator.setValues(new GenericPID(3.0, 0.0, 0.0));
-        elevator.setOutputRange(-1, 1);
+        controlledMotor.setPIDController5010(new RioPIDController());
+        controlledMotor.setControlType(PIDControlType.PROFILED_POSITION);
+        controlledMotor.setTolerance(0.01);
 
-        PIDConstraints = new TrapezoidProfile.Constraints(elevator.getProfiledMaxVelocity(),
-                elevator.getProfiledMaxAcceleration());
-        profiledPID = new ProfiledPIDController(elevator.getP(), elevator.getI(), elevator.getD(), PIDConstraints);
-        profiledPID.setTolerance(0.01);
-
-        elevator.getMotorEncoder().setPosition(LOAD.getLengthInMeters());
+        controlledMotor.setMotorFeedFwd(new MotorFeedFwdConstants(0.26329, 0.38506, 0.04261));
+        controlledMotor.setProfiledMaxVelocity(6.5);
+        controlledMotor.setProfiledMaxAcceleration(20);
+        controlledMotor.setValues(new GenericPID(3.0, 0.0, 0.0));
+        controlledMotor.setOutputRange(-1, 1);
+        controlledMotor.getMotorEncoder().setPosition(LOAD.getLengthInMeters());
 
         // Tell the elevator to run the motor in reverse because the simulator thinks CW
         // is upwards
         if (RobotBase.isSimulation()) {
-            elevator.invert(true);
+            controlledMotor.invert(true);
             // Tell the simulator that the motor is CW.
-            elevator.getMotorEncoder().setInverted(true);
+            controlledMotor.getMotorEncoder().setInverted(true);
         }
 
-        elevator.burnFlash();
+        controlledMotor.burnFlash();
 
-        hasHighCurrentLoad = new CountingValueSwitch(config.ELEVATOR_ZERO_CURRENT, () -> Math.abs(elevator.getOutputCurrent()),
+        hasHighCurrentLoad = new CountingValueSwitch(config.ELEVATOR_ZERO_CURRENT,
+                () -> Math.abs(controlledMotor.getOutputCurrent()),
                 1, 10);
     }
 
     public Boolean validSpeed(double speed) {
-        if ((speed > 0 && !elevator.isAtMax()) || (speed < 0 && !elevator.isAtMin())) {
+        if ((speed > 0 && !controlledMotor.isAtMax()) || (speed < 0 && !controlledMotor.isAtMin())) {
             return true;
         }
         return false;
     }
 
     public Command elevatorSysIdCommand() {
-        return elevator.getSysIdCommand(this);
+        return controlledMotor.getSysIdCommand(this);
     }
 
     public double safeSpeed(double speed) {
@@ -216,11 +211,11 @@ public class ElevatorSystem extends GenericSubsystem {
             return 0.0;
         }
 
-        if ((speed > 0 && elevator.isCloseToMax(safeDistance)) || (speed < 0 && elevator.isCloseToMin(safeDistance))) {
+        if ((speed > 0 && controlledMotor.isCloseToMax(safeDistance)) || (speed < 0 && controlledMotor.isCloseToMin(safeDistance))) {
             speed = speed * 0.13;
             config.rateLimiter.reset(speed);
         } else {
-            double currentSpeed = elevator.get();
+            double currentSpeed = controlledMotor.get();
             if ((Math.signum(speed) > 0 && currentSpeed < speed) ||
                     (Math.signum(speed) < 0 && speed < currentSpeed)) {
                 speed = config.rateLimiter.calculate(speed);
@@ -233,127 +228,101 @@ public class ElevatorSystem extends GenericSubsystem {
 
     public void elevatorSpeed(double speed) {
 
-        if (elevator.getControlType() != PIDControlType.NONE && speed != 0) {
-            elevator.setControlType(PIDControlType.NONE);
+        if (controlledMotor.getControlType() != PIDControlType.NONE && speed != 0) {
+            controlledMotor.setControlType(PIDControlType.NONE);
         }
-        if (PIDControlType.NONE == elevator.getControlType()) {
-            elevator.set(safeSpeed(speed));
+        if (PIDControlType.NONE == controlledMotor.getControlType()) {
+            controlledMotor.set(safeSpeed(speed));
         }
     }
 
     public Command elevatorPositionZeroSequence() {
         double zeroSpeed = -0.2;
 
-        return Commands.run(() -> elevator.set(zeroSpeed), this).until(() -> hasHighCurrentLoad.get())
-                .andThen(zeroElevator()).finallyDo(() -> elevator.set(0.0));
+        return Commands.run(() -> controlledMotor.set(zeroSpeed), this).until(() -> hasHighCurrentLoad.get())
+                .andThen(zeroElevator()).finallyDo(() -> controlledMotor.set(0.0));
     }
 
     public Command holdElevatorDown() {
-        return Commands.run(() -> elevator.set(-0.05));
-    }
-
-    public Command profiledBangBangCmd(Distance position) {
-        return Commands.run(() -> {
-
-            elevator.setReference(position.in(Meters));
-            double difference = position.in(Meters) - elevator.getPosition();
-            double sign = Math.signum(difference);
-            double effort = 0.8;
-            if (Math.abs(difference) < safeDistance.in(Meters)) {
-                effort *= Math.abs(difference) / safeDistance.in(Meters);
-                effort = Math.max(effort, 0.001);
-                if (Math.abs(difference) < 0.002) {
-                    effort = 0;
-                }
-            }
-            effort *= sign;
-            elevator.set(effort);
-        }, this);
+        return Commands.run(() -> controlledMotor.set(-0.05));
     }
 
     public Command pidControlCommand(Distance position) {
         return Commands.run(() -> {
-            runControllerToSetpoint();
+            controlledMotor.runControllerToSetpoint();
 
         }, this).beforeStarting(() -> {
             resetController(position);
-            elevator.setControlType(PIDControlType.NONE);
+            controlledMotor.setControlType(PIDControlType.PROFILED_POSITION);
         }).finallyDo(() -> {
-            elevator.set(0);
-            elevator.setControlType(controlType);
+            controlledMotor.set(0);
+            controlledMotor.setControlType(controlType);
         });
     }
 
     public Command newPidControlCommand(Distance position) {
         return Commands.run(() -> {
-            runControllerToSetpoint();
+            controlledMotor.runControllerToSetpoint();
 
         }, this).beforeStarting(() -> {
             resetController(position);
-            elevator.setControlType(PIDControlType.NONE);
+            controlledMotor.setControlType(PIDControlType.PROFILED_POSITION);
         });
     }
 
     public Command stopElevator() {
         return Commands.run(() -> {
-            elevator.set(0);
-            elevator.setControlType(controlType);
+            controlledMotor.set(0);
+            controlledMotor.setControlType(controlType);
         });
     }
 
     public void runControllerToSetpoint() {
-        double output = profiledPID.calculate(elevator.getPosition());
-        elevator.set(MathUtil.clamp(output, -1, 1), profiledPID.getSetpoint().velocity);
+        controlledMotor.runControllerToSetpoint();
     }
 
     public void setControllerGoal(Distance goal) {
-        profiledPID.setGoal(goal.in(Meters));
-        elevator.setReference(goal.in(Meters));
+        controlledMotor.setReference(goal.in(Meters));
     }
 
     public void resetController(Distance goal) {
-        profiledPID.reset(elevator.getPosition(), elevator.getVelocity());
-        profiledPID.setPID(elevator.getP(), elevator.getI(), elevator.getD());
+        controlledMotor.resetController(controlledMotor.getEncoderFeedback(), controlledMotor.getVelocity());
         setControllerGoal(goal);
     }
 
     private void setElevatorPIDGoal(double goal) {
-        profiledPID.setGoal(goal);
-        elevator.setReference(goal);
+        controlledMotor.setReference(goal);
     }
 
     public Command pidControlCommand(Distance position, Supplier<Distance> maxHeight) {
         return Commands.run(() -> {
-            if (profiledPID.getGoal().position != position.in(Meters)) {
+            if (controlledMotor.getReference() != position.in(Meters)) {
                 setElevatorPIDGoal(Math.min(maxHeight.get().in(Meters), position.in(Meters)));
             }
-            double output = profiledPID.calculate(elevator.getPosition());
-            elevator.set(MathUtil.clamp(output, -1, 1), profiledPID.getSetpoint().velocity);
-
+            controlledMotor.runControllerToSetpoint();
         }, this).beforeStarting(() -> {
-            profiledPID.setPID(elevator.getP(), elevator.getI(), elevator.getD());
-            profiledPID.reset(elevator.getPosition(), elevator.getVelocity());
-            elevator.setControlType(PIDControlType.NONE);
+            resetController(position);
+            controlledMotor.setControlType(PIDControlType.PROFILED_POSITION);
         }).finallyDo(() -> {
-            elevator.setControlType(controlType);
+            controlledMotor.setControlType(controlType);
         });
     }
 
     public void setElevatorPosition(Distance position) {
-        if (elevator.getControlType() != controlType) {
-            elevator.setControlType(controlType);
+        if (controlledMotor.getControlType() != controlType) {
+            controlledMotor.setControlType(controlType);
         }
-        if (controlType == elevator.getControlType()) {
-            elevator.setReference(position.in(Meters));
+        if (controlType == controlledMotor.getControlType()) {
+            controlledMotor.setReference(position.in(Meters));
         }
     }
 
     public double getElevatorReference() {
-        return elevator.getReference();
+        return controlledMotor.getReference();
     }
 
     public Command zeroElevator() {
-        return Commands.runOnce(() -> elevator.getMotorEncoder().setPosition(0.09));
+        return Commands.runOnce(() -> controlledMotor.getMotorEncoder().setPosition(0.09));
     }
 
     public Command basicSuppliersMovement(DoubleSupplier speed) {
@@ -363,28 +332,26 @@ public class ElevatorSystem extends GenericSubsystem {
 
     public Command joystickPositionControl(Supplier<Distance> positionalChange) {
         return Commands.run(() -> {
-            setElevatorPosition(Meters.of(elevator.getPosition()).plus(positionalChange.get()));
+            setElevatorPosition(Meters.of(controlledMotor.getEncoderFeedback()).plus(positionalChange.get()));
         }, this).beforeStarting(setControlType(PIDControlType.PROFILED_POSITION)).finallyDo(this::resetControlType);
     }
 
     public Command setControlType(PIDControlType type) {
-        return Commands.runOnce(() -> elevator.setControlType(type));
+        return Commands.runOnce(() -> controlledMotor.setControlType(type));
     }
 
     private void resetControlType() {
-        elevator.setControlType(controlType);
+        controlledMotor.setControlType(controlType);
     }
 
-    public Trigger isAtTarget() {
-        return new Trigger(() -> elevator.isAtTarget());
-    }
+    public Trigger isAtTarget = new Trigger(() -> controlledMotor.isAtTarget());
 
     public boolean isAtLocation(Distance position) {
-        return Math.abs(position.in(Meters) - elevator.getPosition()) < 0.02;
+        return Math.abs(position.in(Meters) - controlledMotor.getEncoderFeedback()) < 0.02;
     }
 
     public boolean isAtLocationImproved(Distance position) {
-        if (Math.abs(position.in(Meters) - elevator.getPosition()) < 0.02) {
+        if (Math.abs(position.in(Meters) - controlledMotor.getEncoderFeedback()) < 0.02) {
             elevatorAtReferenceCounter++;
             return elevatorAtReferenceCounter > 10;
         }
@@ -393,16 +360,16 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double getCenterOfMassZ() {
-        return growFactor * Math.pow(elevator.getPosition(), exponent) + initialValue;
+        return growFactor * Math.pow(controlledMotor.getEncoderFeedback(), exponent) + initialValue;
     }
 
     // Function that decreases acceleration to counteract elevator flex
     public double getGeneralAccelerationDampener() {
-        return Math.pow(elevator.getPosition()*2, 0.5);
+        return Math.pow(controlledMotor.getEncoderFeedback() * 2, 0.5);
     }
 
     public double getBackwardAccelerationDampener() {
-        return Math.pow(elevator.getPosition()*2, 0.5);
+        return Math.pow(controlledMotor.getEncoderFeedback() * 2, 0.5);
     }
 
     public double getMaxForwardAcceleration() {
@@ -477,26 +444,22 @@ public class ElevatorSystem extends GenericSubsystem {
         }
     }
 
-    public ProfiledPIDController getPIDController() {
-        return profiledPID;
-    }
-
     // returns constants [+acceleration, -+time (time to accelerate in one
     // direction), time]
     public double[] getHeightTimeFunction(double height) {
-        double distance = elevator.getPosition() - height;
-        double timeToMaxVelocity = elevator.getProfiledMaxVelocity() / elevator.getProfiledMaxAcceleration();
-        double maxTriangleDistance = elevator.getProfiledMaxAcceleration() * Math.pow(timeToMaxVelocity, 2);
+        double distance = controlledMotor.getEncoderFeedback() - height;
+        double timeToMaxVelocity = controlledMotor.getProfiledMaxVelocity() / controlledMotor.getProfiledMaxAcceleration();
+        double maxTriangleDistance = controlledMotor.getProfiledMaxAcceleration() * Math.pow(timeToMaxVelocity, 2);
         double accelerationTime = 0.0, time = 0.0;
         if (maxTriangleDistance > height) {
-            accelerationTime = Math.sqrt(distance / elevator.getProfiledMaxAcceleration());
+            accelerationTime = Math.sqrt(distance / controlledMotor.getProfiledMaxAcceleration());
             time = 0.0;
         } else {
             double remainingDistance = distance - maxTriangleDistance;
-            accelerationTime = Math.sqrt(maxTriangleDistance / elevator.getProfiledMaxAcceleration());
-            time = remainingDistance / elevator.getProfiledMaxVelocity();
+            accelerationTime = Math.sqrt(maxTriangleDistance / controlledMotor.getProfiledMaxAcceleration());
+            time = remainingDistance / controlledMotor.getProfiledMaxVelocity();
         }
-        return new double[] { elevator.getProfiledMaxAcceleration(), accelerationTime, time };
+        return new double[] { controlledMotor.getProfiledMaxAcceleration(), accelerationTime, time };
     }
 
     public void setRobotParameters(Distance centerofMassX, Distance centerOfMassY, Distance wheelBase,
@@ -516,16 +479,13 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public boolean atLoading() {
-        return Math.abs(elevator.getPosition() - Position.LOAD.position().in(Meters)) < 0.1;
+        return Math.abs(controlledMotor.getEncoderFeedback() - Position.LOAD.position().in(Meters)) < 0.1;
     }
 
-    public Trigger isLoadingTrigger() {
-        return new Trigger(() -> atLoading());
-    }
-
+    public Trigger isLoadingTrigger = new Trigger(() -> atLoading());
 
     public Distance getElevatorPosition() {
-        return Meters.of(elevator.getPosition());
+        return Meters.of(controlledMotor.getEncoderFeedback());
     }
 
     public Distance getStoppingDistance() {
@@ -542,7 +502,8 @@ public class ElevatorSystem extends GenericSubsystem {
         this.elevatorC = elevatorC;
     }
 
-    public void setUpAccelerationConstraints(double forwardA, double forwardB, double forwardC, double backwardA, double backwardB, double backwardC, double horizontalA, double horizontalB, double horizontalC) {
+    public void setUpAccelerationConstraints(double forwardA, double forwardB, double forwardC, double backwardA,
+            double backwardB, double backwardC, double horizontalA, double horizontalB, double horizontalC) {
         this.forwardA = forwardA;
         this.forwardB = forwardB;
         this.forwardC = forwardC;
@@ -555,38 +516,42 @@ public class ElevatorSystem extends GenericSubsystem {
     }
 
     public double[] getForwardAccelerationConstants() {
-        return new double[] {forwardA, forwardB, forwardC};
+        return new double[] { forwardA, forwardB, forwardC };
     }
 
     public double[] getBackwardAccelerationConstants() {
-        return new double[] {backwardA, backwardB, backwardC};
+        return new double[] { backwardA, backwardB, backwardC };
     }
 
     public double[] getHorizontalAccelerationConstants() {
-        return new double[] {horizontalA, horizontalB, horizontalC};
+        return new double[] { horizontalA, horizontalB, horizontalC };
     }
 
     public double getElevatorExtensionTime() {
-        return elevatorA * Math.pow(Math.abs(selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()).in(Meters) - getElevatorPosition().in(Meters)), elevatorB) + elevatorC;
+        return elevatorA
+                * Math.pow(Math.abs(selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()).in(Meters)
+                        - getElevatorPosition().in(Meters)), elevatorB)
+                + elevatorC;
     }
 
     public double getAverageElevatorVelocity() {
-        return getElevatorExtensionTime() == 0.0 ? 0.0 : (selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()).in(Meters) - getElevatorPosition().in(Meters)) / getElevatorExtensionTime();
+        return getElevatorExtensionTime() == 0.0 ? 0.0
+                : (selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()).in(Meters)
+                        - getElevatorPosition().in(Meters)) / getElevatorExtensionTime();
     }
 
     @Override
     public void periodic() {
-        elevator.draw();
+        controlledMotor.periodicUpdate();
 
-        SmartDashboard.putNumber("Elevator Current", Math.abs(elevator.getOutputCurrent()));
-        SmartDashboard.putNumber("Elevator Position Setpoint", profiledPID.getSetpoint().position);
-        SmartDashboard.putNumber("Elevator Velocity Setpoint", profiledPID.getSetpoint().velocity);
+        SmartDashboard.putNumber("Elevator Current", Math.abs(controlledMotor.getOutputCurrent()));
+        SmartDashboard.putNumber("Elevator Position Setpoint", controlledMotor.getReference());
+        SmartDashboard.putNumber("Elevator Velocity Setpoint", controlledMotor.getReferenceVelocity());
 
-        
     }
 
     @Override
     public void simulationPeriodic() {
-        elevator.simulationUpdate();
+        controlledMotor.simulationUpdate();
     }
 }

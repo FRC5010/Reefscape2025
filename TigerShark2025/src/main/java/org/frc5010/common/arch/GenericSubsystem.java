@@ -112,7 +112,7 @@ public class GenericSubsystem extends SubsystemBase
         .forEach(
             it -> {
               if (it instanceof GenericFunctionalMotor) {
-                ((GenericFunctionalMotor) it).draw();
+                ((GenericFunctionalMotor) it).periodicUpdate();
               }
             });
   }

@@ -63,7 +63,6 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
     protected Optional<DoubleSupplier> supplyKG = Optional.empty();
     protected ElevatorFeedforward elevatorFeedforward;
 
-
     public VerticalPositionControlMotor(MotorController5010 motor, String visualName, DisplayValuesHelper tab) {
         super(motor, visualName, tab);
         kG = _displayValuesHelper.makeConfigDouble(K_G);
@@ -152,44 +151,39 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
     }
 
     public Boolean isCloseToMax(Distance closeZone) {
-        return getPosition() >= mechanismHeight.minus(closeZone).in(Meters) ;
+        return position.getValue() >= mechanismHeight.minus(closeZone).in(Meters);
     }
 
     public Boolean isCloseToMin(Distance closeZone) {
-        return getPosition() <= minHeight.plus(closeZone).in(Meters);
+        return position.getValue() <= minHeight.plus(closeZone).in(Meters);
     }
 
     @Override
     public void setReference(double reference) {
         setReference(reference, controller.getControlType(),
-                getFeedForward(0.0001 * Math.signum(reference - getPosition())).in(Volts));
+                getFeedForward(0.0001 * Math.signum(reference - position.getValue())).in(Volts));
     }
 
     public void updateReference() {
         if (PIDControlType.NONE != controller.getControlType()) {
             controller.setReference(reference.getValue(), getControlType(),
-                    getFeedForward(0.0001 * Math.signum(reference.getValue() - getPosition())).in(Volts));
+                    getFeedForward(0.0001 * Math.signum(reference.getValue() - position.getValue())).in(Volts));
         }
     }
 
     @Override
     public void set(double speed) {
-        
-        double actual = MathUtil.clamp(speed + getFeedForward((int)Math.signum(speed)).in(Volts) / RobotController.getBatteryVoltage(), -1.0,
-                1.0);
+
+        double actual = MathUtil.clamp(
+                speed + getDirectionalFeedForward((int) Math.signum(speed)).in(Volts)
+                        / RobotController.getBatteryVoltage(),
+                -1.0,1.0);
         this.speed.setValue(actual);
+        outputEffort.setVoltage(actual * outputFactor.getValue(), Volts);
         _motor.set(actual);
     }
 
-    public void set(double speed, double ffVelocity) {
-        double actual = MathUtil.clamp(speed + getFeedForward(ffVelocity).in(Volts) / RobotController.getBatteryVoltage(), -1.0,
-                1.0);
-        this.speed.setValue(actual);
-        _motor.set(actual);
-    }
-
-
-    public double getPosition() {
+    public double getEncoderFeedback() {
         if (RobotBase.isReal()) {
             return encoder.getPosition();
         } else {
@@ -219,7 +213,7 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
         return ff;
     }
 
-    public Voltage getFeedForward(int movementDirection) {
+    public Voltage getDirectionalFeedForward(int movementDirection) {
         if (supplyKG.isPresent()) {
             kG.setValue(supplyKG.get().getAsDouble());
         }
@@ -230,33 +224,33 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
                     kV.getValue(),
                     kA.getValue());
         }
-        Voltage ff = Volts.of(elevatorFeedforward.getKs() * Math.signum(movementDirection) + elevatorFeedforward.getKg());
+        Voltage ff = Volts
+                .of(elevatorFeedforward.getKs() * Math.signum(movementDirection) + elevatorFeedforward.getKg());
         return ff;
     }
 
     @Override
-    public void draw() {
+    public void periodicUpdate() {
         updateReference();
         double currentPosition = 0;
-        currentPosition = getPosition();
+        currentPosition = getEncoderFeedback();
         setPointRoot.setPosition(getSimX(Meters.of(_robotToMotor.getX())) + setPointDisplayOffset,
                 getSimY(Meters.of(_robotToMotor.getZ())) + getReference());
         mechRoot.setPosition(getSimX(Meters.of(_robotToMotor.getX())),
                 getSimY(Meters.of(_robotToMotor.getZ())) + currentPosition);
         position.setValue(currentPosition);
         velocity.setValue(encoder.getVelocity());
+        encoderFeedback.setValue(currentPosition);
 
         if (Robot.isSimulation()) {
-            
-            effort.setVoltage(_motor.getVoltage(), Volts);
-            
+            actualEffort.setVoltage(_motor.getVoltage(), Volts);
         }
     }
 
     @Override
     public void simulationUpdate() {
         simMechanism.setInput(_motor.getVoltage());
-        effort.setVoltage(_motor.getVoltage(), Volts);
+        outputEffort.setVoltage(_motor.getVoltage(), Volts);
         simMechanism.update(PhysicsSim.SimProfile.getPeriod());
         _motor.simulationUpdate(Optional.of(simMechanism.getPositionMeters()),
                 simMechanism.getVelocityMetersPerSecond());

@@ -219,7 +219,7 @@ public class AlgaeArm extends GenericSubsystem {
 
     @Override
     public void periodic() {
-        motor.draw();
+        motor.periodicUpdate();
     }
 
     @Override

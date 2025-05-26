@@ -402,7 +402,7 @@ public class DriveToPoseSupplierWithElevator extends GenericCommand {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if (verticalControllerAtTarget() && horizontalControllerAttarget() && elevator.isAtTarget().getAsBoolean()) {
+    if (verticalControllerAtTarget() && horizontalControllerAttarget() && elevator.isAtTarget.getAsBoolean()) {
       onTargetCounter++;
     }
     return onTargetCounter > 5;

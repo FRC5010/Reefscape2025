@@ -378,8 +378,8 @@ public class ShooterSystem extends GenericSubsystem {
 
   @Override
   public void periodic() {
-    shooterLeft.draw();
-    shooterRight.draw();
+    shooterLeft.periodicUpdate();
+    shooterRight.periodicUpdate();
     entryBeamBreakDisplay.setValue(entryBroken.getAsBoolean());
     alignmentBeamBreakDisplay.setValue(alignmentBroken.getAsBoolean());
 

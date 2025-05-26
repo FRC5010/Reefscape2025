@@ -76,6 +76,7 @@
       "/SmartDashboard/Coral2": "Command",
       "/SmartDashboard/CustomAuto": "Command",
       "/SmartDashboard/Drive Visual": "Mechanism2d",
+      "/SmartDashboard/DriveOnlyCustom": "Command",
       "/SmartDashboard/DriveToPoseSupplier": "Command",
       "/SmartDashboard/DriveToPosition": "Command",
       "/SmartDashboard/Encoders": "Alerts",
@@ -84,6 +85,7 @@
       "/SmartDashboard/JSON": "Alerts",
       "/SmartDashboard/Left2Coral": "Command",
       "/SmartDashboard/Motors": "Alerts",
+      "/SmartDashboard/OneCoralCustom": "Command",
       "/SmartDashboard/PathPlanner": "Alerts",
       "/SmartDashboard/Pigeon 2 (v6) [13]": "Gyro",
       "/SmartDashboard/Pigeon 2 (v6) [15]": "Gyro",
@@ -668,6 +670,11 @@
           "visible": true
         }
       },
+      "/SmartDashboard/Robot Visual": {
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard/VisionSystemSim-main/Sim Field": {
         "bottom": 1638,
         "builtin": "2025 Reefscape",
@@ -712,9 +719,13 @@
     },
     "transitory": {
       "Shuffleboard": {
-        "Pose": {
+        "Driver": {
           "open": true
-        }
+        },
+        "TigerShark": {
+          "open": true
+        },
+        "open": true
       },
       "SmartDashboard": {
         "ElevatorSystem": {
@@ -759,9 +770,6 @@
       "open": true
     },
     "visible": true
-  },
-  "NetworkTables View": {
-    "visible": false
   },
   "Plot": {
     "Plot <0>": {

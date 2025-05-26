@@ -265,7 +265,7 @@ public class GenericFunctionalMotor implements MotorController5010, WpiHelperInt
    * Needs to be overridden by subclasses to draw the motor behavior on the
    * visualizer
    */
-  public void draw() {
+  public void periodicUpdate() {
   }
 
   /**

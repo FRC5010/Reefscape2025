@@ -16,6 +16,11 @@ public class PositionControlMotor extends GenericControlledMotor {
   }
 
   @Override
+  public double getEncoderFeedback() {
+    return 0;
+  }
+  
+  @Override
   public Command getSysIdCommand(SubsystemBase subsystemBase) {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'getSysIdCommand'");

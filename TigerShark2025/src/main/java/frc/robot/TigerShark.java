@@ -8,10 +8,8 @@ import static edu.wpi.first.units.Units.Seconds;
 import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.commands.calibration.WheelRadiusCharacterization;
 import org.frc5010.common.config.ConfigConstants;
-import org.frc5010.common.drive.GenericDrivetrain;
 import org.frc5010.common.drive.pose.DrivePoseEstimator.State;
 import org.frc5010.common.drive.swerve.GenericSwerveDrivetrain;
-import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 import org.frc5010.common.sensors.Controller;
 import org.frc5010.common.sensors.camera.QuestNav;
 import org.frc5010.common.sensors.gyro.GenericGyro;
@@ -210,17 +208,20 @@ public class TigerShark extends GenericRobot {
                                 .onlyIf(climb::getOverride)));
 
                 Trigger safetiesOverrided = new Trigger(() -> safetyOverride);
-                Trigger elevatorOkToRun = (shooter.entrySensorIsBroken().negate()).or(safetiesOverrided);
+                Trigger isSimulation = new Trigger(Robot::isSimulation);
+                Trigger elevatorOkToRun = (shooter.entrySensorIsBroken().negate()).or(safetiesOverrided)
+                                .or(isSimulation);
                 Trigger isAuto = new Trigger(RobotState::isAutonomous);
                 Trigger itAintAuto = isAuto.negate();
 
-                elevatorSystem.isLoadingTrigger().and(shooter.coralCapturedOrAligned().negate()).and(itAintAuto)
+                elevatorSystem.isLoadingTrigger.and(shooter.coralCapturedOrAligned().negate()).and(itAintAuto)
                                 .whileTrue(shooter.intakeCoral());
-                driver.createLeftBumper().and(elevatorOkToRun).whileTrue(Commands.deferredProxy(() -> elevatorSystem
-                                .pidControlCommand(
-                                                elevatorSystem.selectElevatorLevel(
-                                                                () -> ReefscapeButtonBoard.getScoringLevel()))));
-
+                driver.createLeftBumper().and(elevatorOkToRun)
+                                .whileTrue(Commands.deferredProxy(() -> elevatorSystem
+                                                .pidControlCommand(
+                                                                elevatorSystem.selectElevatorLevel(
+                                                                                () -> ReefscapeButtonBoard
+                                                                                                .getScoringLevel()))));
                 driver.LEFT_BUMPER.and(AlgaeArm.algaeSelected).and(ReefscapeButtonBoard.algaeLevelIsSelected)
                                 .whileTrue(algaeArm.getDeployCommand());
 
@@ -229,10 +230,11 @@ public class TigerShark extends GenericRobot {
                 operator.createAButton().onTrue(Commands
                                 .runOnce(() -> ReefscapeButtonBoard.setScoringLocation(ScoringLocation.PID_TEST)));
 
-                driver.createRightBumper().whileTrue(Commands.deferredProxy(() -> elevatorSystem
+                driver.createRightBumper().onTrue(Commands.deferredProxy(() -> elevatorSystem
                                 .pidControlCommand(
                                                 elevatorSystem.selectElevatorLevel(
                                                                 () -> ReefscapeButtonBoard.ScoringLevel.INTAKE)))
+                                .until(() -> elevatorSystem.isAtLocation(ElevatorSystem.Position.BOTTOM.position()))
                                 .finallyDo(() -> elevatorSystem.elevatorPositionZeroSequence()
                                                 .andThen(elevatorSystem.holdElevatorDown().withTimeout(1.0))
                                                 .schedule()));

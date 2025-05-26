@@ -78,7 +78,7 @@ public class PercentControlMotor extends GenericFunctionalMotor {
   }
 
   @Override
-  public void draw() {
+  public void periodicUpdate() {
     speed.setValue(_motor.getMotorEncoder().getVelocity());
     speedometer.setAngle(270 - _motor.get() * 180);
   }

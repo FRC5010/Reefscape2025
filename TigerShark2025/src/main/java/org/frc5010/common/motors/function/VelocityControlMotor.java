@@ -69,7 +69,7 @@ public class VelocityControlMotor extends GenericControlledMotor {
   }
 
   @Override
-  public void draw() {
+  public void periodicUpdate() {
     double currentVelocity = 0;
     currentVelocity = encoder.getVelocity();
     velocity.setValue(currentVelocity);
@@ -80,7 +80,7 @@ public class VelocityControlMotor extends GenericControlledMotor {
   @Override
   public void simulationUpdate() {
     flyWheelSim.setInput(_motor.getVoltage());
-    effort.setVoltage(_motor.getVoltage(), Volts);
+    outputEffort.setVoltage(_motor.getVoltage(), Volts);
     flyWheelSim.update(0.020);
     
     _motor.simulationUpdate(Optional.empty(), flyWheelSim.getAngularVelocityRPM());
@@ -93,5 +93,10 @@ public class VelocityControlMotor extends GenericControlledMotor {
   public Command getSysIdCommand(SubsystemBase subsystemBase) {
     return SystemIdentification.getSysIdFullCommand(
         SystemIdentification.rpmSysIdRoutine(_motor, encoder, _visualName, subsystemBase), 5, 3, 3);
+  }
+
+  @Override
+  public double getEncoderFeedback() {
+    return encoder.getVelocity();
   }
 }

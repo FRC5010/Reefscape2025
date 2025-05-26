@@ -238,7 +238,7 @@ public class Elphaba extends GenericRobot {
                 Trigger elevatorOkToRun = (shooter.entrySensorIsBroken().negate()).or(safetiesOverrided);
                 
                
-                elevatorSystem.isLoadingTrigger().and(shooter.coralCapturedOrAligned().negate())
+                elevatorSystem.isLoadingTrigger.and(shooter.coralCapturedOrAligned().negate())
                         .whileTrue(shooter.intakeCoral());
                 driver.createLeftBumper().and(elevatorOkToRun).whileTrue(Commands.deferredProxy(() -> elevatorSystem
                                 .pidControlCommand(

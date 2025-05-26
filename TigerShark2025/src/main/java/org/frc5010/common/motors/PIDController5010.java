@@ -43,6 +43,8 @@ public interface PIDController5010 {
 
   public void setReference(double reference, PIDControlType controlType, double feedforward);
 
+  public double getReferenceVelocity();
+
   public void setControlType(PIDControlType controlType);
 
   public void setProfiledMaxVelocity(double maxVelocity);
@@ -66,6 +68,8 @@ public interface PIDController5010 {
   public PIDControlType getControlType();
 
   public boolean isAtTarget();
+
+  public void resetController(double position, double velocity);
 
   public double calculateControlEffort(double current);
 
