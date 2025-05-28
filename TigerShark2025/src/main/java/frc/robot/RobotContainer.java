@@ -9,11 +9,7 @@ import org.frc5010.common.arch.WpiHelperInterface;
 import org.frc5010.common.arch.WpiNetworkTableValuesHelper;
 import org.frc5010.common.constants.Constants;
 
-import com.ctre.phoenix6.SignalLogger;
-
-import au.grapplerobotics.CanBridge;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.control_board_test.ControlsBoard;
 
 public class RobotContainer implements WpiHelperInterface {
   public static Constants constants;
@@ -24,10 +20,10 @@ public class RobotContainer implements WpiHelperInterface {
     // SignalLogger.start();
     constants = new Constants();
 
-    //robot = new ElphabaOld("elphaba");
+    // robot = new ElphabaOld("elphaba");
     // robot = new Pancake("pancake_bot");
     robot = new TigerShark("tigershark");
-    //robot = new ControlsBoard("controls_board");
+    // robot = new ControlsBoard("controls_board");
     initAutoCommands();
     configureButtonBindings();
     WpiNetworkTableValuesHelper.loadRegisteredToNetworkTables();
