@@ -16,6 +16,7 @@ import org.frc5010.common.telemetry.DisplayString;
 import org.frc5010.common.telemetry.DisplayValuesHelper;
 import org.frc5010.common.telemetry.WpiDataLogging;
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
@@ -25,14 +26,13 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 
 /** Robots should extend this class as the entry point into using the library */
 public abstract class GenericRobot extends GenericMechanism implements GenericDeviceHandler {
   /** Selector for autonomous modes */
-  protected SendableChooser<Command> selectableCommand;
+  protected LoggedDashboardChooser<Command> selectableCommand;
   /** The driver controller */
   protected Optional<Controller> driver;
   /** The operator controller */
@@ -213,9 +213,9 @@ public abstract class GenericRobot extends GenericMechanism implements GenericDe
 
     // TODO: Figure out Pathplanner Warmup Command
     if (AutoBuilder.isConfigured()) {
-      selectableCommand = AutoBuilder.buildAutoChooser();
+      selectableCommand = new LoggedDashboardChooser<>("Auto Modes", AutoBuilder.buildAutoChooser());
       if (null != selectableCommand) {
-        shuffleTab.add("Auto Modes", selectableCommand).withSize(2, 1);
+        shuffleTab.add("Auto Modes", selectableCommand.getSendableChooser()).withSize(2, 1);
       }
     }
   }
@@ -241,7 +241,7 @@ public abstract class GenericRobot extends GenericMechanism implements GenericDe
    */
   public Command getAutonomousCommand() {
     everEnabled = true;
-    return generateAutoCommand(selectableCommand.getSelected());
+    return generateAutoCommand(selectableCommand.get());
   }
 
   /**
