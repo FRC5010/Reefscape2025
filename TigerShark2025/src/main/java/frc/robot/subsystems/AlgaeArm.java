@@ -22,13 +22,13 @@ import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.motors.PIDController5010.PIDControlType;
 import org.frc5010.common.motors.function.AngularControlMotor;
 import org.frc5010.common.motors.hardware.GenericTalonFXMotor;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -94,7 +94,7 @@ public class AlgaeArm extends GenericSubsystem {
 
     private Config config = new Config();
 
-    public AlgaeArm(Mechanism2d mechanismSimulation, Config config) {
+    public AlgaeArm(LoggedMechanism2d mechanismSimulation, Config config) {
         super(mechanismSimulation);
         if (config != null)
             this.config = config;

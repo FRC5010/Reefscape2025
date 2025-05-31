@@ -24,6 +24,7 @@ import org.frc5010.common.motors.function.VerticalPositionControlMotor;
 import org.frc5010.common.motors.hardware.GenericTalonFXMotor;
 import org.frc5010.common.sensors.CountingValueSwitch;
 import org.frc5010.common.telemetry.DisplayLength;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -34,7 +35,6 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -114,7 +114,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
     private Config config = new Config();
 
-    public ElevatorSystem(Mechanism2d mechanismSimulation, Config config) {
+    public ElevatorSystem(LoggedMechanism2d mechanismSimulation, Config config) {
         if (config != null)
             this.config = config;
 

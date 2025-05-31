@@ -28,6 +28,8 @@ import org.frc5010.common.drive.swerve_utils.PathConstraints5010;
 import org.frc5010.common.drive.swerve_utils.SwerveSetpointGenerator5010;
 import org.frc5010.common.sensors.Controller;
 import org.json.simple.parser.ParseException;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathfindingCommand;
@@ -57,8 +59,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
@@ -72,7 +72,7 @@ public class GenericSwerveDrivetrain extends GenericDrivetrain {
     private SwerveDriveFunctions swerveDrive = null;
     private GenericDrivetrainConstants swerveConstants;
 
-    public GenericSwerveDrivetrain(Mechanism2d mechVisual, GenericDrivetrainConstants swerveConstants,
+    public GenericSwerveDrivetrain(LoggedMechanism2d mechVisual, GenericDrivetrainConstants swerveConstants,
             SwerveDriveFunctions swerveDriveFunctions) {
         super(mechVisual);
         this.swerveDrive = swerveDriveFunctions;
@@ -199,28 +199,28 @@ public class GenericSwerveDrivetrain extends GenericDrivetrain {
         for (int i = 0; i < modules.length; i++) {
             visualRoots
                     .get(i)
-                    .append(new MechanismLigament2d(i + "-vert", 0.10, 90, 6.0, new Color8Bit(50, 50, 50)));
+                    .append(new LoggedMechanismLigament2d(i + "-vert", 0.10, 90, 6.0, new Color8Bit(50, 50, 50)));
             visualRoots
                     .get(i)
-                    .append(new MechanismLigament2d(i + "-hori", 0.10, 0, 6.0, new Color8Bit(50, 50, 50)));
+                    .append(new LoggedMechanismLigament2d(i + "-hori", 0.10, 0, 6.0, new Color8Bit(50, 50, 50)));
             motorDials.put(
                     i,
                     visualRoots
                             .get(i)
                             .append(
-                                    new MechanismLigament2d(
+                                    new LoggedMechanismLigament2d(
                                             i + "-motor", 0.10, 90, 6.0, new Color8Bit(Color.kYellow))));
             absEncDials.put(
                     i,
                     visualRoots
                             .get(i)
                             .append(
-                                    new MechanismLigament2d(i + "-Abs", 0.10, 90, 6, new Color8Bit(Color.kBlue))));
+                                    new LoggedMechanismLigament2d(i + "-Abs", 0.10, 90, 6, new Color8Bit(Color.kBlue))));
             expectDials.put(
                     i,
                     visualRoots
                             .get(i)
-                            .append(new MechanismLigament2d(i + "-Exp", 0.10, 90, 6, new Color8Bit(Color.kRed))));
+                            .append(new LoggedMechanismLigament2d(i + "-Exp", 0.10, 90, 6, new Color8Bit(Color.kRed))));
         }
     }
 

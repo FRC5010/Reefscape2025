@@ -51,7 +51,7 @@ public class VelocityMotorConfigurationJson implements DeviceConfiguration {
    * Configures a VelocityControlMotor with the given parameters and visualizes
    * it.
    *
-   * @param mechanismSimulation The Mechanism2d instance for visualization.
+   * @param mechanismSimulation The LoggedMechanism2d instance for visualization.
    * @return A configured VelocityControlMotor object.
    */
   @Override

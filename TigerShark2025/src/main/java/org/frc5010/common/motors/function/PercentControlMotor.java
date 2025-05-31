@@ -16,21 +16,21 @@ import org.frc5010.common.sensors.encoder.SimulatedEncoder;
 import org.frc5010.common.telemetry.DisplayDouble;
 import org.frc5010.common.telemetry.DisplayValuesHelper;
 import org.frc5010.common.telemetry.DisplayVoltage;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 
 /** Add your docs here. */
 public class PercentControlMotor extends GenericFunctionalMotor {
-  protected MechanismLigament2d speedometer;
-  protected MechanismRoot2d root;
+  protected LoggedMechanismLigament2d speedometer;
+  protected LoggedMechanismRoot2d root;
   protected FlywheelSim simMotor;
   protected SimulatedEncoder simEncoder;
   protected DisplayDouble speed;
@@ -64,14 +64,14 @@ public class PercentControlMotor extends GenericFunctionalMotor {
   }
 
   @Override
-  public PercentControlMotor setVisualizer(Mechanism2d visualizer, Pose3d robotToMotor) {
+  public PercentControlMotor setVisualizer(LoggedMechanism2d visualizer, Pose3d robotToMotor) {
     super.setVisualizer(visualizer, robotToMotor);
 
     root = visualizer.getRoot(
         _visualName,
         getSimX(Meters.of(robotToMotor.getX())),
         getSimY(Meters.of(robotToMotor.getZ())));
-    speedometer = new MechanismLigament2d(
+    speedometer = new LoggedMechanismLigament2d(
         _visualName + "-speed", 0.1, 0, 5, new Color8Bit(MotorFactory.getNextVisualColor()));
     root.append(speedometer);
     return this;

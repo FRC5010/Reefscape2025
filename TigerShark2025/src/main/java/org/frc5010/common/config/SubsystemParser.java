@@ -1,19 +1,22 @@
 package org.frc5010.common.config;
 
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.databind.DatabindException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import java.io.File;
 import java.io.IOException;
+
 import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.arch.GenericSubsystem;
 import org.frc5010.common.config.json.SubsystemJson;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+
+import com.fasterxml.jackson.core.exc.StreamReadException;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import edu.wpi.first.wpilibj.Filesystem;
 
 public class SubsystemParser {
   /** The mechanism simulation */
-  protected Mechanism2d mechanismSimulation;
+  protected LoggedMechanism2d mechanismSimulation;
   /** The directory to read from */
   protected String robotDirectory;
   /** The robot */

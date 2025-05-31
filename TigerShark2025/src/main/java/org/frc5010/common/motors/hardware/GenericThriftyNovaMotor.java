@@ -6,9 +6,7 @@ package org.frc5010.common.motors.hardware;
 
 import static edu.wpi.first.units.Units.Amps;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.function.BooleanSupplier;
 
 import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.motors.MotorController5010;
@@ -25,7 +23,6 @@ import com.thethriftybot.ThriftyNova.CurrentType;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 

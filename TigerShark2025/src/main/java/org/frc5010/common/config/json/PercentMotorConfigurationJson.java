@@ -33,7 +33,7 @@ public class PercentMotorConfigurationJson implements DeviceConfiguration {
   /**
    * Configures a PercentControlMotor with the given parameters and visualizes it.
    *
-   * @param mechanismSimulation The Mechanism2d instance for visualization.
+   * @param mechanismSimulation The LoggedMechanism2d instance for visualization.
    * @return A configured PercentControlMotor object.
    */
   @Override

@@ -15,11 +15,13 @@ import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.arch.GenericRobot.LogLevel;
 import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.motors.MotorFactory;
-import org.frc5010.common.motors.PIDController5010;
 import org.frc5010.common.motors.SystemIdentification;
 import org.frc5010.common.subsystems.PhysicsSim;
 import org.frc5010.common.telemetry.DisplayDouble;
 import org.frc5010.common.telemetry.DisplayValuesHelper;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
@@ -33,9 +35,6 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -43,10 +42,10 @@ import frc.robot.Robot;
 
 /** Add your docs here. */
 public class VerticalPositionControlMotor extends GenericControlledMotor {
-    protected MechanismLigament2d displayedCarriage;
-    protected MechanismLigament2d displayedSetpoint;
-    protected MechanismRoot2d mechRoot;
-    protected MechanismRoot2d setPointRoot;
+    protected LoggedMechanismLigament2d displayedCarriage;
+    protected LoggedMechanismLigament2d displayedSetpoint;
+    protected LoggedMechanismRoot2d mechRoot;
+    protected LoggedMechanismRoot2d setPointRoot;
     protected ElevatorSim simMechanism;
     protected double setPointDisplayOffset = 0.03;
     Distance carriageHeight = Meters.of(0.0);
@@ -84,26 +83,26 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
                         drumRadius.in(Meters), gearing),
                 _motor.getMotorSimulationType(), minHeight.in(Meters), maximumHeight.in(Meters), true,
                 startingHeight.in(Meters));
-        double persistedConversion = this.conversionRotationsToDistance.getValue();
         this.kG.setValue(0 == this.kG.getValue() ? kG : this.kG.getValue());
         this.conversionRotationsToDistance
                 .setValue((drumRadius.in(Meters) * 2.0 * Math.PI) / gearing);
-        encoder.setPositionConversion(this.conversionRotationsToDistance.getValue());
-        encoder.setVelocityConversion(this.conversionRotationsToDistance.getValue() / 60.0);
+        double persistedConversion = this.conversionRotationsToDistance.getValue();
+        encoder.setPositionConversion(persistedConversion);
+        encoder.setVelocityConversion(persistedConversion / 60.0);
         encoder.setPosition(startingHeight.in(Meters));
         position.setValue(startingHeight.in(Meters));
         return this;
     }
 
     @Override
-    public VerticalPositionControlMotor setVisualizer(Mechanism2d visualizer, Pose3d robotToMotor) {
+    public VerticalPositionControlMotor setVisualizer(LoggedMechanism2d visualizer, Pose3d robotToMotor) {
         super.setVisualizer(visualizer, robotToMotor);
-        MechanismRoot2d mechanismRoot = visualizer.getRoot(
+        LoggedMechanismRoot2d mechanismRoot = visualizer.getRoot(
                 _visualName + "mechRoot",
                 getSimX(Meters.of(robotToMotor.getX() + -setPointDisplayOffset)),
                 getSimY(Meters.of(robotToMotor.getZ())));
 
-        MechanismLigament2d mechanismStructure = new MechanismLigament2d(
+        LoggedMechanismLigament2d mechanismStructure = new LoggedMechanismLigament2d(
                 _visualName + "-mechanism",
                 mechanismHeight.in(Meters),
                 90,
@@ -116,7 +115,7 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
                 getSimX(Meters.of(robotToMotor.getX() + setPointDisplayOffset)),
                 getSimY(Meters.of(robotToMotor.getZ())));
 
-        displayedSetpoint = new MechanismLigament2d(
+        displayedSetpoint = new LoggedMechanismLigament2d(
                 _visualName + "-setpoint",
                 carriageHeight.in(Meters),
                 90,
@@ -128,7 +127,7 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
                 _visualName,
                 getSimX(Meters.of(robotToMotor.getX())),
                 getSimY(Meters.of(robotToMotor.getZ())));
-        displayedCarriage = new MechanismLigament2d(
+        displayedCarriage = new LoggedMechanismLigament2d(
                 _visualName + "-carriage",
                 carriageHeight.in(Meters),
                 90,
@@ -177,7 +176,7 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
         double actual = MathUtil.clamp(
                 speed + getDirectionalFeedForward((int) Math.signum(speed)).in(Volts)
                         / RobotController.getBatteryVoltage(),
-                -1.0,1.0);
+                -1.0, 1.0);
         this.speed.setValue(actual);
         outputEffort.setVoltage(actual * outputFactor.getValue(), Volts);
         _motor.set(actual);

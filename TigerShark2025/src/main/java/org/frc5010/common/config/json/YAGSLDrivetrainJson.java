@@ -15,11 +15,11 @@ import org.frc5010.common.constants.RobotConstantsDef;
 import org.frc5010.common.constants.SwerveConstants;
 import org.frc5010.common.drive.swerve.GenericSwerveDrivetrain;
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 
 /** Parameters for a YAGSLSwerveDrivetrain */
 public class YAGSLDrivetrainJson implements DrivetrainPropertiesJson {
@@ -68,7 +68,7 @@ public class YAGSLDrivetrainJson implements DrivetrainPropertiesJson {
         turningMotorGearRatio,
         directory);
     GenericSwerveDrivetrain drivetrain = new GenericSwerveDrivetrain(
-        new Mechanism2d(RobotConstantsDef.robotVisualH, RobotConstantsDef.robotVisualV),
+        new LoggedMechanism2d(RobotConstantsDef.robotVisualH, RobotConstantsDef.robotVisualV),
         robot.getDrivetrainConstants(), yagsl);
     robot.addSubsystem(
         ConfigConstants.DRIVETRAIN, drivetrain);

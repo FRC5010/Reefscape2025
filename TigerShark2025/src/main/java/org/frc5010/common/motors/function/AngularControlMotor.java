@@ -19,6 +19,9 @@ import org.frc5010.common.motors.SystemIdentification;
 import org.frc5010.common.sensors.encoder.GenericEncoder;
 import org.frc5010.common.telemetry.DisplayDouble;
 import org.frc5010.common.telemetry.DisplayValuesHelper;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -31,18 +34,15 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /** Provides PID control for angular motors */
 public class AngularControlMotor extends GenericControlledMotor {
-  protected MechanismLigament2d simulatedArm;
-  protected MechanismLigament2d setpoint;
-  protected MechanismRoot2d root;
+  protected LoggedMechanismLigament2d simulatedArm;
+  protected LoggedMechanismLigament2d setpoint;
+  protected LoggedMechanismRoot2d root;
   protected SingleJointedArmSim simMechanism;
   protected GenericEncoder encoder;
   protected Distance armLength = Meters.of(0.0);
@@ -95,20 +95,20 @@ public class AngularControlMotor extends GenericControlledMotor {
   }
 
   @Override
-  public AngularControlMotor setVisualizer(Mechanism2d visualizer, Pose3d robotToMotor) {
+  public AngularControlMotor setVisualizer(LoggedMechanism2d visualizer, Pose3d robotToMotor) {
     super.setVisualizer(visualizer, robotToMotor);
 
     root = visualizer.getRoot(
         _visualName,
         getSimX(Meters.of(robotToMotor.getX())),
         getSimY(Meters.of(robotToMotor.getZ())));
-    simulatedArm = new MechanismLigament2d(
+    simulatedArm = new LoggedMechanismLigament2d(
         _visualName + "-arm",
         armLength.in(Meters),
         startingAngle.in(Degrees),
         5,
         new Color8Bit(MotorFactory.getNextVisualColor()));
-    setpoint = new MechanismLigament2d(
+    setpoint = new LoggedMechanismLigament2d(
         _visualName + "-setpoint",
         armLength.in(Meters),
         startingAngle.in(Degrees),

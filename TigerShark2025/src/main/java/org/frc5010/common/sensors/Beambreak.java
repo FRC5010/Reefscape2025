@@ -6,8 +6,6 @@ package org.frc5010.common.sensors;
 
 import java.util.function.BooleanSupplier;
 
-import edu.wpi.first.wpilibj.DigitalInput;
-
 /** Add your docs here. */
 public class Beambreak {
     BooleanSupplier valueSupplier;

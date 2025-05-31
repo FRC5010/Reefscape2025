@@ -7,8 +7,6 @@ package org.frc5010.common.arch;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.frc5010.common.telemetry.DisplayString;
-
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;

@@ -17,13 +17,13 @@ import org.frc5010.common.motors.function.VelocityControlMotor;
 import org.frc5010.common.sensors.Beambreak;
 import org.frc5010.common.sensors.ValueSwitch;
 import org.frc5010.common.telemetry.DisplayBoolean;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -77,7 +77,7 @@ public class TestShooter extends GenericSubsystem {
   private Config config = new Config();
 
   /** Creates a new Shooter. */
-  public TestShooter(Mechanism2d mechanismSimulation, Config config) {
+  public TestShooter(LoggedMechanism2d mechanismSimulation, Config config) {
     if (config != null) this.config = config;
     
     alignmentBeambreak = new Beambreak(config.alignmentBeambreakCanID);
@@ -110,7 +110,7 @@ public class TestShooter extends GenericSubsystem {
    
   }
 
-  private void setupMotors(Mechanism2d mechanismSimulation) {
+  private void setupMotors(LoggedMechanism2d mechanismSimulation) {
     shooterLeft = new VelocityControlMotor(MotorFactory.Thrifty(12, Motor.Neo), "shooterLeft", displayValues);
     shooterRight = new VelocityControlMotor(MotorFactory.Thrifty(11, Motor.Neo), "shooterRight",
             displayValues);

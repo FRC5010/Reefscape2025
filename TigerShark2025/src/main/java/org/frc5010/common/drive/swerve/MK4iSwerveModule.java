@@ -4,15 +4,15 @@
 
 package org.frc5010.common.drive.swerve;
 
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import org.frc5010.common.constants.GenericPID;
 import org.frc5010.common.constants.MotorFeedFwdConstants;
 import org.frc5010.common.constants.SwerveConstants;
 import org.frc5010.common.constants.SwerveModuleConstants;
 import org.frc5010.common.constants.SwervePorts;
-import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.motors.MotorConstants.Motor;
+import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.sensors.encoder.CanCoderEncoder;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
 /** Add your docs here. */
 public class MK4iSwerveModule extends GenericSwerveModule {
@@ -54,7 +54,7 @@ public class MK4iSwerveModule extends GenericSwerveModule {
       new MotorFeedFwdConstants(0, 0.0016156, 4.2354e-05);
 
   public MK4iSwerveModule(
-      MechanismRoot2d visualRoot,
+      LoggedMechanismRoot2d visualRoot,
       String key,
       double radOffset,
       SwervePorts swervePorts,

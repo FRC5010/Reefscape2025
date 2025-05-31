@@ -57,6 +57,7 @@
     "types": {
       "/AdvantageKit/RealOutputs/Alerts": "Alerts",
       "/AdvantageKit/RealOutputs/Encoders": "Alerts",
+      "/AdvantageKit/RealOutputs/GenericMechanism/MechVisual": "Mechanism2d",
       "/AdvantageKit/RealOutputs/IMU": "Alerts",
       "/AdvantageKit/RealOutputs/JSON": "Alerts",
       "/AdvantageKit/RealOutputs/Motors": "Alerts",

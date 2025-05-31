@@ -4,14 +4,16 @@
 
 package org.frc5010.common.arch;
 
+import org.frc5010.common.constants.RobotConstantsDef;
+import org.frc5010.common.sensors.Controller;
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import org.frc5010.common.constants.RobotConstantsDef;
-import org.frc5010.common.sensors.Controller;
 
 /**
  * GenericMechanism should be used as the parent class of any mechanism It
@@ -20,7 +22,8 @@ import org.frc5010.common.sensors.Controller;
  */
 public abstract class GenericMechanism implements WpiHelperInterface, Sendable {
   /** The visual representation of the mechanism */
-  protected Mechanism2d mechVisual;
+  @AutoLogOutput
+  protected LoggedMechanism2d mechVisual;
   /** The tab for the mechanism */
   protected ShuffleboardTab shuffleTab;
   /** The network table values */
@@ -34,7 +37,7 @@ public abstract class GenericMechanism implements WpiHelperInterface, Sendable {
    * @param tabName - the name of the display tab
    */
   public GenericMechanism() {
-    this.mechVisual = new Mechanism2d(RobotConstantsDef.robotVisualH, RobotConstantsDef.robotVisualV);
+    this.mechVisual = new LoggedMechanism2d(RobotConstantsDef.robotVisualH, RobotConstantsDef.robotVisualV);
     shuffleTab = Shuffleboard.getTab(logPrefix);
     WpiNetworkTableValuesHelper.register(this);
   }
@@ -45,7 +48,7 @@ public abstract class GenericMechanism implements WpiHelperInterface, Sendable {
    * @param tabName - the name of the display tab
    */
   public GenericMechanism(String tabName) {
-    this.mechVisual = new Mechanism2d(RobotConstantsDef.robotVisualH, RobotConstantsDef.robotVisualV);
+    this.mechVisual = new LoggedMechanism2d(RobotConstantsDef.robotVisualH, RobotConstantsDef.robotVisualV);
     shuffleTab = Shuffleboard.getTab(tabName);
     WpiNetworkTableValuesHelper.register(this);
   }
@@ -56,7 +59,7 @@ public abstract class GenericMechanism implements WpiHelperInterface, Sendable {
    * @param robotMechVisual - the visual representation of the mechanism
    * @param shuffleTab      - the tab for the mechanism
    */
-  public GenericMechanism(Mechanism2d robotMechVisual, ShuffleboardTab shuffleTab) {
+  public GenericMechanism(LoggedMechanism2d robotMechVisual, ShuffleboardTab shuffleTab) {
     this.mechVisual = robotMechVisual;
     this.shuffleTab = shuffleTab;
     WpiNetworkTableValuesHelper.register(this);

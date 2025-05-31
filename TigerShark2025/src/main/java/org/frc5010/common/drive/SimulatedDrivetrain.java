@@ -9,6 +9,9 @@ import org.frc5010.common.constants.RobotConstantsDef;
 import org.frc5010.common.drive.pose.DrivePoseEstimator;
 import org.frc5010.common.drive.pose.SimulatedPose;
 import org.frc5010.common.sensors.gyro.GenericGyro;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
@@ -22,21 +25,18 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 
 /** Add your docs here. */
 public class SimulatedDrivetrain extends GenericDrivetrain {
-  private MechanismRoot2d unicycle;
-  private MechanismLigament2d wheel;
+  private LoggedMechanismRoot2d unicycle;
+  private LoggedMechanismLigament2d wheel;
   private Persisted<Integer> driveVisualH;
   private Persisted<Integer> driveVisualV;
   private ChassisSpeeds chassisSpeeds;
 
-  public SimulatedDrivetrain(GenericGyro gyro, Mechanism2d mechVisual) {
+  public SimulatedDrivetrain(GenericGyro gyro, LoggedMechanism2d mechVisual) {
     super(mechVisual);
     setDrivetrainPoseEstimator(new DrivePoseEstimator(new SimulatedPose(gyro)));
 
@@ -47,7 +47,7 @@ public class SimulatedDrivetrain extends GenericDrivetrain {
     Integer centerV = driveVisualV.getInteger() / 2;
 
     unicycle = mechVisual.getRoot("unicycle", centerH, centerV);
-    wheel = new MechanismLigament2d("wheel", 1.0, 0.0, 6.0, new Color8Bit(Color.kYellow));
+    wheel = new LoggedMechanismLigament2d("wheel", 1.0, 0.0, 6.0, new Color8Bit(Color.kYellow));
     unicycle.append(wheel);
   }
 

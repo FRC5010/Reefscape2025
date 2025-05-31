@@ -1,22 +1,11 @@
 package frc.robot.control_board_test;
 
 import org.frc5010.common.arch.GenericRobot;
-import org.frc5010.common.constants.GenericPID;
-import org.frc5010.common.constants.MotorFeedFwdConstants;
-import org.frc5010.common.motors.MotorConstants;
-import org.frc5010.common.motors.MotorController5010;
-import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.motors.PIDController5010;
-import org.frc5010.common.motors.SystemIdentification;
-import org.frc5010.common.motors.function.VelocityControlMotor;
-import org.frc5010.common.motors.MotorConstants.Motor;
-import org.frc5010.common.motors.PIDController5010.PIDControlType;
 import org.frc5010.common.sensors.Controller;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.subsystems.ShooterSystem;
 
 
 

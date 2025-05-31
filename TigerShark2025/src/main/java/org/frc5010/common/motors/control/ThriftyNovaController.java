@@ -6,7 +6,6 @@ package org.frc5010.common.motors.control;
 
 import org.frc5010.common.constants.GenericPID;
 import org.frc5010.common.constants.MotorFeedFwdConstants;
-import org.frc5010.common.motors.PIDController5010;
 
 import com.thethriftybot.ThriftyNova;
 import com.thethriftybot.ThriftyNova.EncoderType;

@@ -18,7 +18,7 @@ public class GyroSettingsConfigurationJson implements DeviceConfiguration {
 /**
  * Configures and returns an appropriate gyro sensor based on the specified type.
  *
- * @param mechanismSimulation The Mechanism2d instance for visualization, if needed.
+ * @param mechanismSimulation The LoggedMechanism2d instance for visualization, if needed.
  * @return An instance of a gyro sensor (NavXGyro or PigeonGyro) based on the type, or null if the type is unrecognized.
  */
   @Override

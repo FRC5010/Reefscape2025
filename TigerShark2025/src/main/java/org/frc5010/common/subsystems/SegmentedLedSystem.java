@@ -4,20 +4,22 @@
 
 package org.frc5010.common.subsystems;
 
-import edu.wpi.first.wpilibj.AddressableLED;
-import edu.wpi.first.wpilibj.AddressableLEDBuffer;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
-import edu.wpi.first.wpilibj.util.Color8Bit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
 import org.frc5010.common.arch.GenericSubsystem;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
+
+import edu.wpi.first.wpilibj.AddressableLED;
+import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 
 public class SegmentedLedSystem extends GenericSubsystem {
   /** Creates a new NewLedSubsystem. */
@@ -32,9 +34,9 @@ public class SegmentedLedSystem extends GenericSubsystem {
 
   private Map<String, LEDStripSegment> ledStripSegments =
       new HashMap<>(); // Might need to be implemented differently
-  private List<MechanismLigament2d> simLEDs = new ArrayList<>();
+  private List<LoggedMechanismLigament2d> simLEDs = new ArrayList<>();
 
-  public SegmentedLedSystem(int port, int length, Mechanism2d simulator) {
+  public SegmentedLedSystem(int port, int length, LoggedMechanism2d simulator) {
     super(simulator);
     m_led = new AddressableLED(port);
     m_ledBuffer = new AddressableLEDBuffer(length);
@@ -50,9 +52,9 @@ public class SegmentedLedSystem extends GenericSubsystem {
 
     for (int i = 0; i < m_ledBuffer.getLength(); i++) {
       m_ledOff.setRGB(i, 0, 0, 0);
-      MechanismRoot2d ledRoot = mechanismSimulation.getRoot("LEDRoot " + i, i / 100.0, 1.0);
-      MechanismLigament2d led =
-          new MechanismLigament2d("LED " + 1, 0.02, -90, 2, Color.OFF.getColor8Bit());
+      LoggedMechanismRoot2d ledRoot = mechanismSimulation.getRoot("LEDRoot " + i, i / 100.0, 1.0);
+      LoggedMechanismLigament2d led =
+          new LoggedMechanismLigament2d("LED " + 1, 0.02, -90, 2, Color.OFF.getColor8Bit());
       ledRoot.append(led);
       simLEDs.add(led);
     }

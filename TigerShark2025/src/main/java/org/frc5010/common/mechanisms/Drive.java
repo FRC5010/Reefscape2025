@@ -29,10 +29,10 @@ import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.sensors.Controller;
 import org.frc5010.common.sensors.gyro.GenericGyro;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -94,7 +94,7 @@ public class Drive extends GenericMechanism {
     this.driveTrainFolder = driveTrainFolder;
     driveVisualH = new Persisted<>(RobotConstantsDef.DRIVE_VISUAL_H, 60);
     driveVisualV = new Persisted<>(RobotConstantsDef.DRIVE_VISUAL_V, 60);
-    mechVisual = new Mechanism2d(driveVisualH.getInteger(), driveVisualV.getInteger());
+    mechVisual = new LoggedMechanism2d(driveVisualH.getInteger(), driveVisualV.getInteger());
     SmartDashboard.putData("Drive Visual", mechVisual);
     // SmartDashboard.putBoolean("Field Oriented", isFieldOrientedDrive);
     initRealOrSim();

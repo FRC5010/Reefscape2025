@@ -4,17 +4,6 @@
 
 package org.frc5010.common.drive.swerve;
 
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.filter.LinearFilter;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.util.Color8Bit;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.frc5010.common.arch.Persisted;
 import org.frc5010.common.constants.GenericPID;
 import org.frc5010.common.constants.MotorFeedFwdConstants;
@@ -23,12 +12,24 @@ import org.frc5010.common.constants.SwerveModuleConstants;
 import org.frc5010.common.mechanisms.DriveConstantsDef;
 import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.sensors.encoder.GenericEncoder;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
+
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.LinearFilter;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /** Add your docs here. */
 public abstract class GenericSwerveModule extends SubsystemBase {
-  private final MechanismLigament2d motorDial;
-  private final MechanismLigament2d absEncDial;
-  private final MechanismLigament2d expectDial;
+  private final LoggedMechanismLigament2d motorDial;
+  private final LoggedMechanismLigament2d absEncDial;
+  private final LoggedMechanismLigament2d expectDial;
   protected final String moduleKey;
   private PIDController turningController;
 
@@ -49,21 +50,21 @@ public abstract class GenericSwerveModule extends SubsystemBase {
   // protected GenericGyro gyro = new SimulatedGyro();
 
   public GenericSwerveModule(
-      MechanismRoot2d visualRoot, String key, double radOffset, SwerveConstants swerveConstants) {
+      LoggedMechanismRoot2d visualRoot, String key, double radOffset, SwerveConstants swerveConstants) {
     this.moduleKey = key;
     visualRoot.append(
-        new MechanismLigament2d(moduleKey + "vert", 10, 90, 6.0, new Color8Bit(50, 50, 50)));
+        new LoggedMechanismLigament2d(moduleKey + "vert", 10, 90, 6.0, new Color8Bit(50, 50, 50)));
     visualRoot.append(
-        new MechanismLigament2d(moduleKey + "hori", 10, 0, 6.0, new Color8Bit(50, 50, 50)));
+        new LoggedMechanismLigament2d(moduleKey + "hori", 10, 0, 6.0, new Color8Bit(50, 50, 50)));
     motorDial =
         visualRoot.append(
-            new MechanismLigament2d(moduleKey, 10.0, 90, 6.0, new Color8Bit(Color.kYellow)));
+            new LoggedMechanismLigament2d(moduleKey, 10.0, 90, 6.0, new Color8Bit(Color.kYellow)));
     absEncDial =
         visualRoot.append(
-            new MechanismLigament2d(moduleKey + "Abs", 10, 90, 6, new Color8Bit(Color.kBlue)));
+            new LoggedMechanismLigament2d(moduleKey + "Abs", 10, 90, 6, new Color8Bit(Color.kBlue)));
     expectDial =
         visualRoot.append(
-            new MechanismLigament2d(moduleKey + "Exp", 10, 90, 6, new Color8Bit(Color.kRed)));
+            new LoggedMechanismLigament2d(moduleKey + "Exp", 10, 90, 6, new Color8Bit(Color.kRed)));
 
     this.radOffset = radOffset;
     this.swerveConstants = swerveConstants;

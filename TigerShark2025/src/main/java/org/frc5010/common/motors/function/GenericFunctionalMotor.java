@@ -14,13 +14,13 @@ import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.motors.PIDController5010;
 import org.frc5010.common.sensors.encoder.GenericEncoder;
 import org.frc5010.common.telemetry.DisplayValuesHelper;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
@@ -29,7 +29,7 @@ public class GenericFunctionalMotor implements MotorController5010, WpiHelperInt
   /** The motor */
   protected MotorController5010 _motor;
 
-  protected Mechanism2d _visualizer;
+  protected LoggedMechanism2d _visualizer;
   protected Pose3d _robotToMotor;
   protected String _visualName;
   protected DisplayValuesHelper _displayValuesHelper;
@@ -251,13 +251,13 @@ public class GenericFunctionalMotor implements MotorController5010, WpiHelperInt
     return _motor.getMotor();
   }
 
-  public GenericFunctionalMotor setVisualizer(Mechanism2d visualizer, Pose3d robotToMotor) {
+  public GenericFunctionalMotor setVisualizer(LoggedMechanism2d visualizer, Pose3d robotToMotor) {
     _visualizer = visualizer;
     _robotToMotor = robotToMotor;
     return this;
   }
 
-  public Mechanism2d getVisualizer() {
+  public LoggedMechanism2d getVisualizer() {
     return _visualizer;
   }
 
@@ -292,10 +292,10 @@ public class GenericFunctionalMotor implements MotorController5010, WpiHelperInt
 
   /**
    * Converts a given distance in the x-direction to a x-coordinate appropriate
-   * for visualizing on a Mechanism2d.
+   * for visualizing on a LoggedMechanism2d.
    *
    * @param x the distance in the x-direction
-   * @return the x-coordinate for visualizing on a Mechanism2d
+   * @return the x-coordinate for visualizing on a LoggedMechanism2d
    */
   public double getSimX(Distance x) {
     return x.in(Meters) * RobotConstantsDef.robotVisualH / 2.0
@@ -304,10 +304,10 @@ public class GenericFunctionalMotor implements MotorController5010, WpiHelperInt
 
   /**
    * Converts a given distance in the y-direction to a y-coordinate appropriate
-   * for visualizing on a Mechanism2d.
+   * for visualizing on a LoggedMechanism2d.
    *
    * @param y the distance in the y-direction
-   * @return the y-coordinate for visualizing on a Mechanism2d
+   * @return the y-coordinate for visualizing on a LoggedMechanism2d
    */
   public double getSimY(Distance y) {
     return y.in(Meters);

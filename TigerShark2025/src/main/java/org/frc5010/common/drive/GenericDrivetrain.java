@@ -21,6 +21,9 @@ import org.frc5010.common.drive.pose.DrivePoseEstimator;
 import org.frc5010.common.sensors.Controller;
 import org.frc5010.common.telemetry.DisplayBoolean;
 import org.ironmaple.simulation.SimulatedArena;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
@@ -39,17 +42,11 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 /** Generic class for defining drivetrain behavior */
 public abstract class GenericDrivetrain extends GenericSubsystem {
-  /** The visual representation of the drivetrain */
-  protected Mechanism2d mechVisual;
-
   /** The pose estimator */
   protected DrivePoseEstimator poseEstimator;
   /** Whether or not the robot is field oriented */
@@ -75,7 +72,7 @@ public abstract class GenericDrivetrain extends GenericSubsystem {
    *
    * @param mechVisual - The visual representation of the drivetrain
    */
-  public GenericDrivetrain(Mechanism2d mechVisual) {
+  public GenericDrivetrain(LoggedMechanism2d mechVisual) {
     super(mechVisual);
     try {
       config = RobotConfig.fromGUISettings();
@@ -112,14 +109,14 @@ public abstract class GenericDrivetrain extends GenericSubsystem {
   }
 
   /**
-   * Returns the Mechanism2d object associated with this GenericDrivetrain.
+   * Returns the LoggedMechanism2d object associated with this GenericDrivetrain.
    *
-   * @return the Mechanism2d object
+   * @return the LoggedMechanism2d object
    * @throws NullPointerException if the poseEstimator is null
    */
-  public Mechanism2d getMechVisual() {
+  public LoggedMechanism2d getMechVisual() {
     assert (null != poseEstimator);
-    return mechVisual;
+    return mechanismSimulation;
   }
 
   /**
@@ -320,10 +317,10 @@ public abstract class GenericDrivetrain extends GenericSubsystem {
   protected int issueCheckCycles = 0;
   protected int issueCount = 0;
   protected static boolean useGlass = false;
-  protected Map<Integer, MechanismRoot2d> visualRoots = new HashMap<>();
-  protected Map<Integer, MechanismLigament2d> motorDials = new HashMap<>();
-  protected Map<Integer, MechanismLigament2d> absEncDials = new HashMap<>();
-  protected Map<Integer, MechanismLigament2d> expectDials = new HashMap<>();
+  protected Map<Integer, LoggedMechanismRoot2d> visualRoots = new HashMap<>();
+  protected Map<Integer, LoggedMechanismLigament2d> motorDials = new HashMap<>();
+  protected Map<Integer, LoggedMechanismLigament2d> absEncDials = new HashMap<>();
+  protected Map<Integer, LoggedMechanismLigament2d> expectDials = new HashMap<>();
 
   protected int badConnections = 0;
   protected double lowLimit = Units.inchesToMeters(-1);

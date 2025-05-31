@@ -29,9 +29,8 @@ import org.ironmaple.simulation.IntakeSimulation;
 import org.ironmaple.simulation.IntakeSimulation.IntakeSide;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
-import org.ironmaple.simulation.gamepieces.GamePieceOnFieldSimulation;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFly;
-import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFly.CoralStationsSide;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 
 import com.revrobotics.spark.SparkMax;
 
@@ -44,7 +43,6 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotState;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -104,7 +102,7 @@ public class ShooterSystem extends GenericSubsystem {
   private Config config = new Config();
 
   /** Creates a new Shooter. */
-  public ShooterSystem(Mechanism2d mechanismSimulation, Config config) {
+  public ShooterSystem(LoggedMechanism2d mechanismSimulation, Config config) {
     if (config != null)
       this.config = config;
 
@@ -164,7 +162,7 @@ public class ShooterSystem extends GenericSubsystem {
     this.elevatorHeight = supplier;
   }
 
-  private void setupMotors(Mechanism2d mechanismSimulation) {
+  private void setupMotors(LoggedMechanism2d mechanismSimulation) {
     shooterLeft = new VelocityControlMotor(MotorFactory.Spark(config.shooterLeftCanID, Motor.Neo), "shooterLeft",
         displayValues);
     shooterRight = new VelocityControlMotor(MotorFactory.Spark(config.shooterRightCanID, Motor.Neo), "shooterRight",

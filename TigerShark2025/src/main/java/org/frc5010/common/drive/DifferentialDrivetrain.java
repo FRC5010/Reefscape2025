@@ -16,6 +16,7 @@ import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.sensors.encoder.GenericEncoder;
 import org.frc5010.common.sensors.encoder.SimulatedEncoder;
 import org.frc5010.common.sensors.gyro.GenericGyro;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.controllers.PPLTVController;
@@ -34,7 +35,6 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim.KitbotWheelSize;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 
 /** A class for differential drive. */
 public class DifferentialDrivetrain extends GenericDrivetrain {
@@ -59,7 +59,7 @@ public class DifferentialDrivetrain extends GenericDrivetrain {
       MotorController5010 left,
       List<DrivePorts> ports,
       GenericGyro gyro,
-      Mechanism2d mechVisual) {
+      LoggedMechanism2d mechVisual) {
     super(mechVisual);
     assert (ports.size() == 4);
     this.motorPorts = ports;

@@ -11,6 +11,7 @@ import org.frc5010.common.drive.pose.DrivePoseEstimator;
 import org.frc5010.common.drive.pose.SwervePose;
 import org.frc5010.common.mechanisms.DriveConstantsDef;
 import org.frc5010.common.sensors.gyro.GenericGyro;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 
 import com.pathplanner.lib.util.DriveFeedforwards;
 
@@ -23,7 +24,6 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Force;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import swervelib.SwerveModule;
@@ -44,7 +44,7 @@ public class SwerveDrivetrain extends SwerveDriveFunctions {
   private DrivePoseEstimator poseEstimator;
 
   public SwerveDrivetrain(
-      Mechanism2d mechVisual,
+      LoggedMechanism2d mechVisual,
       GenericSwerveModule frontLeft,
       GenericSwerveModule frontRight,
       GenericSwerveModule backLeft,
@@ -68,13 +68,13 @@ public class SwerveDrivetrain extends SwerveDriveFunctions {
   }
 
   public SwerveDrivetrain(
-      Mechanism2d mechVisual, GenericGyro genericGyro, SwerveConstants swerveConstants) {
+      LoggedMechanism2d mechVisual, GenericGyro genericGyro, SwerveConstants swerveConstants) {
     this.gyro = genericGyro;
     this.swerveConstants = swerveConstants;
     gyro.reset();
   }
 
-  public SwerveDrivetrain(Mechanism2d mechVisual, GenericDrivetrainConstants swerveConstants) {
+  public SwerveDrivetrain(LoggedMechanism2d mechVisual, GenericDrivetrainConstants swerveConstants) {
     this.swerveConstants = swerveConstants;
   }
 

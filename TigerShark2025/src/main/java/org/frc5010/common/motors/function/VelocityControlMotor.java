@@ -15,24 +15,24 @@ import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.motors.MotorFactory;
 import org.frc5010.common.motors.SystemIdentification;
 import org.frc5010.common.telemetry.DisplayValuesHelper;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /** Add your docs here. */
 public class VelocityControlMotor extends GenericControlledMotor {
-  protected MechanismLigament2d speedometer;
-  protected MechanismLigament2d setpoint;
-  protected MechanismRoot2d root;
+  protected LoggedMechanismLigament2d speedometer;
+  protected LoggedMechanismLigament2d setpoint;
+  protected LoggedMechanismRoot2d root;
   protected FlywheelSim flyWheelSim;
 
   public VelocityControlMotor(MotorController5010 motor, String visualName, DisplayValuesHelper display) {
@@ -49,7 +49,7 @@ public class VelocityControlMotor extends GenericControlledMotor {
   }
 
   @Override
-  public VelocityControlMotor setVisualizer(Mechanism2d visualizer, Pose3d robotToMotor) {
+  public VelocityControlMotor setVisualizer(LoggedMechanism2d visualizer, Pose3d robotToMotor) {
     super.setVisualizer(visualizer, robotToMotor);
 
     root =
@@ -58,10 +58,10 @@ public class VelocityControlMotor extends GenericControlledMotor {
             getSimX(Meters.of(robotToMotor.getX())),
             getSimY(Meters.of(robotToMotor.getZ())));
     speedometer =
-        new MechanismLigament2d(
+        new LoggedMechanismLigament2d(
             _visualName + "-velocity", 0.1, 0, 5, new Color8Bit(MotorFactory.getNextVisualColor()));
     setpoint =
-        new MechanismLigament2d(
+        new LoggedMechanismLigament2d(
             _visualName + "-setpoint", 0.1, 0, 5, new Color8Bit(MotorFactory.getNextVisualColor()));
     root.append(speedometer);
     root.append(setpoint);
