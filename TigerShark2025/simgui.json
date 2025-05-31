@@ -55,6 +55,13 @@
   },
   "NTProvider": {
     "types": {
+      "/AdvantageKit/RealOutputs/Alerts": "Alerts",
+      "/AdvantageKit/RealOutputs/Encoders": "Alerts",
+      "/AdvantageKit/RealOutputs/IMU": "Alerts",
+      "/AdvantageKit/RealOutputs/JSON": "Alerts",
+      "/AdvantageKit/RealOutputs/Motors": "Alerts",
+      "/AdvantageKit/RealOutputs/PathPlanner": "Alerts",
+      "/AdvantageKit/RealOutputs/Swerve Drive": "Alerts",
       "/FMSInfo": "FMSInfo",
       "/LiveWindow/SwerveSubsystem": "Subsystem",
       "/LiveWindow/Ungrouped/PIDController[1]": "PIDController",
