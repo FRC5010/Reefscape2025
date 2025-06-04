@@ -13,6 +13,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import org.frc5010.common.arch.GenericSubsystem;
+import org.frc5010.common.arch.GenericRobot.LogLevel;
 import org.frc5010.common.constants.GenericPID;
 import org.frc5010.common.constants.MotorFeedFwdConstants;
 import org.frc5010.common.motors.MotorConstants.Motor;
@@ -150,7 +151,7 @@ public class ElevatorSystem extends GenericSubsystem {
         elevatorFollower = new FollowerMotor(MotorFactory.TalonFX(10, Motor.KrakenX60),
                 controlledMotor, "elevatorFollower", true);
         controlledMotor.setControlType(controlType);
-
+        controlledMotor.setLogLevel(LogLevel.CONFIG);
         controlledMotor.setMotorBrake(true);
         controlledMotor.setCurrentLimit(config.MAX_ELEVATOR_STATOR_CURRENT_LIMIT);
         ((GenericTalonFXMotor) controlledMotor.getMotorController())
@@ -160,7 +161,7 @@ public class ElevatorSystem extends GenericSubsystem {
 
         controlledMotor.setupSimulatedMotor(config.gearing, Pounds.of(30), Inches.of(1.1),
                 LOAD.getLength(), Inches.of(83.475 - 6.725), LOAD.getLength(),
-                Meters.of(0.2), RobotBase.isSimulation() ? 0.75 : 0.37);
+                Meters.of(0.2), RobotBase.isSimulation() ? 0.9492195 : 0.37);
         elevatorFollower.setCurrentLimit(config.MAX_ELEVATOR_STATOR_CURRENT_LIMIT);
         ((GenericTalonFXMotor) elevatorFollower.getMotorController())
                 .setSupplyCurrent(config.MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT);

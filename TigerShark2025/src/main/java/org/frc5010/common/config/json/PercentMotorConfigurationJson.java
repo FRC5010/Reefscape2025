@@ -1,6 +1,7 @@
 package org.frc5010.common.config.json;
 
 import org.frc5010.common.arch.GenericDeviceHandler;
+import org.frc5010.common.arch.GenericRobot.LogLevel;
 import org.frc5010.common.config.DeviceConfiguration;
 import org.frc5010.common.motors.function.PercentControlMotor;
 
@@ -29,7 +30,8 @@ public class PercentMotorConfigurationJson implements DeviceConfiguration {
   public double y;
   /** The z position of the motor */
   public double z;
-
+  /** The logging level */
+  public String logLevel = "COMPETITION";
   /**
    * Configures a PercentControlMotor with the given parameters and visualizes it.
    *
@@ -41,6 +43,7 @@ public class PercentMotorConfigurationJson implements DeviceConfiguration {
     return new PercentControlMotor(DeviceConfigReader.getMotor(controller, type, id), name,
         deviceHandler.getDisplayValuesHelper())
         .setupSimulatedMotor(gearing, momentOfInertiaKgMSq)
+        .setLogLevel(LogLevel.valueOf(logLevel))
         .setVisualizer(deviceHandler.getMechVisual(), new Pose3d(x, y, z, new Rotation3d()));
   }
 }

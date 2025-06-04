@@ -196,7 +196,7 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
   @Override
   public void setReference(double reference) {
     this.reference.setValue(reference);
-    if (GenericRobot.LogLevel.CONFIG == GenericRobot.getLoggingLevel()) {
+    if (GenericRobot.LogLevel.CONFIG == _displayValuesHelper.getLoggingLevel()) {
       controller.setValues(new GenericPID(kP.getValue(), kI.getValue(), kD.getValue()));
       controller.setMotorFeedFwd(new MotorFeedFwdConstants(kS.getValue(), kV.getValue(), kA.getValue()));
     }
@@ -208,7 +208,7 @@ public abstract class GenericControlledMotor extends GenericFunctionalMotor
     this.reference.setValue(reference);
     feedForward.setValue(feedforward);
     this.controlType.setValue(controlType.name());
-    if (GenericRobot.LogLevel.CONFIG == GenericRobot.getLoggingLevel()) {
+    if (GenericRobot.LogLevel.CONFIG == _displayValuesHelper.getLoggingLevel()) {
       // controller.setValues(new GenericPID(kP.getValue(), kI.getValue(),
       // kD.getValue()));
       // controller.setMotorFeedFwd(new MotorFeedFwdConstants(kS.getValue(),

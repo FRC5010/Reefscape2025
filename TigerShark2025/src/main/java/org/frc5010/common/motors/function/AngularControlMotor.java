@@ -11,7 +11,6 @@ import static edu.wpi.first.units.Units.Volts;
 
 import java.util.Optional;
 
-import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.arch.GenericRobot.LogLevel;
 import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.motors.MotorFactory;
@@ -142,7 +141,7 @@ public class AngularControlMotor extends GenericControlledMotor {
 
   @Override
   public Voltage getFeedForward(double velocity) {
-    if (null == pivotFeedforward || GenericRobot.logLevel == LogLevel.CONFIG) {
+    if (null == pivotFeedforward || _displayValuesHelper.getLoggingLevel() == LogLevel.CONFIG) {
       pivotFeedforward = new ArmFeedforward(
           getMotorFeedFwd().getkS(),
           kG.getValue(),

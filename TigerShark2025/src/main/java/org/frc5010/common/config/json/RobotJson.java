@@ -4,26 +4,24 @@
 
 package org.frc5010.common.config.json;
 
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.databind.DatabindException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+
 import org.frc5010.common.arch.GenericDeviceHandler;
 import org.frc5010.common.arch.GenericRobot;
-import org.frc5010.common.arch.GenericRobot.LogLevel;
 import org.frc5010.common.config.UnitsParser;
 import org.frc5010.common.constants.Constants;
 import org.frc5010.common.constants.GenericDrivetrainConstants;
+
+import com.fasterxml.jackson.core.exc.StreamReadException;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /** The base JSON class for robot configurations */
 public class RobotJson {
   /* User configuration file for the power mode */
   public String userConfig = "competitionMode.json";
-
-  /** The logging level for the robot */
-  public String logLevel = "COMPETITION";
 
   /** Drivetrain configuration */
   public String driveType = "YAGSL_SWERVE_DRIVE";
@@ -72,7 +70,6 @@ public class RobotJson {
    * @throws IOException
    */
   public void configureRobot(GenericRobot robot, File directory) throws IOException {
-    GenericRobot.setLoggingLevel(LogLevel.valueOf(logLevel));
     GenericDrivetrainConstants drivetrainConstants = robot.getDrivetrainConstants();
     drivetrainConstants.setTrackWidth(UnitsParser.parseDistance(trackWidth, trackWidthUom));
     drivetrainConstants.setWheelBase(UnitsParser.parseDistance(wheelBase, wheelBaseUom));

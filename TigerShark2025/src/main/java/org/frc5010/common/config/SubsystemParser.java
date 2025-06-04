@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.arch.GenericSubsystem;
+import org.frc5010.common.arch.GenericRobot.LogLevel;
 import org.frc5010.common.config.json.SubsystemJson;
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 
@@ -66,6 +67,7 @@ public class SubsystemParser {
     SubsystemJson subsystemJson =
         new ObjectMapper().readValue(new File(directory, configFile), SubsystemJson.class);
     genericSubsystem.setDisplay(subsystemJson.display);
+    genericSubsystem.setLoggingLevel(LogLevel.valueOf(subsystemJson.logLevel));
     subsystemJson.configureSubsystem(genericSubsystem, directory);
   }
 }

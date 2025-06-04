@@ -7,11 +7,14 @@ package org.frc5010.common.arch;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.frc5010.common.arch.GenericRobot.LogLevel;
 import org.frc5010.common.motors.function.GenericFunctionalMotor;
 import org.frc5010.common.telemetry.DisplayValuesHelper;
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /**
@@ -29,6 +32,7 @@ public class GenericSubsystem extends SubsystemBase
   protected LoggedMechanism2d mechanismSimulation;
   /** The map of devices created by the configuration system */
   protected Map<String, Object> devices = new HashMap<>();
+  protected Alert loggingAlert = new Alert(logPrefix + " Logging Mode is not COMPETITION!", AlertType.kWarning);
 
   /** Creates a new LoggedSubsystem. */
   public GenericSubsystem(LoggedMechanism2d mechanismSimulation) {
@@ -82,6 +86,14 @@ public class GenericSubsystem extends SubsystemBase
     devices.put(name, device);
   }
 
+  public void setLoggingLevel(LogLevel logLevel) {
+    displayValues.setLoggingLevel(logLevel);
+    if (logLevel == LogLevel.COMPETITION) {
+      loggingAlert.set(false);;
+    } else {
+      loggingAlert.set(true);
+    }
+  }
   /**
    * Get a device from the configuration
    *

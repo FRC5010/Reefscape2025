@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Meters;
 
 import java.util.Optional;
 
+import org.frc5010.common.arch.GenericRobot.LogLevel;
 import org.frc5010.common.arch.WpiHelperInterface;
 import org.frc5010.common.constants.RobotConstantsDef;
 import org.frc5010.common.motors.MotorController5010;
@@ -21,6 +22,8 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
@@ -33,6 +36,7 @@ public class GenericFunctionalMotor implements MotorController5010, WpiHelperInt
   protected Pose3d _robotToMotor;
   protected String _visualName;
   protected DisplayValuesHelper _displayValuesHelper;
+  protected Alert loggingAlert = new Alert(this.getClass().getSimpleName() + " Logging Mode is not COMPETITION!", AlertType.kWarning);
 
   /**
    * Constructor for a motor
@@ -53,6 +57,32 @@ public class GenericFunctionalMotor implements MotorController5010, WpiHelperInt
   public GenericFunctionalMotor(MotorController5010 motor, double slewRate) {
     this._motor = motor;
     _motor.setSlewRate(slewRate);
+  }
+
+  /**
+   * Sets the logging level for the motor. Values that are at a higher or
+   * equal level to the specified level will be displayed on the dashboard.
+   *
+   * @param logLevel the level to set the motor to
+   */
+  public GenericFunctionalMotor setLogLevel(LogLevel logLevel) {
+    _displayValuesHelper.setLoggingLevel(logLevel);
+    if (logLevel == LogLevel.COMPETITION) {
+      loggingAlert.set(false);
+    } else {
+      loggingAlert.setText(_visualName + " Logging Level is " + logLevel);
+      loggingAlert.set(true);
+    }
+    return this;
+  }
+
+  /**
+   * Gets the current logging level for the motor.
+   *
+   * @return the current LogLevel
+   */
+  public LogLevel getLogLevel() {
+    return _displayValuesHelper.getLoggingLevel();
   }
 
   /**

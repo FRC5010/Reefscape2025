@@ -11,7 +11,6 @@ import static edu.wpi.first.units.Units.Volts;
 import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
-import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.arch.GenericRobot.LogLevel;
 import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.motors.MotorFactory;
@@ -199,7 +198,7 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
         if (supplyKG.isPresent()) {
             kG.setValue(supplyKG.get().getAsDouble());
         }
-        if (null == elevatorFeedforward || supplyKG.isPresent() || GenericRobot.logLevel == LogLevel.CONFIG) {
+        if (null == elevatorFeedforward || supplyKG.isPresent() || _displayValuesHelper.getLoggingLevel() == LogLevel.CONFIG) {
             elevatorFeedforward = new ElevatorFeedforward(
                     kS.getValue(),
                     kG.getValue(),
@@ -216,7 +215,7 @@ public class VerticalPositionControlMotor extends GenericControlledMotor {
         if (supplyKG.isPresent()) {
             kG.setValue(supplyKG.get().getAsDouble());
         }
-        if (null == elevatorFeedforward || supplyKG.isPresent() || GenericRobot.logLevel == LogLevel.CONFIG) {
+        if (null == elevatorFeedforward || supplyKG.isPresent() || _displayValuesHelper.getLoggingLevel() == LogLevel.CONFIG) {
             elevatorFeedforward = new ElevatorFeedforward(
                     kS.getValue(),
                     kG.getValue(),

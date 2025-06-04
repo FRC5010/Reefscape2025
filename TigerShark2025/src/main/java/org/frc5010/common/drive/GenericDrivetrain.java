@@ -36,6 +36,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -66,7 +68,8 @@ public abstract class GenericDrivetrain extends GenericSubsystem {
       maxObstacleDimensionDeviation = 0.0;
   protected int obstacleAvoidanceResolution = 0;
   protected double previousLeftXInput = 0.0, previousLeftYInput = 0.0, previousRightXInput = 0.0;
-
+  protected Alert canErrorAlert = new Alert("CAN Tx/Rx is being FLAKY!", AlertType.kError);
+  protected Alert robotPositionAlert = new Alert("Robot position is off field", AlertType.kError);
   /**
    * Constructor
    *
@@ -371,12 +374,14 @@ public abstract class GenericDrivetrain extends GenericSubsystem {
       }
 
       if (badConnections > 5) {
-        System.err.println(
-            "********************************CAN is being flakey********************************");
+        canErrorAlert.set(true);
+      } else {
+        canErrorAlert.set(false);
       }
       if (issueCount > 5) {
-        System.err.println(
-            "********************************Robot position is off field********************************");
+        robotPositionAlert.set(true);
+      } else {
+        robotPositionAlert.set(false);
       }
 
       return badConnections > 5 || !positionOk;

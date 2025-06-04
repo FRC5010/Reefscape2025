@@ -66,7 +66,7 @@ public class DisplayAngle {
     unit_ = unit;
     name_ = String.format("%s (%s)", name, unit_.symbol());
     table_ = table;
-    isDisplayed_ = DisplayValuesHelper.robotIsAtLogLevel(logLevel);
+    isDisplayed_ = DisplayValuesHelper.isAtLogLevel(logLevel);
     if (isDisplayed_) {
       topic_ = NetworkTableInstance.getDefault().getTable(table_).getDoubleTopic(name_);
       publisher_ = topic_.publish();
@@ -100,7 +100,7 @@ public class DisplayAngle {
     unit_ = angle.unit();
     name_ = String.format("%s (%s)", name, unit_.symbol());
     table_ = table;
-    isDisplayed_ = DisplayValuesHelper.robotIsAtLogLevel(logLevel);
+    isDisplayed_ = DisplayValuesHelper.isAtLogLevel(logLevel);
     if (isDisplayed_) {
       topic_ = NetworkTableInstance.getDefault().getTable(table_).getDoubleTopic(name_);
       publisher_ = topic_.publish();
@@ -116,7 +116,7 @@ public class DisplayAngle {
     publisher_.setDefault(angle_.in(unit_));
     if (LogLevel.CONFIG == logLevel) {
       if (isDisplayed_) topic_.setPersistent(true);
-      if (DisplayValuesHelper.robotIsAtLogLevel(LogLevel.CONFIG)) {
+      if (DisplayValuesHelper.isAtLogLevel(LogLevel.CONFIG)) {
         subscriber_ = topic_.subscribe(angle_.in(unit_));
         listenerHandle_ = NetworkTableInstance.getDefault()
             .addListener(

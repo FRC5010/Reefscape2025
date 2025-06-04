@@ -1,13 +1,14 @@
 package org.frc5010.common.subsystems;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.frc5010.common.arch.GenericRobot.LogLevel;
+import org.frc5010.common.arch.GenericSubsystem;
+
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
-import java.util.HashMap;
-import java.util.Map;
-import org.frc5010.common.arch.GenericRobot;
-import org.frc5010.common.arch.GenericRobot.LogLevel;
-import org.frc5010.common.arch.GenericSubsystem;
 
 public class PowerDistribution5010 extends GenericSubsystem {
   private PowerDistribution powerDistribution;
@@ -63,7 +64,7 @@ public class PowerDistribution5010 extends GenericSubsystem {
 
   @Override
   public void periodic() {
-    if (LogLevel.DEBUG == GenericRobot.getLoggingLevel()) {
+    if (LogLevel.DEBUG == displayValues.getLoggingLevel()) {
       double totalCurrent = powerDistribution.getTotalCurrent();
       double pdpVoltage = powerDistribution.getVoltage();
       // TODO: Maybe add a verbosity level to the logging...cause it could be a lot

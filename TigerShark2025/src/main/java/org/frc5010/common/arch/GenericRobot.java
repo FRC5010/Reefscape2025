@@ -76,9 +76,6 @@ public abstract class GenericRobot extends GenericMechanism implements GenericDe
     COMPETITION
   }
 
-  /** The current log level */
-  public static LogLevel logLevel = LogLevel.COMPETITION;
-
   /**
    * Creates a new robot using the provided configuration directory
    *
@@ -140,24 +137,6 @@ public abstract class GenericRobot extends GenericMechanism implements GenericDe
    */
   public GenericSubsystem getSubsystem(String name) {
     return subsystems.get(name);
-  }
-
-  /**
-   * Get the current log level
-   *
-   * @return the current log level
-   */
-  public static LogLevel getLoggingLevel() {
-    return logLevel;
-  }
-
-  /**
-   * Set the current log level
-   *
-   * @param level the new log level
-   */
-  public static void setLoggingLevel(LogLevel level) {
-    logLevel = level;
   }
 
   /**

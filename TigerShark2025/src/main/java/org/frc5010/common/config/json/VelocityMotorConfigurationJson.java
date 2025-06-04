@@ -1,6 +1,7 @@
 package org.frc5010.common.config.json;
 
 import org.frc5010.common.arch.GenericDeviceHandler;
+import org.frc5010.common.arch.GenericRobot.LogLevel;
 import org.frc5010.common.config.DeviceConfiguration;
 import org.frc5010.common.constants.GenericPID;
 import org.frc5010.common.constants.MotorFeedFwdConstants;
@@ -46,6 +47,8 @@ public class VelocityMotorConfigurationJson implements DeviceConfiguration {
   public double kD = 0.0;
   /** The iZone value */
   public double iZone = 0.0;
+  /** The logging level */
+  public String logLevel = "COMPETITION";
 
   /**
    * Configures a VelocityControlMotor with the given parameters and visualizes
@@ -68,6 +71,9 @@ public class VelocityMotorConfigurationJson implements DeviceConfiguration {
     }
     if (iZone != 0.0) {
       motor.setIZone(iZone);
+    }
+    if (logLevel != null) {
+      motor.setLogLevel(LogLevel.valueOf(logLevel));
     }
     return motor;
   }

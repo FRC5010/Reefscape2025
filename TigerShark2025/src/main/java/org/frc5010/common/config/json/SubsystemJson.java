@@ -13,7 +13,9 @@ public class SubsystemJson {
   public Map<String, String> devices;
   /** Whether to display the subsystem in the dashboard */
   public boolean display = false;
-
+  /** The logging level for the robot */
+  public String logLevel = "COMPETITION";
+  
   /**
    * Configures the subsystem by reading device configuration files and adding devices to the system.
    *
