@@ -23,7 +23,7 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.DriveFeedforwards;
 
-import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -32,6 +32,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
@@ -610,9 +611,15 @@ public class YAGSLSwerveDrivetrain extends SwerveDriveFunctions {
    * and radians.
    */
   public void updateVisionMeasurements(
-      Pose2d robotPose, double imageCaptureTime, Vector<N3> stdVector) {
+      Pose2d robotPose, double imageCaptureTime,Matrix<N3, N1> stdVector) {
     swerveDrive.addVisionMeasurement(robotPose, imageCaptureTime, stdVector);
   }
+
+/**
+ * Retrieves the pose of the simulated drivetrain from the MapleSim system.
+ *
+ * @return The current pose of the simulated drivetrain as a {@link Pose2d}.
+ */
 
   public Pose2d getMapleSimPose() {
     return swerveDrive.getMapleSimDrive().get().getSimulatedDriveTrainPose();

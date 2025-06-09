@@ -91,7 +91,8 @@ public class CameraConfigurationJson {
         case "limelight": {
           camera = new LimeLightCamera(name, column, robotToCamera);
           ((LimeLightCamera) camera)
-              .setAngleSupplier(((GenericDrivetrain) robot.getSubsystem("drivetrain")).getPoseEstimator().getCurrentPose()::getRotation)
+              .setAngleSupplier(((GenericDrivetrain) robot.getSubsystem("drivetrain")).getPoseEstimator()
+                  .getCurrentPose()::getRotation)
               .setPoseEstimationChooser(() -> false);
           ((LimeLightCamera) camera).setIMUMode(4);
           break;
@@ -129,7 +130,9 @@ public class CameraConfigurationJson {
                 name,
                 column,
                 AprilTags.aprilTagFieldLayout,
+                PoseStrategy.valueOf(strategy),
                 robotToCamera,
+                robot.getPoseSupplier(),
                 targetFiducialIdList);
           } else if (targetHeight > 0) {
             camera = new PhotonVisionVisualTargetCamera(name, column, robotToCamera);
@@ -204,7 +207,7 @@ public class CameraConfigurationJson {
           drivetrain.getPoseEstimator().registerPoseProvider(camera);
         }
         // if (targetFiducialIds.length > 0) {
-        //   robot.addSubsystem(name, new VisibleTargetSystem(camera, targetHeight));
+        // robot.addSubsystem(name, new VisibleTargetSystem(camera, targetHeight));
         // }
         // atSystem.addCamera(camera);
         break;
@@ -214,7 +217,7 @@ public class CameraConfigurationJson {
         questNav.resetPose();
         if (drivetrain != null) {
           // FIX: Undo this
-          questNav.withRobotSpeedSupplier(((GenericSwerveDrivetrain)drivetrain)::getFieldVelocity);
+          questNav.withRobotSpeedSupplier(((GenericSwerveDrivetrain) drivetrain)::getFieldVelocity);
           drivetrain.getPoseEstimator().registerPoseProvider(questNav);
         }
         break;

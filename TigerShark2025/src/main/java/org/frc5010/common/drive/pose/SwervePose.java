@@ -4,15 +4,17 @@
 
 package org.frc5010.common.drive.pose;
 
-import edu.wpi.first.math.Vector;
+import org.frc5010.common.drive.swerve.SwerveDrivetrain;
+import org.frc5010.common.sensors.gyro.GenericGyro;
+
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import org.frc5010.common.drive.swerve.SwerveDrivetrain;
-import org.frc5010.common.sensors.gyro.GenericGyro;
 
 /** Add your docs here. */
 public class SwervePose extends GenericPose {
@@ -48,7 +50,7 @@ public class SwervePose extends GenericPose {
 
   @Override
   public void updateVisionMeasurements(
-      Pose2d robotPose, double imageCaptureTime, Vector<N3> stdVector) {
+      Pose2d robotPose, double imageCaptureTime, Matrix<N3, N1> stdVector) {
     poseEstimator.addVisionMeasurement(robotPose, imageCaptureTime);
   }
 

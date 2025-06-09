@@ -81,9 +81,6 @@ public class AprilTagPoseSystem extends CameraSystem {
       this.camera = camera;
     }
     cameras.add(camera);
-    camera.registerUpdater(() -> robotPose3ds.put(camera.name(), camera.getRobotPose()));
-    camera.registerUpdater(() -> targetPose3ds.put(camera.name(), camera.getRobotToTargetPose()));
-    camera.registerUpdater(() -> latencies.put(camera.name(), camera.getLatency()));
   }
 
   /**

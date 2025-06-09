@@ -4,9 +4,11 @@
 
 package org.frc5010.common.drive.pose;
 
+import org.frc5010.common.drive.pose.DrivePoseEstimator.VisionConsumer;
+import org.frc5010.common.sensors.gyro.GenericGyro;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
@@ -15,12 +17,13 @@ import edu.wpi.first.math.numbers.N5;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import org.frc5010.common.sensors.gyro.GenericGyro;
 
 /** Base class for all pose estimators */
 public abstract class GenericPose {
   /** The 2D field */
   protected Field2d field2d;
+  /** Vision consumer */
+  protected VisionConsumer visionConsumer = this::updateVisionMeasurements;
   /** State standard deviations */
   protected Matrix<N5, N1> stateStdDevs =
       VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5), 0.05, 0.05);
@@ -58,6 +61,19 @@ public abstract class GenericPose {
     return field2d;
   }
 
+  public VisionConsumer getVisionConsumer() {
+    return visionConsumer;
+  }
+
+  public void setVisionConsumer(VisionConsumer visionConsumer) {
+    this.visionConsumer = visionConsumer;
+  }
+  
+  /**
+   * Update the robot pose on the field.
+   *
+   * @param pose the pose
+   */
   public void updateRobotPoseOnField(Pose2d pose) {
     field2d.setRobotPose(pose);
   }
@@ -141,7 +157,7 @@ public abstract class GenericPose {
    * @param stdVector the standard deviation vector
    */
   public abstract void updateVisionMeasurements(
-      Pose2d robotPose, double imageCaptureTime, Vector<N3> stdVector);
+      Pose2d robotPose, double imageCaptureTime, Matrix<N3, N1> stdVector);
 
   /** Update the pose estimator with local data */
   public abstract void updateLocalMeasurements();

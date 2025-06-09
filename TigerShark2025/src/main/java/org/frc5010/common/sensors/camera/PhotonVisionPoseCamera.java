@@ -5,8 +5,10 @@
 package org.frc5010.common.sensors.camera;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.frc5010.common.vision.VisionConstants;
@@ -16,10 +18,13 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -34,10 +39,6 @@ public class PhotonVisionPoseCamera extends PhotonVisionCamera {
   protected Supplier<Pose2d> poseSupplier;
   /** The current list of fiducial IDs */
   protected List<Integer> fiducialIds = new ArrayList<>();
-
-  protected List<PoseObservation> observations = new ArrayList<>();
-  protected int tagCount = 0;
-  protected double averageDistance = 0;
 
   /**
    * Constructor
@@ -62,7 +63,7 @@ public class PhotonVisionPoseCamera extends PhotonVisionCamera {
     this.fieldLayout = fieldLayout;
     poseEstimator = new PhotonPoseEstimator(fieldLayout, strategy, cameraToRobot);
     poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
-    
+
   }
 
   public PhotonVisionPoseCamera(
@@ -78,7 +79,7 @@ public class PhotonVisionPoseCamera extends PhotonVisionCamera {
     this.poseSupplier = poseSupplier;
     this.fieldLayout = fieldLayout;
     this.fiducialIds = fiducialIds;
-    visionLayout.addDouble("Observations", () -> observations.size());
+    visionLayout.addDouble("Observations", () -> input.poseObservations.length);
     poseEstimator = new PhotonPoseEstimator(fieldLayout, strategy, cameraToRobot);
     poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
   }
@@ -87,18 +88,19 @@ public class PhotonVisionPoseCamera extends PhotonVisionCamera {
   @Override
   public void updateCameraInfo() {
     poseEstimator.addHeadingData(Timer.getFPGATimestamp(), poseSupplier.get().getRotation());
-  
-    observations.clear();
+
+    List<PoseObservation> observations = new ArrayList<>();
 
     super.updateCameraInfo();
-    SmartDashboard.putString("Primary Strategy "+name, poseEstimator.getPrimaryStrategy().name());
-  
+    SmartDashboard.putString("Primary Strategy " + name, poseEstimator.getPrimaryStrategy().name());
+    Set<Short> tagIds = new HashSet<>();
+
     for (PhotonPipelineResult camResult : camResults) {
       Optional<EstimatedRobotPose> estimate = poseEstimator.update(camResult);
       if (estimate.isPresent()) {
         EstimatedRobotPose estimatedRobotPose = estimate.get();
         Pose3d robotPose = estimatedRobotPose.estimatedPose;
-        
+
         double totalTagDistance = 0.0;
         for (var target : camResult.targets) {
           totalTagDistance += target.bestCameraToTarget.getTranslation().getNorm();
@@ -110,136 +112,60 @@ public class PhotonVisionPoseCamera extends PhotonVisionCamera {
           averageDistance = totalTagDistance / camResult.targets.size();
         }
 
-        double stdDevFactor = Math.pow(averageDistance, 4.0) / tagCount;
-        double linearStdDev = VisionConstants.linearStdDevBaseline * stdDevFactor;
+        // Add tag IDs
+        camResult.multitagResult.map(it -> tagIds.addAll(it.fiducialIDsUsed));
 
-
-        double angularStdDev = VisionConstants.angularStdDevBaseline * stdDevFactor;
-        if (camResult.multitagResult.isEmpty()) {
-          angularStdDev = 1.0;
-        }
-
-
-        double rotStdDev = 0.3;
-
-        // If really close, disregard angle measurement
-        if (averageDistance < 0.3 || (averageDistance > 2 && RobotState.isEnabled())) {
-          angularStdDev = 1000.0;
-        }
-
-        if ((averageDistance > 2.5 && RobotState.isEnabled() && tagCount < 2)) {
-          linearStdDev = 100.0;
-        }
-
-
-        SmartDashboard.putNumber("Total Distance To Tag "+name, totalTagDistance);
-        SmartDashboard.putNumber("Photon Ambiguity "+name,  camResult.getBestTarget().poseAmbiguity);
-        SmartDashboard.putNumberArray("Photon Camera "+name+" POSE", new double[] {
-                  robotPose.getX(), robotPose.getY(), robotPose.getRotation().toRotation2d().getDegrees()
-          });
+        SmartDashboard.putNumber("Total Distance To Tag " + name, totalTagDistance);
+        SmartDashboard.putNumber("Photon Ambiguity " + name, camResult.getBestTarget().poseAmbiguity);
+        SmartDashboard.putNumberArray("Photon Camera " + name + " POSE", new double[] {
+            robotPose.getX(), robotPose.getY(), robotPose.getRotation().toRotation2d().getDegrees()
+        });
 
         observations.add(
             new PoseObservation(
                 camResult.getTimestampSeconds(), // Timestamp
+                // 3D pose estimate
+                robotPose,
                 camResult.getBestTarget().poseAmbiguity,
                 tagCount,
-                VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev),
-                robotPose // 3D pose estimate
-            ));
+                averageDistance,
+                PoseObservationType.PHOTONVISION,
+                ProviderType.FIELD_BASED));
       }
-      // if (camResult.hasTargets()) {
-        
-      //   if (camResult.getMultiTagResult().isPresent()) {
-      //     var multitagResult = camResult.multitagResult.get();
-          
 
-      //     // Calculate robot pose
-      //     Transform3d fieldToCamera = multitagResult.estimatedPose.best;
-      //     Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
-      //     Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
-
-      //     // Calculate average tag distance
-      //     double totalTagDistance = 0.0;
-      //     for (var target : camResult.targets) {
-      //       totalTagDistance += target.bestCameraToTarget.getTranslation().getNorm();
-      //     }
-      //     // Compute the average tag distance
-      //     int tagCount = multitagResult.fiducialIDsUsed.size();
-      //     double averageDistance = 0.0;
-      //     if (camResult.targets.size() > 0) {
-      //       averageDistance = totalTagDistance / camResult.targets.size();
-      //     }
-
-      //     double stdDevFactor = Math.pow(averageDistance, 2.0) / tagCount;
-      //     double linearStdDev = VisionConstants.linearStdDevBaseline * stdDevFactor;
-      //     double angularStdDev = VisionConstants.angularStdDevBaseline * stdDevFactor;
-      //     SmartDashboard.putNumberArray("Photon Camera "+name+" POSE", new double[] {
-      //               robotPose.getX(), robotPose.getY(), robotPose.getRotation().toRotation2d().getDegrees()
-      //       });
-      //     observations.add(
-      //         new PoseObservation(
-      //             camResult.getTimestampSeconds(), // Timestamp
-      //             multitagResult.estimatedPose.ambiguity,
-      //             tagCount,
-      //             VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev),
-      //             robotPose // 3D pose estimate
-      //         ));
-      //   }
-      //   if (fiducialIds.size() > 0) {
-      //     target = camResult.getTargets().stream()
-      //         .filter(it -> fiducialIds.contains(it.getFiducialId()))
-      //         .findFirst();
-      //   } else {
-      //     target = Optional.ofNullable(camResult.getBestTarget());
-      //   }
-      // }
-    }
-  }
-
-  @Override
-  public void update() {
-    updateCameraInfo();
-  }
-
-  @Override
-  public List<PoseObservation> getObservations() {
-    return observations;
-  }
-
-  /**
-   * Get the target pose estimate relative to the robot.
-   *
-   * @return the target pose estimate relative to the robot
-   */
-  @Override
-  public Optional<Pose3d> getRobotPose() {
-    Pose3d robotPoseEst = null;
-    if (target.isPresent()) {
-      Optional<EstimatedRobotPose> result = poseEstimator.update(camResult);
-
-      if (result.isPresent()
-          && result.get().estimatedPose != null
-          && target.get().getPoseAmbiguity() < 0.5) {
-        robotPoseEst = result.get().estimatedPose;
+      // Save pose observations to inputs object
+      input.poseObservations = new PoseObservation[observations.size()];
+      for (int i = 0; i < observations.size(); i++) {
+        input.poseObservations[i] = observations.get(i);
+      }
+      // Save tag IDs to inputs objects
+      input.tagIds = new int[tagIds.size()];
+      int i = 0;
+      for (int id : tagIds) {
+        input.tagIds[i++] = id;
       }
     }
-    return Optional.ofNullable(robotPoseEst);
   }
 
-  /**
-   * Get the target pose estimate relative to the robot.
-   *
-   * @return the target pose estimate relative to the robot
-   */
   @Override
-  public Optional<Pose3d> getRobotToTargetPose() {
-    Pose3d targetPoseEst = null;
-    if (target.isPresent()) {
-      if (target.get().getFiducialId() != 0) {
-        Transform3d robotToTarget = robotToCamera.plus(target.get().getBestCameraToTarget());
-        targetPoseEst = new Pose3d(robotToTarget.getTranslation(), robotToTarget.getRotation());
-      }
+  public Matrix<N3, N1> getStdDeviations(PoseObservation observation) {
+    double stdDevFactor = Math.pow(observation.averageTagDistance(), 4.0) / observation.tagCount();
+    double linearStdDev = VisionConstants.linearStdDevBaseline * stdDevFactor;
+
+    double angularStdDev = VisionConstants.angularStdDevBaseline * stdDevFactor;
+    if (camResult.multitagResult.isEmpty()) {
+      angularStdDev = 1.0;
     }
-    return Optional.ofNullable(targetPoseEst);
+    //double rotStdDev = 0.3;
+
+    // If really close, disregard angle measurement
+    if (observation.averageTagDistance() < 0.3 || (observation.averageTagDistance() > 2 && RobotState.isEnabled())) {
+      angularStdDev = 1000.0;
+    }
+
+    if ((observation.averageTagDistance() > 2.5 && RobotState.isEnabled() && observation.tagCount() < 2)) {
+      linearStdDev = 100.0;
+    }
+    return VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev);
   }
 }

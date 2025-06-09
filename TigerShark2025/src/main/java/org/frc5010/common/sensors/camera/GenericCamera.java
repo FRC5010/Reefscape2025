@@ -4,19 +4,17 @@
 
 package org.frc5010.common.sensors.camera;
 
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.frc5010.common.drive.pose.PoseProvider;
+import org.frc5010.common.vision.VisionConstants;
+
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.frc5010.common.drive.pose.PoseProvider;
-import org.frc5010.common.vision.VisionConstants;
 
 /** A generic camera interface */
 public abstract class GenericCamera implements PoseProvider {
@@ -56,11 +54,7 @@ public abstract class GenericCamera implements PoseProvider {
     visionLayout.addDouble("Target Yaw", this::getTargetYaw);
     visionLayout.addDouble("Target Pitch", this::getTargetPitch);
     visionLayout.addDouble("Target Area", this::getTargetArea);
-    visionLayout.addDouble("Latency", this::getLatency);
-    visionLayout.addDouble(
-        "Pose X", () -> getRobotPose().orElse(new Pose3d(-1, -1, 0, new Rotation3d())).getX());
-    visionLayout.addDouble(
-        "Pose Y", () -> getRobotPose().orElse(new Pose3d(-1, -1, 0, new Rotation3d())).getY());
+    visionLayout.addDouble("Latency", this::getCaptureTime);
   }
 
   /**
@@ -76,6 +70,7 @@ public abstract class GenericCamera implements PoseProvider {
     for (Runnable updater : updaters) {
       updater.run();
     }
+    logInput(name);
   }
 
   /** Updates the vision information from the camera */
@@ -124,21 +119,25 @@ public abstract class GenericCamera implements PoseProvider {
    *
    * @return whether or not the camera has a valid target
    */
-  public abstract boolean hasValidTarget();
+  public boolean hasValidTarget() { return input.hasTarget; }
 
   /**
    * Returns the yaw of the target in degrees along the horizontal X axis of the camera.
    *
    * @return the yaw of the target in degrees along the horizontal X axis of the camera
    */
-  public abstract double getTargetYaw();
+  public double getTargetYaw() {
+    return input.latestTargetRotation.rotation().getZ();
+  }
 
   /**
    * Returns the pitch of the target in degrees along the vertical Y axis of the camera.
    *
    * @return the pitch of the target in degrees along the vertical Y axis of the camera
    */
-  public abstract double getTargetPitch();
+  public double getTargetPitch() {
+    return input.latestTargetRotation.rotation().getY();
+  }
 
   /**
    * Returns the area of the target.
@@ -146,25 +145,4 @@ public abstract class GenericCamera implements PoseProvider {
    * @return the area of the target
    */
   public abstract double getTargetArea();
-
-  /**
-   * Returns the latency of the camera image.
-   *
-   * @return the latency of the camera image
-   */
-  public abstract double getLatency();
-
-  /**
-   * Returns the current pose estimate of the robot.
-   *
-   * @return the current pose estimate of the robot
-   */
-  public abstract Optional<Pose3d> getRobotPose();
-
-  /**
-   * Returns the target pose estimate relative to the robot.
-   *
-   * @return the target pose estimate relative to the robot
-   */
-  public abstract Optional<Pose3d> getRobotToTargetPose();
 }

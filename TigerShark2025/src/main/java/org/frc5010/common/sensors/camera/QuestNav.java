@@ -7,6 +7,7 @@ package org.frc5010.common.sensors.camera;
 import static edu.wpi.first.units.Units.Degrees;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -16,7 +17,10 @@ import org.frc5010.common.drive.pose.DrivePoseEstimator;
 import org.frc5010.common.drive.pose.DrivePoseEstimator.State;
 import org.frc5010.common.drive.pose.PoseProvider;
 import org.frc5010.common.drive.swerve.GenericSwerveDrivetrain;
+import org.frc5010.common.vision.VisionConstants;
+import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -26,6 +30,8 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.DoubleSubscriber;
@@ -35,7 +41,6 @@ import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -133,6 +138,8 @@ public class QuestNav implements PoseProvider {
 
         heartbeatRequestSub = networkTable.getDoubleTopic("heartbeat/quest_to_robot").subscribe(0.0);
         heartbeatResponsePub = networkTable.getDoubleTopic("heartbeat/robot_to_quest").publish();
+
+        disconnectedAlert.setText("QuestNav: Not connected");
     }
 
     public Translation3d getRawPosition() {
@@ -165,23 +172,48 @@ public class QuestNav implements PoseProvider {
         }
     }
 
-    @Override
-    public List<PoseObservation> getObservations() {
+    private void updateObservations() {
         List<PoseObservation> observations = new ArrayList<>();
         double calib = getConfidence();
         if (null != robotVelocity) {
-            Translation2d questVelVector = new Translation2d(getVelocity().vxMetersPerSecond, getVelocity().vyMetersPerSecond);
-            Translation2d robotVelVector = new Translation2d(robotVelocity.get().vxMetersPerSecond, robotVelocity.get().vyMetersPerSecond);
+            Translation2d questVelVector = new Translation2d(getVelocity().vxMetersPerSecond,
+                    getVelocity().vyMetersPerSecond);
+            Translation2d robotVelVector = new Translation2d(robotVelocity.get().vxMetersPerSecond,
+                    robotVelocity.get().vyMetersPerSecond);
             if (Math.abs(questVelVector.getNorm() - robotVelVector.getNorm()) > 1.0) {
                 calib = 10;
-            } 
+            }
         }
-
+        input.connected = isActive();
         if (isActive) {
-            observations.add(new PoseObservation(getCaptureTime(), 0, 0, VecBuilder.fill(calib, calib, calib*0.2),
-                    new Pose3d(getPosition(), getRotation())));
+            observations.add(
+                    new PoseObservation(
+                            getCaptureTime(),
+                            new Pose3d(getPosition(), getRotation()),
+                            0, 0, 0,
+                            PoseObservationType.ENVIRONMENT_BASED,
+                            ProviderType.ENVIRONMENT_BASED));
         }
-        return observations;
+        // Save pose observations to inputs object
+        input.poseObservations = new PoseObservation[observations.size()];
+        for (int i = 0; i < observations.size(); i++) {
+            input.poseObservations[i] = observations.get(i);
+        }
+    }
+
+    @Override
+    public Matrix<N3, N1> getStdDeviations(PoseObservation observation) {
+        double calib = getConfidence();
+        if (null != robotVelocity) {
+            Translation2d questVelVector = new Translation2d(getVelocity().vxMetersPerSecond,
+                    getVelocity().vyMetersPerSecond);
+            Translation2d robotVelVector = new Translation2d(robotVelocity.get().vxMetersPerSecond,
+                    robotVelocity.get().vyMetersPerSecond);
+            if (Math.abs(questVelVector.getNorm() - robotVelVector.getNorm()) > 1.0) {
+                calib = 10;
+            }
+        }
+        return VecBuilder.fill(calib, calib, calib * 0.2);
     }
 
     public Translation3d getProcessedPosition() {
@@ -230,23 +262,34 @@ public class QuestNav implements PoseProvider {
         double requestId = heartbeatRequestSub.get();
         // Only respond to new requests to avoid flooding
         if (requestId > 0 && requestId != lastProcessedHeartbeatId) {
-          heartbeatResponsePub.set(requestId);
-          lastProcessedHeartbeatId = requestId;
+            heartbeatResponsePub.set(requestId);
+            lastProcessedHeartbeatId = requestId;
         }
-      }
+    }
 
+    @Override
+    public boolean isConnected() {
+        return input.connected;
+    }
     public boolean isActive() {
         double t = timestamp.get();
         boolean simulation = RobotBase.isSimulation();
-        boolean disabled = DriverStation.isDisabled();
+        // boolean disabled = DriverStation.isDisabled();
         double frame = frameCount.get();
-        double previousFrame = previousFrameCount;
-        if (t == 0 || simulation || previousFrame == frame || !isTracking.get()) {
-            isActive = false;
-            return false;
+
+        isActive = t != 0 && !simulation && previousFrameCount != frame && isTracking.get();
+
+        if (previousFrameCount == frame) {
+            disconnectedAlert.setText("QuestNav Disconnected: Frame mismach");
+        } else if (!isTracking.get()) {
+            disconnectedAlert.setText("QuestNav Disconnected: Not tracking");
+        } else if (simulation) {
+            disconnectedAlert.setText("QuestNav Disconnected: Simulation");
+        } else {
+            disconnectedAlert.setText("QuestNav Disconnected");
         }
-        isActive = true;
-        return initializedPosition;
+        disconnectedAlert.set(!simulation && (!isActive || !initializedPosition));
+        return isActive && initializedPosition;
     }
 
     public void updateFrameCount() {
@@ -345,6 +388,7 @@ public class QuestNav implements PoseProvider {
             processHeartbeat();
             cleanUpQuestCommand();
             updateVelocity();
+            updateObservations();
             SmartDashboard.putBoolean("Reset Pose", false);
 
             Pose2d currPose = getRobotPose().get().toPose2d();
@@ -356,6 +400,7 @@ public class QuestNav implements PoseProvider {
             SmartDashboard.putNumberArray("Velocity", new double[] { velocity.vxMetersPerSecond,
                     velocity.vyMetersPerSecond, velocity.omegaRadiansPerSecond });
         }
+        logInput(networkTableRoot);
     }
 
     private Translation2d calculateOffsetToRobotCenter() {

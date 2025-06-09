@@ -4,17 +4,27 @@
 
 package org.frc5010.common.drive.pose;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
-import edu.wpi.first.math.Vector;
+import org.frc5010.common.vision.VisionConstants;
+import org.littletonrobotics.junction.AutoLog;
+import org.littletonrobotics.junction.Logger;
+
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 
 /** Add your docs here. */
 public interface PoseProvider {
+    public VisionIOInputsAutoLogged input = new VisionIOInputsAutoLogged();
+    public Alert disconnectedAlert = new Alert("PoseProvider", AlertType.kWarning);
+    public int cameraIndex = 0;
 
     public enum ProviderType {
         ALL,
@@ -23,74 +33,88 @@ public interface PoseProvider {
         ENVIRONMENT_BASED,
         RELATIVE
     }
-    
-    public static class PoseObservation {
-        public double timestamp;
-        public Vector<N3> stdDeviations;
-        public Pose3d pose;
-        public double ambiguity;
-        public int tagCount;
 
-        public PoseObservation(double timestamp, double ambiguity, int tagCount, Vector<N3> stdDeviations, Pose3d pose) {
-            this.timestamp = timestamp; 
-            this.ambiguity = ambiguity;
-            this.tagCount = tagCount;
-            this.stdDeviations = stdDeviations;
-            this.pose = pose;
-        }
+    public enum PoseObservationType {
+        MEGATAG_1,
+        MEGATAG_2,
+        PHOTONVISION,
+        ENVIRONMENT_BASED,
     }
 
-    /*
-     * Returns the current pose of the robot.
-     * 
-     * @return The current pose of the robot.
-     */
-    public Optional<Pose3d> getRobotPose();
+    @AutoLog
+    public static class VisionIOInputs {
+        public boolean connected = false;
+        public boolean hasTarget = false;
+        public TargetRotation latestTargetRotation = new TargetRotation(new Rotation3d());
+        public Pose3d latestTargetPose = new Pose3d();
+        public double captureTime;
+        public PoseObservation[] poseObservations = new PoseObservation[0];
+        public int[] tagIds = new int[0];
+    }
+
+    /** Represents the angle to a simple target, not used for pose estimation. */
+    public static record TargetRotation(Rotation3d rotation) {
+    }
+
+    /** Represents a robot pose sample used for pose estimation. */
+    public static record PoseObservation(
+            double timestamp,
+            Pose3d pose,
+            double ambiguity,
+            int tagCount,
+            double averageTagDistance,
+            PoseObservationType type,
+            ProviderType provider) {
+    }
 
     /*
      * Returns the current observations of the robot.
      * 
      * @return The current observations of the robot.
      */
-    public List<PoseObservation> getObservations();
-    
-    /*
-     * Returns the confidence of the current pose measurement. Used in order to merge multiple pose measurements. Lower values are better.
-     *
-     * @return The confidence of the current pose measurement.
-     */
-    public double getConfidence();
-
+    public default List<PoseObservation> getObservations() {
+        return Arrays.asList(input.poseObservations);
+    }
 
     /*
-     * Returns whether the pose provider is currently active. A camera could be inactive if it is not currently tracking a target, for example.
+     * Returns whether the pose provider is currently active. A camera could be
+     * inactive if it is not currently tracking a target, for example.
      * 
      * @return Whether the pose provider is currently active.
-     */ 
-    public boolean isActive();
-
-    /*
-     * Returns the position of the pose
-     * 
-     * @return The position of the pose
      */
-    public Translation3d getPosition();
+    public default boolean isConnected() {
+        return input.connected;
+    }
 
-    /*
-     * Returns the rotation of the pose
-     * 
-     * @return The rotation of the pose
-     */
-    public Rotation3d getRotation();
-
-    public double getCaptureTime();
+    public default double getCaptureTime() {
+        return input.captureTime;
+    }
 
     public void update();
 
-
-    public void resetPose(Pose3d initPose);
-
-    public int fiducialId();
+    public default void resetPose(Pose3d initPose) {
+    }
 
     public ProviderType getType();
+
+    public default void logInput(String tableName) {
+        Logger.processInputs(VisionConstants.SBTabVisionDisplay + "/Camera " + tableName, input);
+    }
+
+    public default Matrix<N3, N1> getStdDeviations(PoseObservation observation) {
+        // Calculate standard deviations
+        double stdDevFactor = Math.pow(observation.averageTagDistance(), 2.0) / observation.tagCount();
+        double linearStdDev = VisionConstants.linearStdDevBaseline * stdDevFactor;
+        double angularStdDev = VisionConstants.angularStdDevBaseline * stdDevFactor;
+        if (observation.type() == PoseObservationType.MEGATAG_2) {
+            linearStdDev *= VisionConstants.linearStdDevMegatag2Factor;
+            angularStdDev *= VisionConstants.angularStdDevMegatag2Factor;
+        }
+        if (cameraIndex < VisionConstants.cameraStdDevFactors.length) {
+            linearStdDev *= VisionConstants.cameraStdDevFactors[cameraIndex];
+            angularStdDev *= VisionConstants.cameraStdDevFactors[cameraIndex];
+        }
+
+        return VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev);
+    }
 }

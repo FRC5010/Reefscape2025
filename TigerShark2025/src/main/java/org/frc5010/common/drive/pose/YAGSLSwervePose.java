@@ -6,9 +6,10 @@ package org.frc5010.common.drive.pose;
 
 import org.frc5010.common.drive.swerve.YAGSLSwerveDrivetrain;
 
-import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 
 public class YAGSLSwervePose extends GenericPose {
@@ -18,6 +19,7 @@ public class YAGSLSwervePose extends GenericPose {
     super(null);
     this.drivetrain = drivetrain;
     field2d = drivetrain.getField2d();
+    visionConsumer = drivetrain::updateVisionMeasurements;
   }
 
   @Override
@@ -27,7 +29,7 @@ public class YAGSLSwervePose extends GenericPose {
 
   @Override
   public void updateVisionMeasurements(
-      Pose2d robotPose, double imageCaptureTime, Vector<N3> stdVector) {
+      Pose2d robotPose, double imageCaptureTime, Matrix<N3, N1> stdVector) {
     drivetrain.updateVisionMeasurements(robotPose, imageCaptureTime, stdVector);
   }
 

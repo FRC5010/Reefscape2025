@@ -4,6 +4,7 @@
 
 package org.frc5010.common.sensors.camera;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -19,14 +20,11 @@ import org.frc5010.common.vision.LimelightHelpers.RawFiducial;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /** Limelight Camera */
 public class LimeLightCamera extends GenericCamera {
-  Optional<PoseEstimate> poseEstimate = Optional.empty();
   Optional<Pose3d> targetPose = Optional.empty();
   Supplier<GenericGyro> gyroSupplier;
   Supplier<Rotation2d> angleResetSupplier;
@@ -97,6 +95,7 @@ public class LimeLightCamera extends GenericCamera {
   protected Optional<PoseEstimate> getRobotPoseEstimateM1() {
     Optional<PoseEstimate> poseEstimate = validatePoseEstimate(
         Optional.ofNullable(LimelightHelpers.getBotPoseEstimate_wpiBlue(name)));
+
     if (poseEstimate.isPresent() && null != poseEstimate.get().pose && null != gyroSupplier) {
       SmartDashboard.putNumber("MT1 Angle", poseEstimate.get().pose.getRotation().getDegrees());
       gyroSupplier.get().setAngle(poseEstimate.get().pose.getRotation().getDegrees());
@@ -115,12 +114,7 @@ public class LimeLightCamera extends GenericCamera {
         Optional.ofNullable(LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(name)));
     return poseEstimate;
   }
-
-  @Override
-  public int fiducialId() {
-    return (int)LimelightHelpers.getFiducialID(name);
-  }
-
+  
   /**
    * Validate the pose estimate
    *
@@ -161,77 +155,59 @@ public class LimeLightCamera extends GenericCamera {
   @Override
   public void updateCameraInfo() {
     if (null != gyroSupplier.get()) {
-      GenericGyro gyro =  gyroSupplier.get();
-      LimelightHelpers.SetRobotOrientation(name,gyro.getAngle(), gyro.getRate(), 0.0, 0.0, 0.0, 0.0);
+      GenericGyro gyro = gyroSupplier.get();
+      LimelightHelpers.SetRobotOrientation(name, gyro.getAngle(), gyro.getRate(), 0.0, 0.0, 0.0, 0.0);
     } else if (null != angleResetSupplier.get()) {
       LimelightHelpers.SetRobotOrientation(name, angleResetSupplier.get().getDegrees(), 0.0, 0.0, 0.0, 0.0, 0.0);
     }
-    
+
     LimelightHelpers.getLatestResults(name);
+    List<PoseObservation> observations = new ArrayList<>();
     if (hasValidTarget()) {
-      poseEstimate = megatagChooser.getAsBoolean() ? getRobotPoseEstimateM1() : getRobotPoseEstimateM2();
+      Optional<PoseEstimate> poseEstimate = megatagChooser.getAsBoolean() ? getRobotPoseEstimateM1() : getRobotPoseEstimateM2();
       if (poseEstimate.isPresent()) {
         Pose2d currPose = poseEstimate.get().pose;
         if (null != currPose) {
-        SmartDashboard.putNumberArray("Limelight POSE", new double[] {
-          currPose.getX(), currPose.getY(), currPose.getRotation().getDegrees()
-      });
-    }
-  }
+          SmartDashboard.putNumberArray("Limelight POSE", new double[] {
+              currPose.getX(), currPose.getY(), currPose.getRotation().getDegrees()
+          });
+        }
+      }
       targetPose = Optional.of(LimelightHelpers.getTargetPose3d_RobotSpace(name));
+      input.latestTargetPose = targetPose.orElse(new Pose3d());
+      input.hasTarget = targetPose.isPresent();
+
+      observations.add(
+          new PoseObservation(
+              poseEstimate.map(it -> it.timestampSeconds).orElse(0.0),
+              // 3D pose estimate
+              poseEstimate.map(it -> new Pose3d(it.pose)).orElse(null),
+              determineConfidence(poseEstimate.get()),
+              poseEstimate.map(it -> it.tagCount).orElse(0),
+              poseEstimate.map(it -> it.avgTagDist).orElse(0.0),
+              PoseObservationType.PHOTONVISION,
+              ProviderType.FIELD_BASED));
+
+      // Save pose observations to inputs object
+      if (observations.size() != input.poseObservations.length) {
+        input.poseObservations = new PoseObservation[observations.size()];
+      }
+      for (int i = 0; i < observations.size(); i++) {
+        input.poseObservations[i] = observations.get(i);
+      }
+
+      // Save tag IDs to inputs objects
+      input.tagIds = Arrays.stream(LimelightHelpers.getRawFiducials(name))
+                            .mapToInt(fiducial -> fiducial.id)
+                            .distinct()
+                            .toArray();
     }
-  }
-
-  /** Get the validity of the target information */
-  @Override
-  public boolean hasValidTarget() {
-    return LimelightHelpers.getLimelightNTTableEntry(name, "tv").getDouble(0) == 1;
-  }
-
-  /**
-   * Get the yaw of the target in degrees along the horizontal X axis of the
-   * camera
-   */
-  @Override
-  public double getTargetYaw() {
-    return LimelightHelpers.getLimelightNTDouble(name, "tx");
-  }
-
-  /**
-   * Get the pitch of the target in degrees along the vertical Y axis of the
-   * camera
-   */
-  @Override
-  public double getTargetPitch() {
-    return LimelightHelpers.getLimelightNTDouble(name, "ty");
   }
 
   /** Get the area of the target in percentage of the image */
   @Override
   public double getTargetArea() {
     return LimelightHelpers.getLimelightNTDouble(name, "ta");
-  }
-
-  /**
-   * Get the latency in seconds between the camera image and when the data was
-   * received
-   */
-  @Override
-  public double getLatency() {
-    return poseEstimate.map(it -> it.timestampSeconds).orElse(0.0);
-  }
-
-  /** Get the current pose estimate of the robot */
-  @Override
-  public Optional<Pose3d> getRobotPose() {
-    return Optional.ofNullable(poseEstimate.map(
-        it -> null != it.pose ? new Pose3d(it.pose) : null).orElse(null));
-  }
-
-  /** Get the target pose estimate relative to the robot */
-  @Override
-  public Optional<Pose3d> getRobotToTargetPose() {
-    return targetPose;
   }
 
   /**
@@ -252,49 +228,20 @@ public class LimeLightCamera extends GenericCamera {
 
   public void setRobotToCameraOnLL() {
     LimelightHelpers.setCameraPose_RobotSpace(name, robotToCamera.getX(), -robotToCamera.getY(), robotToCamera.getZ(),
-    robotToCamera.getRotation().getX(), robotToCamera.getRotation().getY(), robotToCamera.getRotation().getZ());
+        robotToCamera.getRotation().getX(), robotToCamera.getRotation().getY(), robotToCamera.getRotation().getZ());
   }
-  
-  @Override
-  public double getConfidence() {
-    PoseEstimate estimate = poseEstimate.get();
-    
-    Stream<RawFiducial> fiducialStream = Arrays.stream(LimelightHelpers.getRawFiducials(name)).sorted((raw1, raw2) -> raw1.ambiguity == raw2.ambiguity ? 0 : (raw1.ambiguity > raw2.ambiguity ? 1 : -1));
+
+  public double determineConfidence( PoseEstimate estimate) {
+    Stream<RawFiducial> fiducialStream = Arrays.stream(LimelightHelpers.getRawFiducials(name))
+        .sorted((raw1, raw2) -> raw1.ambiguity == raw2.ambiguity ? 0 : (raw1.ambiguity > raw2.ambiguity ? 1 : -1));
     double min_ambiguity = fiducialStream.findFirst().map(fiducial -> fiducial.ambiguity).orElse(100.0);
-    double confidence = estimate.avgTagDist > 2 ? 1.0 : min_ambiguity * Math.max(estimate.avgTagDist/2, 0.5);
+    double confidence = estimate.avgTagDist > 2 ? 1.0 : min_ambiguity * Math.max(estimate.avgTagDist / 2, 0.5);
     SmartDashboard.putNumber("Limelight Confidence", confidence);
     return confidence;
-  }
-
-  @Override
-  public List<PoseObservation> getObservations() {
-    return List.of();
-  }
-
-  @Override
-  public boolean isActive() {
-    return hasValidTarget();
   }
 
   @Override
   public ProviderType getType() {
     return ProviderType.FIELD_BASED;
   }
-
-  @Override
-  public Translation3d getPosition() {
-    return getRobotPose().orElse(new Pose3d()).getTranslation();
-  }
-
-  @Override
-  public Rotation3d getRotation() {
-    return getRobotPose().orElse(new Pose3d()).getRotation();
-  }
-
-  public double getCaptureTime() {
-    SmartDashboard.putNumber("Limelight Timestamp", getLatency());
-    return getLatency();
-  }
-
-  public void resetPose(Pose3d init) {}
 }
