@@ -1,7 +1,7 @@
-package org.frc5010.common.config.json;
+package org.frc5010.common.config.json.devices;
 
-import org.frc5010.common.arch.GenericDeviceHandler;
 import org.frc5010.common.arch.GenericRobot.LogLevel;
+import org.frc5010.common.arch.GenericSubsystem;
 import org.frc5010.common.config.DeviceConfiguration;
 import org.frc5010.common.constants.GenericPID;
 import org.frc5010.common.constants.MotorFeedFwdConstants;
@@ -58,7 +58,7 @@ public class VelocityMotorConfigurationJson implements DeviceConfiguration {
    * @return A configured VelocityControlMotor object.
    */
   @Override
-  public Object configure(GenericDeviceHandler deviceHandler) {
+  public Object configure(GenericSubsystem deviceHandler) {
     VelocityControlMotor motor = new VelocityControlMotor(DeviceConfigReader.getMotor(controller, type, id), name,
         deviceHandler.getDisplayValuesHelper())
         .setupSimulatedMotor(gearing, momentOfInertiaKgMSq)

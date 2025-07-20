@@ -33,6 +33,10 @@ import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import yams.motorcontrollers.SmartMotorController;
+import yams.motorcontrollers.SmartMotorControllerConfig;
+import yams.motorcontrollers.local.SparkWrapper;
+import yams.motorcontrollers.remote.TalonFXWrapper;
 
 /** A class for a generic TalonFX motor */
 public class GenericTalonFXMotor implements MotorController5010 {
@@ -162,7 +166,6 @@ public class GenericTalonFXMotor implements MotorController5010 {
             .withSupplyCurrentLimitEnable(0 != supplyCurrentLimit)
             .withStatorCurrentLimitEnable(0 != motorCurrentLimit));
   }
-
 
   public MotorController5010 setSupplyCurrent(Current limit) {
     supplyCurrentLimit = (int) limit.in(Amps);
@@ -539,5 +542,21 @@ public class GenericTalonFXMotor implements MotorController5010 {
 
   public void sendControlRequest(ControlRequest request) {
     motor.setControl(request);
+  }
+
+  /**
+   * Returns the configuration of the motor as a Motor object.
+   *
+   * @return The motor configuration
+   */
+  @Override
+  public Motor getMotorConfig() {
+    return config;
+  }
+
+  
+  @Override
+  public SmartMotorController getSmartMotorController(SmartMotorControllerConfig config) {
+    return new TalonFXWrapper(motor, motorSim, config);
   }
 }

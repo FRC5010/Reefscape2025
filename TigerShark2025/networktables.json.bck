@@ -1,22 +1,6 @@
 [
   {
-    "name": "/SmartDashboard/AprilTagPoseSystem/AprilTagPoseSystem/Std Vector Factor",
-    "type": "double",
-    "value": 0.1,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/AprilTagPoseSystem/AprilTagPoseSystem/Std Vector Radian Factor",
-    "type": "double",
-    "value": 5.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/shooterLeft/kP",
+    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/BOTTOM (m)",
     "type": "double",
     "value": 0.0,
     "properties": {
@@ -24,433 +8,97 @@
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/shooterLeft/kI",
+    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/LOAD (m)",
     "type": "double",
-    "value": 0.0,
+    "value": 0.09,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/shooterLeft/kD",
+    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/PROCESSOR (m)",
     "type": "double",
-    "value": 0.0,
+    "value": 0.15,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/shooterLeft/kF",
+    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/L1 (m)",
     "type": "double",
-    "value": 0.0,
+    "value": 0.72,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/shooterLeft/kS",
+    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/L2Algae (m)",
     "type": "double",
-    "value": 0.0,
+    "value": 0.11,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/shooterLeft/kV",
+    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/L2Shoot (m)",
     "type": "double",
-    "value": 0.0,
+    "value": 0.87,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/shooterLeft/kA",
+    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/L2 (m)",
     "type": "double",
-    "value": 0.0,
+    "value": 0.8779,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/shooterLeft/IZone",
+    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/L3Algae (m)",
     "type": "double",
-    "value": 0.0,
+    "value": 1.1,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/shooterLeft/MinOutput",
+    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/L3Shoot (m)",
     "type": "double",
-    "value": 0.0,
+    "value": 1.27,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/shooterLeft/MaxOutput",
+    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/L3 (m)",
     "type": "double",
-    "value": 0.0,
+    "value": 1.27,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/shooterLeft/Tolerance",
+    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/L4Shoot (m)",
     "type": "double",
-    "value": 0.0,
+    "value": 1.765,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/shooterLeft/Max Velocity",
+    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/L4 (m)",
     "type": "double",
-    "value": 0.0,
+    "value": 1.88,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ScoringSystem/shooterLeft/Max Acceleration",
+    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/NET (m)",
     "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/shooterRight/kP",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/shooterRight/kI",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/shooterRight/kD",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/shooterRight/kF",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/shooterRight/kS",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/shooterRight/kV",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/shooterRight/kA",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/shooterRight/IZone",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/shooterRight/MinOutput",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/shooterRight/MaxOutput",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/shooterRight/Tolerance",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/shooterRight/Max Velocity",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/shooterRight/Max Acceleration",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/elevator/kP",
-    "type": "double",
-    "value": 60.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/elevator/kI",
-    "type": "double",
-    "value": 1.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/elevator/kD",
-    "type": "double",
-    "value": 0.5,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/elevator/kF",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/elevator/kS",
-    "type": "double",
-    "value": 0.25,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/elevator/kV",
-    "type": "double",
-    "value": 0.12,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/elevator/kA",
-    "type": "double",
-    "value": 0.01,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/elevator/IZone",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/elevator/MinOutput",
-    "type": "double",
-    "value": -1.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/elevator/MaxOutput",
-    "type": "double",
-    "value": 1.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/elevator/Tolerance",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/elevator/Max Velocity",
-    "type": "double",
-    "value": 2.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/elevator/Max Acceleration",
-    "type": "double",
-    "value": 5.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/elevator/kG",
-    "type": "double",
-    "value": 2.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/ScoringSystem/elevator/Conversion",
-    "type": "double",
-    "value": 1.053313184895586,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kP",
-    "type": "double",
-    "value": 2.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kI",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kD",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kF",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kS",
-    "type": "double",
-    "value": 0.02728,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kV",
-    "type": "double",
-    "value": 0.11622,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kA",
-    "type": "double",
-    "value": 0.00094272,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/AlgaeArm/Algae Arm/IZone",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/AlgaeArm/Algae Arm/MinOutput",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/AlgaeArm/Algae Arm/MaxOutput",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/AlgaeArm/Algae Arm/Tolerance",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/AlgaeArm/Algae Arm/Max Velocity",
-    "type": "double",
-    "value": 83.333,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/AlgaeArm/Algae Arm/Max Acceleration",
-    "type": "double",
-    "value": 16.66,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kG",
-    "type": "double",
-    "value": -0.1478,
+    "value": 1.9,
     "properties": {
       "persistent": true
     }
@@ -466,7 +114,7 @@
   {
     "name": "/SmartDashboard/ElevatorSystem/elevator/kI",
     "type": "double",
-    "value": 1.0,
+    "value": 0.0,
     "properties": {
       "persistent": true
     }
@@ -474,7 +122,7 @@
   {
     "name": "/SmartDashboard/ElevatorSystem/elevator/kD",
     "type": "double",
-    "value": 0.5,
+    "value": 0.0,
     "properties": {
       "persistent": true
     }
@@ -538,7 +186,7 @@
   {
     "name": "/SmartDashboard/ElevatorSystem/elevator/Tolerance",
     "type": "double",
-    "value": 0.0,
+    "value": 0.01,
     "properties": {
       "persistent": true
     }
@@ -546,7 +194,7 @@
   {
     "name": "/SmartDashboard/ElevatorSystem/elevator/Max Velocity",
     "type": "double",
-    "value": 2.5,
+    "value": 6.5,
     "properties": {
       "persistent": true
     }
@@ -554,7 +202,7 @@
   {
     "name": "/SmartDashboard/ElevatorSystem/elevator/Max Acceleration",
     "type": "double",
-    "value": 15.0,
+    "value": 20.0,
     "properties": {
       "persistent": true
     }
@@ -562,7 +210,7 @@
   {
     "name": "/SmartDashboard/ElevatorSystem/elevator/kG",
     "type": "double",
-    "value": 0.263672,
+    "value": 0.949219,
     "properties": {
       "persistent": true
     }
@@ -784,7 +432,15 @@
     }
   },
   {
-    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/BOTTOM (m)",
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kP",
+    "type": "double",
+    "value": 2.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kI",
     "type": "double",
     "value": 0.0,
     "properties": {
@@ -792,97 +448,97 @@
     }
   },
   {
-    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/LOAD (m)",
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kD",
     "type": "double",
-    "value": 0.05,
+    "value": 0.0,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/PROCESSOR (m)",
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kF",
     "type": "double",
-    "value": 0.15,
+    "value": 0.0,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/L1 (m)",
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kS",
     "type": "double",
-    "value": 0.65,
+    "value": 0.02728,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/L2Algae (m)",
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kV",
     "type": "double",
-    "value": 0.11,
+    "value": 0.11622,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/L2Shoot (m)",
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kA",
     "type": "double",
-    "value": 0.45,
+    "value": 0.00094272,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/L2 (m)",
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/IZone",
     "type": "double",
-    "value": 0.81,
+    "value": 0.0,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/L3Algae (m)",
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/MinOutput",
     "type": "double",
-    "value": 1.1,
+    "value": 0.0,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/L3Shoot (m)",
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/MaxOutput",
     "type": "double",
-    "value": 1.1,
+    "value": 0.0,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/L3 (m)",
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/Tolerance",
     "type": "double",
-    "value": 1.19,
+    "value": 0.0,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/L4Shoot (m)",
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/Max Velocity",
     "type": "double",
-    "value": 1.7,
+    "value": 83.333,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/L4 (m)",
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/Max Acceleration",
     "type": "double",
-    "value": 1.82,
+    "value": 16.66,
     "properties": {
       "persistent": true
     }
   },
   {
-    "name": "/SmartDashboard/ElevatorSystem/ElevatorSystem/NET (m)",
+    "name": "/SmartDashboard/AlgaeArm/Algae Arm/kG",
     "type": "double",
-    "value": 1.9,
+    "value": -0.1478,
     "properties": {
       "persistent": true
     }
@@ -985,6 +641,38 @@
   },
   {
     "name": "/SmartDashboard/Motors/Climb Motor/Max Acceleration",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/PID Values/DriveToPoseSupplier/Translation kP",
+    "type": "double",
+    "value": 7.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/PID Values/DriveToPoseSupplier/Translation kD",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/PID Values/DriveToPoseSupplier/Rotation kP",
+    "type": "double",
+    "value": 7.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/PID Values/DriveToPoseSupplier/Rotation kD",
     "type": "double",
     "value": 0.0,
     "properties": {

@@ -1,0 +1,592 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
+package frc.robot.subsystems;
+
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Pounds;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Volts;
+import static yams.mechanisms.SmartMechanism.gearbox;
+import static yams.mechanisms.SmartMechanism.gearing;
+
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+
+import org.frc5010.common.arch.GenericSubsystem;
+import org.frc5010.common.motors.PIDController5010.PIDControlType;
+import org.frc5010.common.sensors.CountingValueSwitch;
+import org.frc5010.common.telemetry.DisplayLength;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+
+import com.ctre.phoenix6.hardware.TalonFX;
+
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.Pair;
+import edu.wpi.first.math.controller.ElevatorFeedforward;
+import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearAcceleration;
+import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Mass;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.ReefscapeButtonBoard;
+import yams.mechanisms.config.ElevatorConfig;
+import yams.mechanisms.positional.Elevator;
+import yams.motorcontrollers.SmartMotorController;
+import yams.motorcontrollers.SmartMotorControllerConfig;
+import yams.motorcontrollers.SmartMotorControllerConfig.ControlMode;
+import yams.motorcontrollers.SmartMotorControllerConfig.MotorMode;
+import yams.motorcontrollers.SmartMotorControllerConfig.TelemetryVerbosity;
+import yams.motorcontrollers.remote.TalonFXWrapper;
+
+/** Add your docs here. */
+public class ElevatorSystemYAMS extends GenericSubsystem {
+    protected CountingValueSwitch hasHighCurrentLoad;
+    private final TalonFX elevatorMotor;
+    protected TalonFX elevatorFollower;
+    // private final SparkMax elevatorMotor;
+    // protected SparkMax elevatorFollower;
+    private final SmartMotorControllerConfig motorConfig;
+    private final SmartMotorController controlledMotor;
+    private final ElevatorConfig m_config;
+    private final Elevator elevator;
+    protected PIDControlType controlType = PIDControlType.NONE;
+    protected ControlMode controlMode = ControlMode.OPEN_LOOP;
+    protected Distance safeDistance = Inches.of(0.5);
+    public DisplayLength BOTTOM = displayValues.makeConfigLength(Position.BOTTOM.name());
+    public DisplayLength LOAD = displayValues.makeConfigLength(Position.LOAD.name());
+    public DisplayLength PROCESSOR = displayValues.makeConfigLength(Position.PROCESSOR.name());
+    public DisplayLength L1 = displayValues.makeConfigLength(Position.L1.name());
+    public DisplayLength L2Algae = displayValues.makeConfigLength(Position.L2Algae.name());
+    public DisplayLength L2Shoot = displayValues.makeConfigLength(Position.L2Shoot.name());
+    public DisplayLength L2 = displayValues.makeConfigLength(Position.L2.name());
+    public DisplayLength L3Algae = displayValues.makeConfigLength(Position.L3Algae.name());
+    public DisplayLength L3Shoot = displayValues.makeConfigLength(Position.L3Shoot.name());
+    public DisplayLength L3 = displayValues.makeConfigLength(Position.L3.name());
+    public DisplayLength L4Shoot = displayValues.makeConfigLength(Position.L4Shoot.name());
+    public DisplayLength L4 = displayValues.makeConfigLength(Position.L4.name());
+    public DisplayLength NET = displayValues.makeConfigLength(Position.NET.name());
+    // public DisplayLength HowTo = new DisplayLength(Meters.of(0.06), "HowTo",
+    // "MyTable");
+    private double currentX = 0.0, lastX = 0.0, lastTime = 0.0, timeChange = 0.0, currentVelocity = 0.0,
+            lastVelocity = 0.0, currentAcceleration = 0.0;
+    private double forwardA = 0.0, forwardB = 0.0, forwardC = 0.0, backwardA = 0.0, backwardB = 0.0, backwardC = 0.0,
+            horizontalA = 0.0, horizontalB = 0.0, horizontalC = 0.0, elevatorA = 0.0, elevatorB = 0.0, elevatorC = 0.0;
+
+    public static enum Position {
+        BOTTOM(Meters.of(0.0)),
+        LOAD(Meters.of(0.09)),
+        CORAL_EXTENSION(Meters.of(0.30)),
+        PROCESSOR(Meters.of(0.15)),
+        L1(Meters.of(0.72)),
+        L2Algae(Meters.of(0.11)),
+        L2Shoot(Meters.of(0.87)),
+        L2(Meters.of(0.8779)),
+        L3Algae(Meters.of(1.1)),
+        L3Shoot(Meters.of(1.27)),
+        L3(Meters.of(1.27)),
+        L4Shoot(Meters.of(1.765)),
+        L4(Meters.of(1.88)),
+        NET(Meters.of(1.9));
+
+        private final Distance position;
+
+        private Position(Distance position) {
+            this.position = position;
+        }
+
+        public Distance position() {
+            return position;
+        }
+    }
+
+    private Distance centerOfMassX = Meters.zero(), centerOfMassY = Inches.of(1.178), wheelBase = Meters.of(0.56);
+    private double growFactor = 0.233035, exponent = 0.824063, initialValue = 0.189682;
+    private double lastError;
+    private double lastTimestamp = 0;
+    private int elevatorAtReferenceCounter = 0;
+    public Supplier<Distance> stoppingDistance = () -> getStoppingDistance();
+    private Trigger isAtMax;
+    private Trigger isAtMin;
+    private Trigger isCloseToMax;
+    private Trigger isCloseToMin;
+    public Trigger isAtTarget;
+
+    public static class Config {
+        public final Current MAX_ELEVATOR_STATOR_CURRENT_LIMIT = Amps.of(120);
+        public final Current MAX_ELEVATOR_SUPPLY_CURRENT_LIMIT = Amps.of(60);
+        public Distance centerOfMassX = Meters.zero(), centerOfMassY = Inches.of(1.178), wheelBase = Meters.of(0.56);
+        public double g = 9.81;
+        public final double ELEVATOR_ZERO_CURRENT = 50;
+        public SlewRateLimiter rateLimiter = new SlewRateLimiter(0.5);
+        public double gearing = 6;
+        public int leaderCANId = 9;
+        public int followerCANId = 10;
+        public Mass weight = Pounds.of(30);
+        public Distance circumference = Meters.of(Inches.of(1.1).in(Meters) * 22);
+        public Distance maxHeight = Inches.of(83.475 - 6.725);
+        public Distance minHeight = Position.LOAD.position();
+        public Distance startingHeight = Position.LOAD.position();
+        public Distance carriageHeight = Meters.of(0.2);
+        public double kG = RobotBase.isSimulation() ? 0.56712 : 0.37;
+        public double kV = 4.1409;
+        public double kA = 0.081308;
+        public double kStatic = 0.0;
+        public double kP = 4.3241E-20;
+        public LinearVelocity maxVelocity = MetersPerSecond.of(6.5);
+        public LinearAcceleration maxAcceleration = MetersPerSecondPerSecond.of(20);
+    }
+
+    private Config config = new Config();
+
+    public ElevatorSystemYAMS(LoggedMechanism2d mechanismSimulation, Config config) {
+        if (config != null)
+            this.config = config;
+
+        elevatorMotor = new TalonFX(config.leaderCANId);
+        elevatorFollower = new TalonFX(config.followerCANId);
+        // elevatorMotor = new SparkMax(config.leaderCANId, MotorType.kBrushless);
+        // elevatorFollower = new SparkMax(config.followerCANId, MotorType.kBrushless);
+        motorConfig = new SmartMotorControllerConfig(this)
+                .withFollowers(Pair.of(elevatorFollower, true))
+                .withMechanismCircumference(config.circumference)
+                .withClosedLoopController(config.kP, 0, 0, config.maxVelocity, config.maxAcceleration)
+                .withSoftLimit(config.minHeight, config.maxHeight)
+                .withGearing(gearing(gearbox(config.gearing)))
+                .withIdleMode(MotorMode.BRAKE)
+                .withTelemetry(logPrefix + " Motor", TelemetryVerbosity.HIGH)
+                .withStatorCurrentLimit(config.MAX_ELEVATOR_STATOR_CURRENT_LIMIT)
+                // .withVoltageCompensation(Volts.of(12))
+                .withMotorInverted(false)
+                .withClosedLoopRampRate(Seconds.of(0.25))
+                .withOpenLoopRampRate(Seconds.of(0.25))
+                .withFeedforward(new ElevatorFeedforward(config.kStatic, config.kG, config.kV, config.kA))
+                .withControlMode(ControlMode.CLOSED_LOOP);
+
+        controlledMotor = new TalonFXWrapper(elevatorMotor,
+                DCMotor.getKrakenX60(2),
+                motorConfig);
+        // controlledMotor = new SparkWrapper(elevatorMotor, DCMotor.getNEO(2), motorConfig);
+        m_config = new ElevatorConfig(controlledMotor)
+                .withStartingHeight(config.startingHeight)
+                .withHardLimits(Meters.of(0.01), config.maxHeight)
+                .withTelemetry(logPrefix, TelemetryVerbosity.HIGH)
+                .withMass(config.weight);
+        elevator = new Elevator(m_config);
+
+        isAtMax = elevator.max();
+        isAtMin = elevator.min();
+        isCloseToMax = elevator.isNear(config.maxHeight, safeDistance);
+        isCloseToMin = elevator.isNear(config.minHeight, safeDistance);
+        // If setpoint isn't used, returns -1 so this will no be true
+        isAtTarget = elevator.isNear(controlledMotor.getMeasurementPosition(), Meters.of(0.01));
+
+        // Tell the elevator to run the motor in reverse because the simulator thinks CW
+        // is upwards
+        // if (RobotBase.isSimulation()) {
+        // controlledMotor.invert(true);
+        // // Tell the simulator that the motor is CW.
+        // controlledMotor.getMotorEncoder().setInverted(true);
+        // }
+
+        if (0 == BOTTOM.getLength().in(Meters))
+            BOTTOM.setLength(Position.BOTTOM.position());
+        if (0 == LOAD.getLength().in(Meters))
+            LOAD.setLength(Position.LOAD.position());
+        if (0 == PROCESSOR.getLength().in(Meters))
+            PROCESSOR.setLength(Position.PROCESSOR.position());
+        if (0 == L1.getLength().in(Meters))
+            L1.setLength(Position.L1.position());
+        if (0 == L2Algae.getLength().in(Meters))
+            L2Algae.setLength(Position.L2Algae.position());
+        if (0 == L2Shoot.getLength().in(Meters))
+            L2Shoot.setLength(Position.L2Shoot.position());
+        if (0 == L2.getLength().in(Meters))
+            L2.setLength(Position.L2.position());
+        if (0 == L3Algae.getLength().in(Meters))
+            L3Algae.setLength(Position.L3Algae.position());
+        if (0 == L3Shoot.getLength().in(Meters))
+            L3Shoot.setLength(Position.L3Shoot.position());
+        if (0 == L3.getLength().in(Meters))
+            L3.setLength(Position.L3.position());
+        if (0 == L4Shoot.getLength().in(Meters))
+            L4Shoot.setLength(Position.L4Shoot.position());
+        if (0 == L4.getLength().in(Meters))
+            L4.setLength(Position.L4.position());
+        if (0 == NET.getLength().in(Meters))
+            NET.setLength(Position.NET.position());
+
+        hasHighCurrentLoad = new CountingValueSwitch(config.ELEVATOR_ZERO_CURRENT,
+                () -> controlledMotor.getStatorCurrent().abs(Amps),
+                1, 10);
+    }
+
+    public Boolean validSpeed(double speed) {
+        if ((speed > 0 && !isAtMax.getAsBoolean()) || (speed < 0 && !isAtMin.getAsBoolean())) {
+            return true;
+        }
+        return false;
+    }
+
+    public Command elevatorSysIdCommand() {
+        return elevator.sysId(Volts.of(12), Volts.of(12).per(Second), Second.of(30));
+    }
+
+    public double safeSpeed(double speed) {
+        if (!validSpeed(speed)) {
+            return 0.0;
+        }
+
+        if ((speed > 0 && isCloseToMax.getAsBoolean())
+                || (speed < 0 && isCloseToMin.getAsBoolean())) {
+            speed = speed * 0.13;
+            config.rateLimiter.reset(speed);
+        } else {
+            double currentSpeed = controlledMotor.getDutyCycle();
+            if ((Math.signum(speed) > 0 && currentSpeed < speed) ||
+                    (Math.signum(speed) < 0 && speed < currentSpeed)) {
+                speed = config.rateLimiter.calculate(speed);
+            } else {
+                config.rateLimiter.reset(speed);
+            }
+        }
+        return speed;
+    }
+
+    public void elevatorSpeed(double speed) {
+
+        if (motorConfig.getMotorControllerMode() != ControlMode.OPEN_LOOP && speed != 0) {
+            motorConfig.withControlMode(ControlMode.OPEN_LOOP);
+        }
+        if (ControlMode.OPEN_LOOP == motorConfig.getMotorControllerMode()) {
+            controlledMotor.setDutyCycle(safeSpeed(speed));
+        }
+    }
+
+    public Command elevatorPositionZeroSequence() {
+        double zeroSpeed = -0.2;
+
+        return Commands.run(() -> controlledMotor.setDutyCycle(zeroSpeed), this).until(() -> hasHighCurrentLoad.get())
+                .andThen(zeroElevator()).finallyDo(() -> controlledMotor.setDutyCycle(0.0));
+    }
+
+    public Command holdElevatorDown() {
+        return Commands.run(() -> controlledMotor.setDutyCycle(-0.05));
+    }
+
+    public Command pidControlCommand(Distance position) {
+        return elevator.setHeight(position);
+                // .beforeStarting(() -> {
+                //     motorConfig.withControlMode(ControlMode.CLOSED_LOOP);
+                //     controlledMotor.applyConfig(motorConfig);
+                // });
+                // .finallyDo(() -> {
+                //     controlledMotor.setDutyCycle(0);
+                //     motorConfig.withControlMode(controlMode);
+                // });
+    }
+
+    public Command newPidControlCommand(Distance position) {
+        return Commands.run(() -> {
+            controlledMotor.iterateClosedLoopController();
+
+        }, this).beforeStarting(() -> {
+            resetController(position);
+            motorConfig.withControlMode(ControlMode.CLOSED_LOOP);
+        });
+    }
+
+    public Command stopElevator() {
+        return Commands.run(() -> {
+            controlledMotor.setDutyCycle(0);
+            motorConfig.withControlMode(controlMode);
+        });
+    }
+
+    public void runControllerToSetpoint() {
+        controlledMotor.iterateClosedLoopController();
+    }
+
+    public void setControllerGoal(Distance goal) {
+        elevator.setHeight(goal);
+    }
+
+    public void resetController(Distance goal) {
+        // controlledMotor.resetController(controlledMotor.getMeasurementPosition(),
+        // controlledMotor.getMeasurementVelocity());
+        setControllerGoal(goal);
+    }
+
+    private void setElevatorPIDGoal(double goal) {
+        elevator.setHeight(Meters.of(goal));
+    }
+
+    public Command pidControlCommand(Distance position, Supplier<Distance> maxHeight) {
+        return Commands.run(() -> {
+            if (elevator.getHeight() != position) {
+                setElevatorPIDGoal(Math.min(maxHeight.get().in(Meters), position.in(Meters)));
+            }
+            controlledMotor.iterateClosedLoopController();
+        }, this).beforeStarting(() -> {
+            resetController(position);
+            motorConfig.withControlMode(ControlMode.CLOSED_LOOP);
+        }).finallyDo(() -> {
+            motorConfig.withControlMode(controlMode);
+        });
+    }
+
+    public void setElevatorPosition(Distance position) {
+        if (motorConfig.getMotorControllerMode() != controlMode) {
+            motorConfig.withControlMode(controlMode);
+        }
+        if (controlMode == motorConfig.getMotorControllerMode()) {
+            elevator.setHeight(position);
+        }
+    }
+
+    public double getElevatorReference() {
+        return elevator.getHeight().in(Meters);
+    }
+
+    public Command zeroElevator() {
+        return Commands.runOnce(() -> controlledMotor.setPosition(Meters.of(0.09)));
+    }
+
+    public Command basicSuppliersMovement(DoubleSupplier speed) {
+        return Commands.run(
+                () -> elevatorSpeed(speed.getAsDouble()), this);
+    }
+
+    public Command joystickPositionControl(Supplier<Distance> positionalChange) {
+        return Commands.run(() -> {
+            setElevatorPosition(elevator.getHeight().plus(positionalChange.get()));
+        }, this).beforeStarting(setControlType(ControlMode.CLOSED_LOOP)).finallyDo(this::resetControlType);
+    }
+
+    public Command setControlType(ControlMode type) {
+        return Commands.runOnce(() -> motorConfig.withControlMode(type));
+    }
+
+    private void resetControlType() {
+        motorConfig.withControlMode(controlMode);
+    }
+
+    public boolean isAtLocation(Distance position) {
+        return Math.abs(position.in(Meters) - elevator.getHeight().in(Meters)) < 0.02;
+    }
+
+    public boolean isAtLocationImproved(Distance position) {
+        if (Math.abs(position.in(Meters) - elevator.getHeight().in(Meters)) < 0.02) {
+            elevatorAtReferenceCounter++;
+            return elevatorAtReferenceCounter > 10;
+        }
+        elevatorAtReferenceCounter = 0;
+        return false;
+    }
+
+    public double getCenterOfMassZ() {
+        return growFactor * Math.pow(elevator.getHeight().in(Meters), exponent) + initialValue;
+    }
+
+    // Function that decreases acceleration to counteract elevator flex
+    public double getGeneralAccelerationDampener() {
+        return Math.pow(elevator.getHeight().in(Meters) * 2, 0.5);
+    }
+
+    public double getBackwardAccelerationDampener() {
+        return Math.pow(elevator.getHeight().in(Meters) * 2, 0.5);
+    }
+
+    public double getMaxForwardAcceleration() {
+        return ((((wheelBase.in(Meters) / 2) + centerOfMassY.in(Meters))
+                * (config.g)) / getCenterOfMassZ())
+                - getGeneralAccelerationDampener();
+    }
+
+    public double getMaxForwardVelocity() {
+        return Math.sqrt(2 * (Math.abs(getMaxBackwardAcceleration())) * stoppingDistance.get().in(Meters));
+    }
+
+    public double getMaxBackwardAcceleration() {
+        return -((((wheelBase.in(Meters) / 2) - centerOfMassY.in(Meters))
+                * (config.g)) / getCenterOfMassZ())
+                + getBackwardAccelerationDampener();
+    }
+
+    public double getMaxBackwardVelocity() {
+        return Math.sqrt(2 * (-Math.abs(getMaxForwardAcceleration())) * stoppingDistance.get().in(Meters));
+    }
+
+    public double getMaxRightAcceleration() {
+        return ((((wheelBase.in(Meters) / 2) + centerOfMassX.in(Meters))
+                * (config.g)) / getCenterOfMassZ())
+                - getGeneralAccelerationDampener();
+    }
+
+    public double getMaxRightVelocity() {
+        return Math.sqrt(2 * (Math.abs(getMaxLeftAcceleration())) * stoppingDistance.get().in(Meters));
+    }
+
+    public double getMaxLeftAcceleration() {
+        return -((((wheelBase.in(Meters) / 2) - centerOfMassX.in(Meters))
+                * (config.g)) / getCenterOfMassZ())
+                + getGeneralAccelerationDampener();
+    }
+
+    public double getMaxLeftVelocity() {
+        return Math.sqrt(2 * (-Math.abs(getMaxRightAcceleration())) * stoppingDistance.get().in(Meters));
+    }
+
+    public double getCOMAcceleration(double x) {
+        timeChange = (RobotController.getFPGATime() - lastTime) / 1E6;
+        lastTime = RobotController.getFPGATime();
+        currentVelocity = MathUtil.clamp((x - lastX) / timeChange, -2.5, 2.5); // Note: temporary fix, add data
+                                                                               // smoothing later
+        lastX = x;
+        currentAcceleration = MathUtil.clamp((currentVelocity - lastVelocity) / timeChange, 2.5, -2.5); // Note:
+                                                                                                        // temporary
+                                                                                                        // fix, add data
+                                                                                                        // smoothing
+                                                                                                        // later
+        lastVelocity = currentVelocity;
+        return (growFactor * exponent * (exponent - 1) * Math.pow(x, exponent - 2)
+                * Math.pow(currentVelocity, 2))
+                + (growFactor * exponent * Math.pow(x, exponent - 1) * currentAcceleration);
+    }
+
+    public Distance selectElevatorLevel(Supplier<ReefscapeButtonBoard.ScoringLevel> level) {
+        switch (level.get()) {
+            case L1:
+                return L1.getLength();
+            case L2:
+                return AlgaeArm.algaeSelected.getAsBoolean() ? L2Algae.getLength() : L2.getLength();
+            case L3:
+                return AlgaeArm.algaeSelected.getAsBoolean() ? L3Algae.getLength() : L3.getLength();
+            case L4:
+                return L4.getLength();
+            default:
+                return LOAD.getLength();
+        }
+    }
+
+    // returns constants [+acceleration, -+time (time to accelerate in one
+    // direction), time]
+    public double[] getHeightTimeFunction(double height) {
+        double distance = elevator.getHeight().in(Meters) - height;
+        double timeToMaxVelocity = config.maxVelocity.in(MetersPerSecond)
+                / config.maxAcceleration.in(MetersPerSecondPerSecond);
+        double maxTriangleDistance = config.maxAcceleration.in(MetersPerSecondPerSecond)
+                * Math.pow(timeToMaxVelocity, 2);
+        double accelerationTime = 0.0, time = 0.0;
+        if (maxTriangleDistance > height) {
+            accelerationTime = Math.sqrt(distance / config.maxAcceleration.in(MetersPerSecondPerSecond));
+            time = 0.0;
+        } else {
+            double remainingDistance = distance - maxTriangleDistance;
+            accelerationTime = Math.sqrt(maxTriangleDistance / config.maxAcceleration.in(MetersPerSecondPerSecond));
+            time = remainingDistance / config.maxVelocity.in(MetersPerSecond);
+        }
+        return new double[] { config.maxAcceleration.in(MetersPerSecondPerSecond), accelerationTime, time };
+    }
+
+    public void setRobotParameters(Distance centerofMassX, Distance centerOfMassY, Distance wheelBase,
+            double growFactor, double exponent, double initialValue) {
+        this.centerOfMassX = centerOfMassX;
+        this.centerOfMassY = centerOfMassY;
+        this.wheelBase = wheelBase;
+        this.growFactor = growFactor;
+        this.exponent = exponent;
+        this.initialValue = initialValue;
+    }
+
+    public void setCOGFunctionParameters(double growFactor, double exponent, double intialValue) {
+        this.growFactor = growFactor;
+        this.exponent = exponent;
+        this.initialValue = intialValue;
+    }
+
+    public boolean atLoading() {
+        return Math.abs(elevator.getHeight().in(Meters) - Position.LOAD.position().in(Meters)) < 0.1;
+    }
+
+    public Trigger isLoadingTrigger = new Trigger(() -> atLoading());
+
+    public Distance getElevatorPosition() {
+        return elevator.getHeight();
+    }
+
+    public Distance getStoppingDistance() {
+        if (Math.abs(getElevatorPosition().in(Meters) - Position.L4.position().in(Meters)) < 0.05) {
+            return Meters.of(0.3);
+        } else {
+            return Meters.of(1.0);
+        }
+    }
+
+    public void setUpElevatorVelocityFunction(double elevatorA, double elevatorB, double elevatorC) {
+        this.elevatorA = elevatorA;
+        this.elevatorB = elevatorB;
+        this.elevatorC = elevatorC;
+    }
+
+    public void setUpAccelerationConstraints(double forwardA, double forwardB, double forwardC, double backwardA,
+            double backwardB, double backwardC, double horizontalA, double horizontalB, double horizontalC) {
+        this.forwardA = forwardA;
+        this.forwardB = forwardB;
+        this.forwardC = forwardC;
+        this.backwardA = backwardA;
+        this.backwardB = backwardB;
+        this.backwardC = backwardC;
+        this.horizontalA = horizontalA;
+        this.horizontalB = horizontalB;
+        this.horizontalC = horizontalC;
+    }
+
+    public double[] getForwardAccelerationConstants() {
+        return new double[] { forwardA, forwardB, forwardC };
+    }
+
+    public double[] getBackwardAccelerationConstants() {
+        return new double[] { backwardA, backwardB, backwardC };
+    }
+
+    public double[] getHorizontalAccelerationConstants() {
+        return new double[] { horizontalA, horizontalB, horizontalC };
+    }
+
+    public double getElevatorExtensionTime() {
+        return elevatorA
+                * Math.pow(Math.abs(selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()).in(Meters)
+                        - getElevatorPosition().in(Meters)), elevatorB)
+                + elevatorC;
+    }
+
+    public double getAverageElevatorVelocity() {
+        return getElevatorExtensionTime() == 0.0 ? 0.0
+                : (selectElevatorLevel(() -> ReefscapeButtonBoard.getScoringLevel()).in(Meters)
+                        - getElevatorPosition().in(Meters)) / getElevatorExtensionTime();
+    }
+
+    @Override
+    public void periodic() {
+        elevator.updateTelemetry();
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        elevator.simIterate();
+    }
+}

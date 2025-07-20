@@ -6,6 +6,7 @@ package org.frc5010.common.motors;
 
 import java.util.Optional;
 
+import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.sensors.encoder.GenericEncoder;
 
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -14,6 +15,8 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import yams.motorcontrollers.SmartMotorController;
+import yams.motorcontrollers.SmartMotorControllerConfig;
 
 /** Common interface fdr motors in the library */
 public interface MotorController5010 extends MotorController {
@@ -120,9 +123,15 @@ public interface MotorController5010 extends MotorController {
    */
   public void setMotorSimulationType(DCMotor motorSimulationType);
 
+  /**
+   * Returns the motor configuration
+   * @return The motor configuration
+   */
+  public Motor getMotorConfig();
+
   /** Updates the simulated instance of the motor */
   public void simulationUpdate(Optional<Double> position, Double velocity);
-  
+
   /**
    * Returns the maximum RPM
    *
@@ -136,7 +145,7 @@ public interface MotorController5010 extends MotorController {
    * @param rpm The maximum RPM
    */
   public void setMaxRPM(AngularVelocity rpm);
-  
+
   /**
    * Set the voltage compensation for the swerve module motor.
    *
@@ -175,11 +184,17 @@ public interface MotorController5010 extends MotorController {
    */
   public double getAppliedOutput();
 
-
   /**
    * Get the current output of the motor controller.
    * 
    * @return Current output.
    */
   public double getOutputCurrent();
+
+  /**
+   * Get the smart motor controller
+   * @param config The smart motor controller config
+   * @return The smart motor controller
+   */
+  public SmartMotorController getSmartMotorController(SmartMotorControllerConfig config);
 }

@@ -8,14 +8,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import org.frc5010.common.arch.GenericDeviceHandler;
 import org.frc5010.common.arch.GenericRobot;
 import org.frc5010.common.config.UnitsParser;
 import org.frc5010.common.constants.Constants;
 import org.frc5010.common.constants.GenericDrivetrainConstants;
 
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /** The base JSON class for robot configurations */
@@ -87,22 +84,5 @@ public class RobotJson {
 
     Constants.Simulation.gamePieceA = gamePieceA;
     Constants.Simulation.gamePieceB = gamePieceB;
-  }
-
-  /**
-   * Reads the mechanism definition files
-   *
-   * @param system the system being configured
-   * @throws IOException
-   * @throws DatabindException
-   * @throws StreamReadException
-   */
-  public void readDeviceDefinitions(GenericDeviceHandler system, File directory)
-      throws StreamReadException, DatabindException, IOException {
-    for (String key : devices.keySet()) {
-      File mechanismDefFile = new File(directory, "devices/" + devices.get(key));
-      assert mechanismDefFile.exists();
-      DeviceConfigReader.readDeviceConfig(system, mechanismDefFile, key);
-    }
   }
 }

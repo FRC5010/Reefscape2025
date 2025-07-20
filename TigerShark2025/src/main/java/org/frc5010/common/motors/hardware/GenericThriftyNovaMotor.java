@@ -25,6 +25,8 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import yams.motorcontrollers.SmartMotorController;
+import yams.motorcontrollers.SmartMotorControllerConfig;
 
 /** Add your docs here. */
 public class GenericThriftyNovaMotor implements MotorController5010 {
@@ -188,8 +190,6 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
         return motorSim;
     }
 
-
-
     @Override
     public AngularVelocity getMaxRPM() {
         return maxRPM;
@@ -237,7 +237,6 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
         checkErrors("Getting output current failed: ");
         return current;
     }
-    
 
     @Override
     public void setMotorSimulationType(DCMotor motorSimulationType) {
@@ -255,22 +254,39 @@ public class GenericThriftyNovaMotor implements MotorController5010 {
         maxRPM = rpm;
     }
 
-      /**
-   * Checks for errors in the motor and logs them if any are found.
-   *
-   * @param message the message to prepend to the log and print statement
-   */
-  private void checkErrors(String message)
-  {
-    
-    // List<ThriftyNova.Error> errors = motor.getErrors();
-    // if (errors.size() > 0)
-    // {
-    //   for (ThriftyNova.Error error : errors)
-    //   {
-    //     DataLogManager.log(this.getClass().getSimpleName() + ": " + message + error.toString());
-    //     System.out.println(this.getClass().getSimpleName() + ": " + message + error.toString());
-    //   }
-    // }
-  }
+    /**
+     * Checks for errors in the motor and logs them if any are found.
+     *
+     * @param message the message to prepend to the log and print statement
+     */
+    private void checkErrors(String message) {
+
+        // List<ThriftyNova.Error> errors = motor.getErrors();
+        // if (errors.size() > 0)
+        // {
+        // for (ThriftyNova.Error error : errors)
+        // {
+        // DataLogManager.log(this.getClass().getSimpleName() + ": " + message +
+        // error.toString());
+        // System.out.println(this.getClass().getSimpleName() + ": " + message +
+        // error.toString());
+        // }
+        // }
+    }
+
+    /**
+     * Returns the configuration of the motor as a Motor object.
+     *
+     * @return The motor configuration
+     */
+    @Override
+    public Motor getMotorConfig() {
+        return config;
+    }
+
+    @Override
+    public SmartMotorController getSmartMotorController(SmartMotorControllerConfig config) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getSmartMotorController'");
+    }
 }

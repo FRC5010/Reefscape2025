@@ -1,7 +1,7 @@
-package org.frc5010.common.config.json;
+package org.frc5010.common.config.json.devices;
 
-import org.frc5010.common.arch.GenericDeviceHandler;
 import org.frc5010.common.arch.GenericRobot.LogLevel;
+import org.frc5010.common.arch.GenericSubsystem;
 import org.frc5010.common.config.DeviceConfiguration;
 import org.frc5010.common.motors.function.PercentControlMotor;
 
@@ -39,7 +39,7 @@ public class PercentMotorConfigurationJson implements DeviceConfiguration {
    * @return A configured PercentControlMotor object.
    */
   @Override
-  public Object configure(GenericDeviceHandler deviceHandler) {
+  public Object configure(GenericSubsystem deviceHandler) {
     return new PercentControlMotor(DeviceConfigReader.getMotor(controller, type, id), name,
         deviceHandler.getDisplayValuesHelper())
         .setupSimulatedMotor(gearing, momentOfInertiaKgMSq)

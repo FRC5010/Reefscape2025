@@ -220,7 +220,15 @@ public abstract class GenericRobot extends GenericMechanism implements GenericDe
    */
   public Command getAutonomousCommand() {
     everEnabled = true;
-    return generateAutoCommand(selectableCommand.get());
+    return generateAutoCommand(selectableCommand.get().asProxy());
+  }
+
+  /**
+   * Executes periodic behavior when the robot is disabled.
+   */
+  @Override
+  public void disabledBehavior() {
+    selectableCommand.periodic();
   }
 
   /**

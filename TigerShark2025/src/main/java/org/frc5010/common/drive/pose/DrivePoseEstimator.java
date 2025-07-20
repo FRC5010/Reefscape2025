@@ -36,7 +36,6 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.FieldConstants.Reef;
 
 /** A class to handle estimating the pose of the robot */
 public class DrivePoseEstimator extends GenericSubsystem {
@@ -97,8 +96,6 @@ public class DrivePoseEstimator extends GenericSubsystem {
     }).withSize(6, 2).withPosition(0, 5);
     tab.addBoolean("April Tag Visible", () -> aprilTagVisible).withPosition(6, 5);
     tab.addBoolean("Acceptor Updating", () -> updatingPoseAcceptor).withPosition(8, 5);
-    tab.addNumber("Distance X to AB Reef", () -> Reef.Side.AB.getCenterFace().getX() - getCurrentPose().getX());
-    tab.addNumber("Distance Y to AB Reef", () -> Reef.Side.AB.getCenterFace().getY() - getCurrentPose().getY());
     tab.addString("Estimator State", () -> state.name());
 
     for (AprilTag at : AprilTags.aprilTagFieldLayout.getTags()) {

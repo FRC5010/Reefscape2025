@@ -11,6 +11,7 @@ import java.util.Optional;
 import org.frc5010.common.arch.GenericRobot.LogLevel;
 import org.frc5010.common.arch.WpiHelperInterface;
 import org.frc5010.common.constants.RobotConstantsDef;
+import org.frc5010.common.motors.MotorConstants.Motor;
 import org.frc5010.common.motors.MotorController5010;
 import org.frc5010.common.motors.PIDController5010;
 import org.frc5010.common.sensors.encoder.GenericEncoder;
@@ -26,6 +27,8 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import yams.motorcontrollers.SmartMotorController;
+import yams.motorcontrollers.SmartMotorControllerConfig;
 
 /** A class that wraps a motor controller with functionality */
 public class GenericFunctionalMotor implements MotorController5010, WpiHelperInterface {
@@ -36,7 +39,8 @@ public class GenericFunctionalMotor implements MotorController5010, WpiHelperInt
   protected Pose3d _robotToMotor;
   protected String _visualName;
   protected DisplayValuesHelper _displayValuesHelper;
-  protected Alert loggingAlert = new Alert(this.getClass().getSimpleName() + " Logging Mode is not COMPETITION!", AlertType.kWarning);
+  protected Alert loggingAlert = new Alert(this.getClass().getSimpleName() + " Logging Mode is not COMPETITION!",
+      AlertType.kWarning);
 
   /**
    * Constructor for a motor
@@ -485,5 +489,26 @@ public class GenericFunctionalMotor implements MotorController5010, WpiHelperInt
   @Override
   public void setMaxRPM(AngularVelocity rpm) {
     _motor.setMaxRPM(rpm);
+  }
+
+  /**
+   * Get the motor configuration for this motor controller.
+   *
+   * @return The motor configuration for this motor controller.
+   */
+  @Override
+  public Motor getMotorConfig() {
+    return _motor.getMotorConfig();
+  }
+
+  /**
+   * Get the smart motor controller associated with this motor.
+   *
+   * @param config The configuration for the smart motor controller
+   * @return The smart motor controller associated with this motor
+   */
+  @Override
+  public SmartMotorController getSmartMotorController(SmartMotorControllerConfig config) {
+    return _motor.getSmartMotorController(config);
   }
 }

@@ -150,7 +150,7 @@ public class TigerShark extends GenericRobot {
                 driver.createAButton().whileTrue(drivetrain.sysIdDriveMotorCommand());
                 driver.createBButton().whileTrue(drivetrain.sysIdAngleMotorCommand());
                 driver.createXButton().whileTrue(new WheelRadiusCharacterization(drivetrain));
-                operator.createYButton().whileTrue(elevatorSystem.elevatorSysIdCommand());
+                operator.createBButton().whileTrue(elevatorSystem.elevatorSysIdCommand());
 
                 QuestNav calibrationQuest = new QuestNav(new Transform3d(new Translation3d(),
                                 new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(-90))));

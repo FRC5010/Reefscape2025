@@ -1,6 +1,6 @@
-package org.frc5010.common.config.json;
+package org.frc5010.common.config.json.devices;
 
-import org.frc5010.common.arch.GenericDeviceHandler;
+import org.frc5010.common.arch.GenericSubsystem;
 import org.frc5010.common.config.DeviceConfiguration;
 import org.frc5010.common.sensors.gyro.NavXGyro;
 import org.frc5010.common.sensors.gyro.PigeonGyro;
@@ -22,7 +22,7 @@ public class GyroSettingsConfigurationJson implements DeviceConfiguration {
  * @return An instance of a gyro sensor (NavXGyro or PigeonGyro) based on the type, or null if the type is unrecognized.
  */
   @Override
-  public Object configure(GenericDeviceHandler deviceHandler) {
+  public Object configure(GenericSubsystem deviceHandler) {
     switch (type) {
       case "navx":
         return new NavXGyro(NavXComType.kMXP_SPI);

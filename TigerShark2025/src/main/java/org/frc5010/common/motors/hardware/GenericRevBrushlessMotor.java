@@ -40,6 +40,9 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import yams.motorcontrollers.SmartMotorController;
+import yams.motorcontrollers.SmartMotorControllerConfig;
+import yams.motorcontrollers.local.SparkWrapper;
 
 /** A class for a generic REV brushless motor */
 public class GenericRevBrushlessMotor implements MotorController5010 {
@@ -91,7 +94,7 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
 
     getMotorEncoder();
     controller = new RevSparkController(this);
-    
+
     setCurrentLimit(config.currentLimit);
     setMotorSimulationType(config.getMotorSimulationType());
     setMaxRPM(config.maxRpm);
@@ -494,4 +497,18 @@ public class GenericRevBrushlessMotor implements MotorController5010 {
     encoder.simulationUpdate(position, velocity);
   }
 
+  /**
+   * Returns the configuration of the motor as a Motor object.
+   *
+   * @return The motor configuration
+   */
+  @Override
+  public Motor getMotorConfig() {
+    return config;
+  }
+
+  @Override
+  public SmartMotorController getSmartMotorController(SmartMotorControllerConfig config) {
+    return new SparkWrapper(motor, motorSim, config);
+  }
 }

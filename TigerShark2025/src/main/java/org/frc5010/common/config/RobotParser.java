@@ -56,8 +56,6 @@ public class RobotParser {
             .readValue(new File(directory, "controllers.json"), DriveteamControllersJson.class);
     controllersMap = controllersJson.readControllers(directory);
 
-    robotJson.readDeviceDefinitions(robot, directory);
-
     // Read in the cameras
     visionJson =
         new ObjectMapper()

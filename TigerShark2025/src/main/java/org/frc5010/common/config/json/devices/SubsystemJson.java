@@ -1,11 +1,13 @@
-package org.frc5010.common.config.json;
+package org.frc5010.common.config.json.devices;
 
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.databind.DatabindException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-import org.frc5010.common.arch.GenericDeviceHandler;
+
+import org.frc5010.common.arch.GenericSubsystem;
+
+import com.fasterxml.jackson.core.exc.StreamReadException;
+import com.fasterxml.jackson.databind.DatabindException;
 
 /** The base JSON class for subsystem configurations */
 public class SubsystemJson {
@@ -25,7 +27,7 @@ public class SubsystemJson {
    * @throws DatabindException if a configuration file cannot be parsed
    * @throws IOException if an I/O error occurs when reading a configuration file
    */
-  public void configureSubsystem(GenericDeviceHandler system, File directory)
+  public void configureSubsystem(GenericSubsystem system, File directory)
       throws StreamReadException, DatabindException, IOException {
     for (String key : devices.keySet()) {
       File deviceFile = new File(directory, devices.get(key));
