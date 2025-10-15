@@ -81,7 +81,7 @@ public class TigerShark extends GenericRobot {
                 brainZero = new DigitalInput(0);
                 brainOne = new DigitalInput(1);
 
-                leds = new NewLEDSubsystem(1, 28, Inches.of(27.0));
+                leds = new NewLEDSubsystem(1, 23, Inches.of(27.0));
 
                 gyro = (GenericGyro) subsystems.get(ConfigConstants.GYRO);
 
@@ -173,17 +173,17 @@ public class TigerShark extends GenericRobot {
                                 .run(() -> ((YAGSLSwerveDrivetrain) drivetrain)
                                                 .drive(new ChassisSpeeds(0.1, 0, 0)), drivetrain));
                 // operator.createXButton().whileTrue(algaeArm.getSysIdCommand());
-
+//7.745
                 operator.createYButton().onTrue(TargetingSystem.driveXMetersQuest(Meters.of(1.0)));
         }
 
         @Override
         public void configureButtonBindings(Controller driver, Controller operator) {
-                drivetrain.configureButtonBindings(driver, operator);
                 if (DriverStation.isTest()) {// TODO: Move into Generic Robot
                         configureTestButtonBindings(driver, operator);
                         return;
                 }
+                drivetrain.configureButtonBindings(driver, operator);
                 reefscapeButtonBoard.configureOperatorButtonBindings(operator);
 
                 // Auto drive to reef
