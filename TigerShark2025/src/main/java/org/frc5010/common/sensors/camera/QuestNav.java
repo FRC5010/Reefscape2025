@@ -35,6 +35,7 @@ import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.TimestampedDouble;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
@@ -47,6 +48,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class QuestNav implements PoseProvider {
     private boolean initializedPosition = false;
     public static boolean isActive = false;
+    private double heartbeatTimestamp = 0.0;
     private String networkTableRoot = "questnav";
     private NetworkTableInstance networkTableInstance = NetworkTableInstance.getDefault();
     private Supplier<ChassisSpeeds> robotVelocity = null;
@@ -228,11 +230,13 @@ public class QuestNav implements PoseProvider {
     }
 
     public void processHeartbeat() {
-        double requestId = heartbeatRequestSub.get();
+        TimestampedDouble request = heartbeatRequestSub.getAtomic();
+        double requestId = request.value;
         // Only respond to new requests to avoid flooding
         if (requestId > 0 && requestId != lastProcessedHeartbeatId) {
           heartbeatResponsePub.set(requestId);
           lastProcessedHeartbeatId = requestId;
+          heartbeatTimestamp = request.timestamp;
         }
       }
 
